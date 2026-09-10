@@ -37,7 +37,7 @@ export class Route {
     dropWidth = 7,
     baseColor = 0x666666,
     satColor = 0x000000,
-    baseOpacity = 0.18,
+    baseOpacity = 0,
     satOpacity = 1,
     dropBaseColor = 0x444444,
     tailLength = 0.035,

@@ -121,18 +121,18 @@ test('looping wraps back to the start after the loop delay', () => {
   assert.equal(flow.time, 0)
 })
 
-test('the destination pin lands no earlier than the drop arrives', () => {
-  const { flow, route, destPin } = makeFlow()
-  let dropDone = null
-  let pinStart = null
+test('the drop only travels once the arc is fully painted', () => {
+  const { flow, route } = makeFlow()
+  let drawDone = null
+  let dropStart = null
   for (let t = 0; t <= flow.duration; t += 0.01) {
     flow.seek(t)
-    if (dropDone === null && route.head >= 0.999) dropDone = t
-    if (pinStart === null && destPin.amount > 0.001) pinStart = t
+    if (drawDone === null && route.progress >= 0.999) drawDone = t
+    if (dropStart === null && route.head > 0.001) dropStart = t
   }
-  assert.ok(pinStart !== null && dropDone !== null)
-  assert.ok(pinStart >= dropDone - 0.35,
-    `pin starts at ${pinStart} but drop only arrives at ${dropDone}`)
+  assert.ok(drawDone !== null && dropStart !== null)
+  assert.ok(dropStart >= drawDone - 1e-9,
+    `drop starts at ${dropStart} but the arc is only painted at ${drawDone}`)
 })
 
 test('a custom beat list overrides the default', () => {

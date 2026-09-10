@@ -141,8 +141,7 @@ const FRAGMENT =  `
       return;
     }
 
-    float behind = 1.0 - smoothstep(uHeadT - uSatFeather, uHeadT, vAlong);
-    float ramp = vAlong * behind;
+    float ramp = vAlong;
     gl_FragColor = vec4(
       mix(uBaseColor, uSatColor, ramp),
       mix(uBaseOpacity, uSatOpacity, ramp) * uOpacity
@@ -153,7 +152,7 @@ const FRAGMENT =  `
 export function createRibbonMaterial({
   baseColor = 0x666666,
   satColor = 0x000000,
-  baseOpacity = 0.18,
+  baseOpacity = 0,
   satOpacity = 1,
   width = 2,
   opacity = 1,

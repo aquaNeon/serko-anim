@@ -16,8 +16,8 @@ const EASINGS = {
 export const DEFAULT_BEATS = [
   { track: 'originPin', at: 0.15, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
   { track: 'arcDraw', at: 0.65, dur: 1.5, from: 0, to: 1, ease: 'inOutCubic' },
-  { track: 'dropHead', at: 1.55, dur: 1.9, from: 0, to: 1, ease: 'inOutCubic' },
-  { track: 'destPin', at: 3.15, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
+  { track: 'destPin', at: 2.05, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
+  { track: 'dropHead', at: 2.6, dur: 1.8, from: 0, to: 1, ease: 'inOutCubic' },
 ]
 
 export class Flow {

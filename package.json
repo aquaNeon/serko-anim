@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "prebake": "node tools/prebake-dots.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "serve": "node tools/serve-local.mjs",
+    "watch": "vite build --watch --logLevel warn"
   },
   "dependencies": {
     "three": "^0.180.0"
