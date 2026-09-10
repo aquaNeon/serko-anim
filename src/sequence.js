@@ -32,6 +32,11 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_confirm',
+    create: {
+      cloneFrom: '.hero1_profile_choice_text',
+      insertAfter: '.hero1_profile_choice_check',
+      text: 'No early mornings',
+    },
     in: 7.0,
     anim: 'type',
     typeSpeed: 4.5,
@@ -66,12 +71,47 @@ const ATTR = {
   offsetY: 'data-offset-y',
 }
 
+function createElement(entry, root) {
+  const { cloneFrom, appendTo, insertAfter, text } = entry.create
+  const parent = appendTo ? root.querySelector(appendTo) : null
+  const sibling = insertAfter ? root.querySelector(insertAfter) : null
+  if (!parent && !sibling) return null
+
+  const template = cloneFrom ? root.querySelector(cloneFrom) : null
+  const el = template
+    ? template.cloneNode(false)
+    : (root.ownerDocument || document).createElement('div')
+
+  el.removeAttribute('data-globe-cue')
+  el.removeAttribute('data-globe-pin')
+  for (const cls of entry.selector.split('.').filter(Boolean)) {
+    el.classList.add(cls)
+  }
+  if (text !== undefined) el.textContent = text
+  el.style.display = 'none'
+
+  if (sibling && sibling.parentNode) {
+    sibling.parentNode.insertBefore(el, sibling.nextSibling)
+  } else {
+    parent.appendChild(el)
+  }
+  return el
+}
+
 export function applySequence(sequence = SEQUENCE, root = document) {
   const applied = []
   const missing = []
+  const created = []
 
   for (const entry of sequence) {
-    const nodes = root.querySelectorAll(entry.selector)
+    let nodes = root.querySelectorAll(entry.selector)
+    if (!nodes.length && entry.create) {
+      const made = createElement(entry, root)
+      if (made) {
+        nodes = [made]
+        created.push(entry.selector)
+      }
+    }
     if (!nodes.length) {
       if (!entry.optional) missing.push(entry.selector)
       continue
@@ -104,5 +144,5 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       ' - a class was probably renamed in Webflow'
     )
   }
-  return { applied, missing }
+  return { applied, missing, created }
 }

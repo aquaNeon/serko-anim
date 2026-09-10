@@ -125,3 +125,86 @@ test('without stagger every match shares the same timing', () => {
   assert.equal(els[0].getAttribute('data-in'), '2')
   assert.equal(els[1].getAttribute('data-in'), '2')
 })
+
+function makeDomEl(cls) {
+  const attrs = new Map()
+  const el = {
+    className: cls,
+    attrs,
+    childNodes: [],
+    parentNode: null,
+    style: {},
+    classList: { add: (c) => { el.className = (el.className + ' ' + c).trim() } },
+    hasAttribute: (n) => attrs.has(n),
+    getAttribute: (n) => (attrs.has(n) ? attrs.get(n) : null),
+    setAttribute: (n, v) => attrs.set(n, v),
+    removeAttribute: (n) => attrs.delete(n),
+    cloneNode: () => makeDomEl(cls),
+    appendChild: (c) => { el.childNodes.push(c); c.parentNode = el; return c },
+    insertBefore: (c) => { el.childNodes.push(c); c.parentNode = el; return c },
+    textContent: '',
+  }
+  return el
+}
+
+test('a missing element is created by cloning a styled one', () => {
+  const template = makeDomEl('hero1_profile_choice_text')
+  const check = makeDomEl('hero1_profile_choice_check')
+  const parent = makeDomEl('wrap')
+  parent.appendChild(check)
+
+  const root = {
+    querySelectorAll: (sel) => (sel === '.made' ? [] : []),
+    querySelector: (sel) =>
+      sel === '.hero1_profile_choice_text' ? template
+      : sel === '.hero1_profile_choice_check' ? check
+      : null,
+    ownerDocument: { createElement: () => makeDomEl('') },
+  }
+
+  const { created } = applySequence([{
+    selector: '.made',
+    create: {
+      cloneFrom: '.hero1_profile_choice_text',
+      insertAfter: '.hero1_profile_choice_check',
+      text: 'No early mornings',
+    },
+    in: 7,
+    anim: 'type',
+  }], root)
+
+  assert.deepEqual(created, ['.made'])
+  const made = parent.childNodes.find((c) => c.className.includes('made'))
+  assert.ok(made, 'created element must be inserted into the DOM')
+  assert.equal(made.textContent, 'No early mornings')
+  assert.match(made.className, /hero1_profile_choice_text/, 'keeps the template styling')
+  assert.equal(made.style.display, 'none', 'starts hidden so it cannot flash')
+  assert.equal(made.getAttribute('data-in'), '7')
+})
+
+test('an element built in Webflow wins over creating one', () => {
+  const existing = makeEl('made')
+  const root = {
+    querySelectorAll: (sel) => (sel === '.made' ? [existing] : []),
+    querySelector: () => null,
+  }
+  const { created } = applySequence([{
+    selector: '.made',
+    create: { cloneFrom: '.x', appendTo: '.y', text: 'injected' },
+    in: 7,
+  }], root)
+
+  assert.deepEqual(created, [], 'must not create when the element already exists')
+  assert.equal(existing.getAttribute('data-in'), '7')
+})
+
+test('creation is skipped when there is nowhere to put it', () => {
+  const root = { querySelectorAll: () => [], querySelector: () => null }
+  const { created, missing } = applySequence([{
+    selector: '.made',
+    create: { cloneFrom: '.x', appendTo: '.nope', text: 'hi' },
+    in: 1,
+  }], root)
+  assert.deepEqual(created, [])
+  assert.deepEqual(missing, ['.made'])
+})
