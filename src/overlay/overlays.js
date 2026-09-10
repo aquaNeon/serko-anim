@@ -39,9 +39,12 @@ function parse(el) {
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
+    const byWord = (el.getAttribute('data-type-by') || 'word').toLowerCase() !== 'char'
     item.typer = new Typewriter(el, {
       skipSelector: el.getAttribute('data-type-skip') || null,
+      byWord,
     })
+    if (!el.hasAttribute('data-type-speed')) item.typeSpeed = byWord ? 4.5 : 26
   }
 
   const computed = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null

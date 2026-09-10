@@ -132,3 +132,47 @@ test('skipSelector leaves matched subtrees alone', () => {
   tw.reveal(0)
   assert.notEqual(arrow.style.display, 'none', 'skipped element stays visible')
 })
+
+test('word mode reveals whole words, not characters', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+
+  tw.reveal(1)
+  assert.equal(t1.nodeValue, 'Fly')
+  tw.reveal(2)
+  assert.equal(t1.nodeValue, 'Fly American')
+  tw.reveal(3)
+  assert.equal(t1.nodeValue, 'Fly American Airlines')
+  assert.equal(t2.nodeValue, '')
+})
+
+test('word mode counts words plus one per atom', () => {
+  const { root } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  assert.equal(tw.total, 3 + 1 + 4, 'three words, one atom, four words')
+})
+
+test('word mode never leaves a partial word on screen', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  for (let n = 0; n <= tw.total; n++) {
+    tw.reveal(n)
+    for (const node of [t1, t2]) {
+      const shown = node.nodeValue
+      if (shown === '' || shown === node._original) continue
+      assert.ok(!/\s$/.test(shown), `"${shown}" ends mid-gap`)
+      const nextChar = node._original[shown.length]
+      assert.ok(nextChar === undefined || /\s/.test(nextChar),
+        `"${shown}" cuts a word in half`)
+    }
+  }
+})
+
+test('word mode still hides the image until its turn', () => {
+  const { root, emojiWrap } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  tw.reveal(2)
+  assert.equal(emojiWrap.style.display, 'none')
+  tw.reveal(4)
+  assert.notEqual(emojiWrap.style.display, 'none')
+})
