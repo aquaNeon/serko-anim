@@ -56,7 +56,7 @@ If no places are found the built-in San Francisco / New York pair is used.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/OWNER/REPO@v0.1.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.1.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -67,7 +67,7 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/OWNER/REPO@v0.1.0/dist/serko-globe.js"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.1.0/dist/serko-globe.js"
         integrity="sha384-r0Z4mlYL/ldbPo6jmU/GqX4RIEj/NXtrxleiPaUWx2PDaAoREcKV3LRdXCsKf403"
         crossorigin="anonymous" defer></script>
 ```
