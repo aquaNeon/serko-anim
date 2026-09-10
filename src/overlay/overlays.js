@@ -39,6 +39,10 @@ function parse(el) {
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
+    if (rect.width) {
+      el.style.minWidth = `${Math.ceil(rect.width)}px`
+      el.style.maxWidth = '100%'
+    }
     const byWord = (el.getAttribute('data-type-by') || 'word').toLowerCase() !== 'char'
     item.typer = new Typewriter(el, {
       skipSelector: el.getAttribute('data-type-skip') || null,

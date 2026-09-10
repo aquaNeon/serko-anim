@@ -12,25 +12,27 @@ export const SEQUENCE = [
     typeSkip: '.hero1_profile_search_wrap',
   },
   {
-    selector: '.hero1_profile_item',
-    in: 1.0,
+    selector: '.hero1_profile_route_wrap',
+    in: 3.2,
     anim: 'rise',
   },
   {
-    selector: '.hero1_profile_choice_second',
-    in: 8.0,
-    anim: 'type',
-    typeSpeed: 4.5,
+    selector: '.hero1_profile_choice_check',
+    in: 6.5,
+    anim: 'pop',
     display: 'flex',
   },
   {
-    selector: '.hero1_profile_route_wrap',
-    in: 9.4,
-    anim: 'pop',
+    selector: '.hero1_profile_choice_second',
+    in: 6.6,
+    anim: 'type',
+    typeSpeed: 4.5,
+    display: 'flex',
+    optional: true,
   },
 ]
 
-export const GLOBE_START = 3.6
+export const GLOBE_START = 3.0
 
 const ATTR = {
   in: 'data-in',
@@ -54,7 +56,7 @@ export function applySequence(sequence = SEQUENCE, root = document) {
   for (const entry of sequence) {
     const nodes = root.querySelectorAll(entry.selector)
     if (!nodes.length) {
-      missing.push(entry.selector)
+      if (!entry.optional) missing.push(entry.selector)
       continue
     }
 
