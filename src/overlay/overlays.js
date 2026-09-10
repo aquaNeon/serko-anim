@@ -33,6 +33,9 @@ function parse(el) {
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     strokes: null,
+    exitWidth: null,
+    baseMinWidth: '',
+    baseMaxWidth: '',
     typedCount: -1,
     hiddenByDisplay: false,
     revealDisplay: '',
@@ -112,6 +115,26 @@ export class Overlays {
     if (item.anim === 'draw') this._draw(item, enter)
 
     const gone = item.outAt !== null && time >= item.outAt + item.dur
+
+    if (item.collapse && item.outAt !== null) {
+      if (exit > 0 && exit < 1) {
+        if (item.exitWidth === null) {
+          item.exitWidth = el.offsetWidth
+          item.baseMinWidth = el.style.minWidth
+          item.baseMaxWidth = el.style.maxWidth
+          el.style.overflow = 'hidden'
+          el.style.whiteSpace = 'nowrap'
+        }
+        el.style.minWidth = '0px'
+        el.style.maxWidth = `${item.exitWidth * (1 - exit)}px`
+      } else if (exit === 0 && item.exitWidth !== null) {
+        el.style.minWidth = item.baseMinWidth
+        el.style.maxWidth = item.baseMaxWidth
+        el.style.overflow = ''
+        el.style.whiteSpace = ''
+        item.exitWidth = null
+      }
+    }
 
     if (amount <= 0.001) {
       el.style.opacity = '0'

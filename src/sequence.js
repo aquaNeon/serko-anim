@@ -43,6 +43,7 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'No early mornings',
+      style: { marginLeft: '4px', textAlign: 'left' },
     },
     in: 7.0,
     anim: 'type',
@@ -79,7 +80,7 @@ const ATTR = {
 }
 
 function createElement(entry, root) {
-  const { cloneFrom, appendTo, insertAfter, text } = entry.create
+  const { cloneFrom, appendTo, insertAfter, text, style } = entry.create
   const parent = appendTo ? root.querySelector(appendTo) : null
   const sibling = insertAfter ? root.querySelector(insertAfter) : null
   if (!parent && !sibling) return null
@@ -95,6 +96,7 @@ function createElement(entry, root) {
     el.classList.add(cls)
   }
   if (text !== undefined) el.textContent = text
+  if (style) Object.assign(el.style, style)
   el.style.display = 'none'
 
   if (sibling && sibling.parentNode) {
