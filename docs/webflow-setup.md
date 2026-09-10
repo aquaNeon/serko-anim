@@ -98,7 +98,31 @@ Layout can be overridden per-site on the root element:
 | `data-center-y` | `0.925` | sphere centre, in radii below the anchor's top edge |
 | `data-camera-lat` | `-4` | where the camera looks |
 | `data-camera-lng` | `-91` | where the camera looks |
+| `data-apex-clearance` | off | px the dome's top must sit **below** the anchor's top edge |
+| `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
 | `data-globe-loop` | off | present = replay the flight on a loop |
+
+### Stopping the globe overlapping content above it
+
+`data-center-y` places the sphere's **centre**, so the dome's top edge ends up
+`(1 - centerY) x radius` **above** the anchor. At the default `0.925` that is
+7.5% of the radius - which grows with the globe, and on a narrow layout where
+the heading sits close to the anchor it is enough to overlap.
+
+`data-apex-clearance` fixes it in pixels rather than proportionally:
+
+```html
+<div id="globe-root" data-apex-clearance="0">
+```
+
+`0` pins the dome's top edge exactly to the anchor's top edge, so it can never
+reach whatever is above. A positive value leaves that many pixels of gap. It
+only ever pushes the globe **down**, so `data-center-y` still controls the look
+everywhere it is not needed.
+
+`data-radius-max-vh` stops the globe getting too tall on short viewports -
+`0.4` caps the radius at 40% of the window height regardless of how wide the
+anchor is.
 
 The animation runs once on load and holds its end state. Add `data-globe-loop`
 to the root element to have it repeat.

@@ -9,7 +9,9 @@ const DEFAULT_LAYOUT = {
   centerYFactor: 0.925,
 
   cameraLat: -4,
-  cameraLng: -91
+  cameraLng: -91,
+  radiusMaxVh: 0,
+  apexClearance: null
 };
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr);
@@ -44,7 +46,11 @@ function readLayout(rootEl) {
     radiusScale: num(rootEl, "data-radius-scale", DEFAULT_LAYOUT.radiusScale),
     centerYFactor: num(rootEl, "data-center-y", DEFAULT_LAYOUT.centerYFactor),
     cameraLat: num(rootEl, "data-camera-lat", DEFAULT_LAYOUT.cameraLat),
-    cameraLng: num(rootEl, "data-camera-lng", DEFAULT_LAYOUT.cameraLng)
+    cameraLng: num(rootEl, "data-camera-lng", DEFAULT_LAYOUT.cameraLng),
+    radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
+    apexClearance: rootEl.hasAttribute("data-apex-clearance")
+      ? num(rootEl, "data-apex-clearance", 0)
+      : DEFAULT_LAYOUT.apexClearance
   };
 }
 export {

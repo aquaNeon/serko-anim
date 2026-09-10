@@ -83,11 +83,19 @@ class Stage {
       this._size = { w, h, dpr };
       this.dots.material.uniforms.uPixelRatio.value = dpr;
     }
-    const radiusPx = anchorRect.width * this.layout.radiusScale;
+    let radiusPx = anchorRect.width * this.layout.radiusScale;
+    if (this.layout.radiusMaxVh > 0) {
+      const vh = window.innerHeight || rect.height || 1;
+      radiusPx = Math.min(radiusPx, vh * this.layout.radiusMaxVh);
+    }
+    const anchorTop = anchorRect.top - rect.top;
+    let centerY = anchorTop + radiusPx * this.layout.centerYFactor;
+    if (this.layout.apexClearance !== null) {
+      centerY = Math.max(centerY, anchorTop + this.layout.apexClearance + radiusPx);
+    }
     const centerPx = {
-
       x: anchorRect.left - rect.left + anchorRect.width / 2,
-      y: anchorRect.top - rect.top + radiusPx * this.layout.centerYFactor
+      y: centerY
     };
     this.globeCam.layout(w, h, centerPx, radiusPx);
     const [lo, hi] = SIZE_SCALE_RANGE;
