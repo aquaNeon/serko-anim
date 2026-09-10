@@ -33,7 +33,6 @@ export const SEQUENCE = [
     dur: 0.4,
     anim: 'pop',
     display: 'flex',
-    style: { marginLeft: 'auto' },
   },
   {
     selector: '.hero1_profile_choice_check_mark',
@@ -48,12 +47,6 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'No early mornings',
-      style: {
-        marginLeft: '4px',
-        marginRight: '0',
-        textAlign: 'right',
-        flex: '0 0 auto',
-      },
     },
     in: 7.0,
     out: 8.6,
@@ -69,12 +62,6 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'Premium economy',
-      style: {
-        marginLeft: '4px',
-        marginRight: '0',
-        textAlign: 'right',
-        flex: '0 0 auto',
-      },
     },
     in: 9.1,
     out: 11.0,
