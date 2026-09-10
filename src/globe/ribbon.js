@@ -109,6 +109,8 @@ const VERTEX =  `
 const FRAGMENT =  `
   uniform vec3 uBaseColor;
   uniform vec3 uSatColor;
+  uniform float uBaseOpacity;
+  uniform float uSatOpacity;
   uniform float uOpacity;
   uniform float uDrawProgress;
   uniform float uHeadT;
@@ -131,20 +133,28 @@ const FRAGMENT =  `
     if (uMode > 0.5) {
       if (vLocal < 0.0 || vLocal > 1.0) discard;
       if (uHeadT <= 0.0 || uHeadT >= 1.0) discard;
-      float shade = mix(0.6, 1.0, vLocal);
-      gl_FragColor = vec4(mix(uBaseColor, uSatColor, shade), uOpacity);
+      float shade = mix(0.55, 1.0, vLocal);
+      gl_FragColor = vec4(
+        mix(uBaseColor, uSatColor, shade),
+        mix(uBaseOpacity, uSatOpacity, shade) * uOpacity
+      );
       return;
     }
 
     float behind = 1.0 - smoothstep(uHeadT - uSatFeather, uHeadT, vAlong);
     float ramp = vAlong * behind;
-    gl_FragColor = vec4(mix(uBaseColor, uSatColor, ramp), uOpacity);
+    gl_FragColor = vec4(
+      mix(uBaseColor, uSatColor, ramp),
+      mix(uBaseOpacity, uSatOpacity, ramp) * uOpacity
+    );
   }
 `
 
 export function createRibbonMaterial({
-  baseColor = 0x98ccfa,
+  baseColor = 0x666666,
   satColor = 0x000000,
+  baseOpacity = 0.18,
+  satOpacity = 1,
   width = 2,
   opacity = 1,
   mode = 0,
@@ -162,6 +172,8 @@ export function createRibbonMaterial({
       uOpacity: { value: opacity },
       uBaseColor: { value: new THREE.Color(baseColor) },
       uSatColor: { value: new THREE.Color(satColor) },
+      uBaseOpacity: { value: baseOpacity },
+      uSatOpacity: { value: satOpacity },
       uDrawProgress: { value: 0 },
       uHeadT: { value: 0 },
       uTailLength: { value: tailLength },

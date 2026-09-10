@@ -19,8 +19,12 @@ Anywhere in the hero section, add an empty div with the id `globe-root`:
 <div id="globe-root"></div>
 ```
 
-Style it: `position: absolute`, `inset: 0`, `z-index: 20`, `pointer-events: none`.
+Style it: `position: absolute`, `inset: 0`, `z-index: 20`.
 It must sit **above** the gradient background and **below** the hero copy.
+
+The script sets `pointer-events: none` on it, so the globe never blocks clicks on
+the hero buttons underneath. Set the property explicitly in Webflow only if you
+want something different - an explicit value is left alone.
 
 The script creates the canvas and the overlay inside it. Leave it empty in the
 Designer.

@@ -35,9 +35,11 @@ export class Route {
     lift = 0.055,
     width = 2,
     dropWidth = 7,
-    baseColor = 0x98ccfa,
+    baseColor = 0x666666,
     satColor = 0x000000,
-    dropBaseColor = 0xa3d2fa,
+    baseOpacity = 0.18,
+    satOpacity = 1,
+    dropBaseColor = 0x444444,
     tailLength = 0.035,
   } = {}) {
     this.from = from
@@ -48,10 +50,12 @@ export class Route {
     this.geometry = createRibbonGeometry(points)
 
     this.arcMaterial = createRibbonMaterial({
-      baseColor, satColor, width, mode: 0, tailLength,
+      baseColor, satColor, baseOpacity, satOpacity, width, mode: 0, tailLength,
     })
     this.dropMaterial = createRibbonMaterial({
-      baseColor: dropBaseColor, satColor, width: dropWidth, mode: 1, tailLength,
+      baseColor: dropBaseColor, satColor,
+      baseOpacity: 0.75, satOpacity: 1,
+      width: dropWidth, mode: 1, tailLength,
     })
 
     this.arc = new THREE.Mesh(this.geometry, this.arcMaterial)

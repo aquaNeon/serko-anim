@@ -10,6 +10,7 @@ const SIZE_SCALE_RANGE = [0.7, 1.6];
 class Stage {
   constructor(rootEl, layout) {
     this.root = rootEl;
+    if (!rootEl.style.pointerEvents) rootEl.style.pointerEvents = "none";
     this.layout = layout;
     this.anchor = document.querySelector("[data-globe-anchor]") || rootEl;
     this.canvas = document.createElement("canvas");
