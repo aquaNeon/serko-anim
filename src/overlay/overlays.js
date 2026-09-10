@@ -54,10 +54,7 @@ function parse(el) {
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
-    if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
-      el.style.minWidth = `${Math.ceil(rect.width)}px`
-      el.style.maxWidth = '100%'
-    }
+
     const byWord = (el.getAttribute('data-type-by') || 'word').toLowerCase() !== 'char'
     item.typer = new Typewriter(el, {
       skipSelector: el.getAttribute('data-type-skip') || null,
@@ -96,6 +93,17 @@ function parse(el) {
   return item
 }
 
+function lockWidths(root) {
+  const targets = root.querySelectorAll('[data-lock-width="true"]')
+  for (const el of targets) {
+    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null
+    if (!rect || !rect.width) continue
+    el.style.width = `${Math.ceil(rect.width)}px`
+    el.style.flexGrow = '0'
+    el.style.flexShrink = '0'
+  }
+}
+
 function activeWindow(item, time) {
   let index = -1
   for (let i = 0; i < item.ins.length; i++) {
@@ -114,6 +122,7 @@ function activeWindow(item, time) {
 export class Overlays {
   constructor(stage, root = document) {
     const nodes = root.querySelectorAll('[data-globe-cue], [data-globe-pin]')
+    lockWidths(root)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
   }

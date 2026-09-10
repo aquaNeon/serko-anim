@@ -3,6 +3,7 @@ export const SEQUENCE = [
     selector: '.hero1_profile_choice_wrap',
     in: 0.2,
     anim: 'rise',
+    lockWidth: true,
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
@@ -101,6 +102,7 @@ const ATTR = {
   typeSkip: 'data-type-skip',
   typeBy: 'data-type-by',
   display: 'data-display',
+  lockWidth: 'data-lock-width',
   lat: 'data-lat',
   lng: 'data-lng',
   offsetX: 'data-offset-x',
