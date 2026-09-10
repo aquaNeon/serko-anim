@@ -87,3 +87,41 @@ test('shipped sequence has no duplicate selectors', () => {
     seen.add(entry.selector)
   }
 })
+
+test('staggered times carry no float noise', () => {
+  const els = [makeEl('l'), makeEl('l'), makeEl('l'), makeEl('l')]
+  const root = makeRoot({ '.l': els })
+  applySequence([{ selector: '.l', in: 0.6, stagger: 1.6 }], root)
+  for (const el of els) {
+    const v = el.getAttribute('data-in')
+    assert.ok(!/\d{6,}/.test(v), `float noise in data-in: ${v}`)
+  }
+})
+
+test('stagger spaces a run of matching elements', () => {
+  const els = [makeEl('line'), makeEl('line'), makeEl('line')]
+  const root = makeRoot({ '.line': els })
+  applySequence([{ selector: '.line', in: 0.6, stagger: 1.6, anim: 'type' }], root)
+
+  assert.equal(els[0].getAttribute('data-in'), '0.6')
+  assert.equal(els[1].getAttribute('data-in'), '2.2')
+  assert.equal(els[2].getAttribute('data-in'), '3.8')
+})
+
+test('stagger shifts out-points too, keeping each line on screen equally', () => {
+  const els = [makeEl('line'), makeEl('line')]
+  const root = makeRoot({ '.line': els })
+  applySequence([{ selector: '.line', in: 1, out: 3, stagger: 2 }], root)
+
+  assert.equal(els[0].getAttribute('data-out'), '3')
+  assert.equal(els[1].getAttribute('data-out'), '5')
+})
+
+test('without stagger every match shares the same timing', () => {
+  const els = [makeEl('a'), makeEl('a')]
+  const root = makeRoot({ '.a': els })
+  applySequence([{ selector: '.a', in: 2 }], root)
+
+  assert.equal(els[0].getAttribute('data-in'), '2')
+  assert.equal(els[1].getAttribute('data-in'), '2')
+})

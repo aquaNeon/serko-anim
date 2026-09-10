@@ -23,10 +23,12 @@ export const SEQUENCE = [
     display: 'flex',
   },
   {
-    selector: '.hero1_profile_choice_second',
-    in: 6.6,
+    selector: '.hero1_profile_choice_line',
+    in: 0.6,
+    stagger: 1.6,
     anim: 'type',
     typeSpeed: 4.5,
+    typeSkip: '.hero1_profile_search_wrap',
     display: 'flex',
     optional: true,
   },
@@ -60,7 +62,10 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       continue
     }
 
+    let index = 0
     for (const el of nodes) {
+      const offset = entry.stagger ? index * entry.stagger : 0
+      index++
       const marker = entry.lat !== undefined ? 'data-globe-pin' : 'data-globe-cue'
       if (!el.hasAttribute('data-globe-cue') && !el.hasAttribute('data-globe-pin')) {
         el.setAttribute(marker, '')
@@ -68,7 +73,11 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       for (const [key, attr] of Object.entries(ATTR)) {
         if (entry[key] === undefined) continue
         if (el.hasAttribute(attr)) continue
-        el.setAttribute(attr, String(entry[key]))
+        const value =
+          key === 'in' || key === 'out'
+            ? Math.round((entry[key] + offset) * 1000) / 1000
+            : entry[key]
+        el.setAttribute(attr, String(value))
       }
       applied.push(entry.selector)
     }
