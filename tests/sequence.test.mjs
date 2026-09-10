@@ -153,12 +153,24 @@ function makeDomEl(cls) {
     childNodes: [],
     parentNode: null,
     style: {},
-    classList: { add: (c) => { el.className = (el.className + ' ' + c).trim() } },
+    classList: {
+      add: (c) => {
+        const parts = el.className.split(' ').filter(Boolean)
+        if (!parts.includes(c)) parts.push(c)
+        el.className = parts.join(' ')
+      },
+      remove: (c) => {
+        el.className = el.className.split(' ').filter((x) => x && x !== c).join(' ')
+      },
+      [Symbol.iterator]: function* () {
+        yield* el.className.split(' ').filter(Boolean)
+      },
+    },
     hasAttribute: (n) => attrs.has(n),
     getAttribute: (n) => (attrs.has(n) ? attrs.get(n) : null),
     setAttribute: (n, v) => attrs.set(n, v),
     removeAttribute: (n) => attrs.delete(n),
-    cloneNode: () => makeDomEl(cls),
+    cloneNode: () => makeDomEl(el.className),
     appendChild: (c) => { el.childNodes.push(c); c.parentNode = el; return c },
     insertBefore: (c) => { el.childNodes.push(c); c.parentNode = el; return c },
     textContent: '',
@@ -237,4 +249,37 @@ test('array in/out points survive stagger as a comma list', () => {
   assert.equal(els[0].getAttribute('data-out'), '2')
   assert.equal(els[1].getAttribute('data-in'), '1.2,6')
   assert.equal(els[1].getAttribute('data-out'), '3')
+})
+
+test('a clone does not inherit another entry identity class', () => {
+  const first = makeDomEl('hero1_profile_choice_text hero1_profile_choice_confirm')
+  const anchor = makeDomEl('anchor')
+  const parent = makeDomEl('wrap')
+  parent.appendChild(anchor)
+
+  const root = {
+    querySelectorAll: () => [],
+    querySelector: (sel) =>
+      sel === '.hero1_profile_choice_text' ? first
+      : sel === '.anchor' ? anchor
+      : null,
+    ownerDocument: { createElement: () => makeDomEl('') },
+  }
+
+  applySequence([
+    { selector: '.hero1_profile_choice_confirm', in: 7 },
+    {
+      selector: '.hero1_profile_choice_confirm_two',
+      create: { cloneFrom: '.hero1_profile_choice_text', insertAfter: '.anchor', text: 'two' },
+      in: 9,
+    },
+  ], root)
+
+  const made = parent.childNodes.find((c) => c.className.includes('confirm_two'))
+  assert.ok(made, 'element must be created')
+  const classes = made.className.split(' ')
+  assert.ok(!classes.includes('hero1_profile_choice_confirm'),
+    `clone kept a foreign identity class: ${made.className}`)
+  assert.ok(classes.includes('hero1_profile_choice_text'), 'styling classes are kept')
+  assert.ok(classes.includes('hero1_profile_choice_confirm_two'), 'own class added')
 })

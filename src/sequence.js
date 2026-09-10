@@ -33,6 +33,7 @@ export const SEQUENCE = [
     dur: 0.4,
     anim: 'pop',
     display: 'flex',
+    style: { marginLeft: 'auto' },
   },
   {
     selector: '.hero1_profile_choice_check_mark',
@@ -49,8 +50,8 @@ export const SEQUENCE = [
       text: 'No early mornings',
       style: {
         marginLeft: '4px',
-        marginRight: 'auto',
-        textAlign: 'left',
+        marginRight: '0',
+        textAlign: 'right',
         flex: '0 0 auto',
       },
     },
@@ -70,8 +71,8 @@ export const SEQUENCE = [
       text: 'Premium economy',
       style: {
         marginLeft: '4px',
-        marginRight: 'auto',
-        textAlign: 'left',
+        marginRight: '0',
+        textAlign: 'right',
         flex: '0 0 auto',
       },
     },
@@ -119,7 +120,15 @@ const ATTR = {
   offsetY: 'data-offset-y',
 }
 
-function createElement(entry, root) {
+function ownedClasses(sequence) {
+  const owned = new Set()
+  for (const entry of sequence) {
+    for (const cls of entry.selector.split('.').filter(Boolean)) owned.add(cls)
+  }
+  return owned
+}
+
+function createElement(entry, root, owned) {
   const { cloneFrom, appendTo, insertAfter, text, style } = entry.create
   const parent = appendTo ? root.querySelector(appendTo) : null
   const sibling = insertAfter ? root.querySelector(insertAfter) : null
@@ -132,6 +141,14 @@ function createElement(entry, root) {
 
   el.removeAttribute('data-globe-cue')
   el.removeAttribute('data-globe-pin')
+  for (const attr of ['data-in', 'data-out', 'data-dur', 'data-anim']) {
+    el.removeAttribute(attr)
+  }
+  if (owned) {
+    for (const cls of Array.from(el.classList || [])) {
+      if (owned.has(cls)) el.classList.remove(cls)
+    }
+  }
   for (const cls of entry.selector.split('.').filter(Boolean)) {
     el.classList.add(cls)
   }
@@ -151,11 +168,12 @@ export function applySequence(sequence = SEQUENCE, root = document) {
   const applied = []
   const missing = []
   const created = []
+  const owned = ownedClasses(sequence)
 
   for (const entry of sequence) {
     let nodes = root.querySelectorAll(entry.selector)
     if (!nodes.length && entry.create) {
-      const made = createElement(entry, root)
+      const made = createElement(entry, root, owned)
       if (made) {
         nodes = [made]
         created.push(entry.selector)
@@ -174,6 +192,7 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       if (!el.hasAttribute('data-globe-cue') && !el.hasAttribute('data-globe-pin')) {
         el.setAttribute(marker, '')
       }
+      if (entry.style) Object.assign(el.style, entry.style)
       for (const [key, attr] of Object.entries(ATTR)) {
         if (entry[key] === undefined) continue
         if (el.hasAttribute(attr)) continue
