@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Serko hero globe — Webflow integration example</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #0b0b0c;
+    background: #fff;
+  }
+
+  .hero { position: relative; min-height: 1305px; overflow: hidden; }
+
+  .hero__bg {
+    position: absolute; inset: 0; z-index: 10;
+    background:
+      radial-gradient(90% 60% at 50% 105%, #fdf0e8 0%, rgba(255,255,255,0) 60%),
+      radial-gradient(70% 50% at 15% 90%, #eef2fb 0%, rgba(255,255,255,0) 60%),
+      #fff;
+  }
+
+  #globe-root { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+
+  .hero__copy { position: relative; z-index: 30; text-align: center; padding: 80px 120px 0; }
+  .eyebrow { font-size: 14px; margin: 0 0 32px; }
+  h1 { font-size: 80px; line-height: 1; letter-spacing: -.03em; font-weight: 500; margin: 0 0 32px; }
+  h1 .grad {
+    background: linear-gradient(90deg, #ff8a3d, #4f9df7 45%, #a86ff0 72%, #ff86c8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { font-size: 18px; line-height: 1.5; max-width: 632px; margin: 0 auto 32px; }
+  .btns { display: flex; gap: 8px; justify-content: center; }
+  .btn { height: 48px; padding: 0 20px; border-radius: 999px; border: 0;
+         display: inline-flex; align-items: center; gap: 8px; font: inherit;
+         font-size: 16px; cursor: pointer; }
+  .btn--primary { color: #fff; background: linear-gradient(90deg, #ff7a45, #d94fd0); }
+  .btn--ghost { background: #fff; border: 1px solid #e4e4e7; }
+
+  .globe-anchor { position: relative; margin: 0 20px; height: 559px; }
+</style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero__bg"></div>
+
+    <div id="globe-root">
+      <div data-globe-place data-id="origin"
+           data-lat="37.7749" data-lng="-122.4194" data-label="San Francisco"></div>
+      <div data-globe-place data-id="destination"
+           data-lat="40.7128" data-lng="-74.0060" data-label="New York"></div>
+    </div>
+
+    <div class="hero__copy">
+      <p class="eyebrow">AI travel agent</p>
+      <h1>The last travel <span class="grad">agent</span><br />you'll ever need.</h1>
+      <p class="sub">Serko.ai finds the best flights and hotels, learns how you like to travel,
+        and refunds you 100% if plans change.</p>
+      <div class="btns">
+        <button class="btn btn--primary">Start booking &rsaquo;</button>
+        <button class="btn btn--ghost">FAQs &#8964;</button>
+      </div>
+      <div style="height:80px"></div>
+      <div class="globe-anchor" data-globe-anchor></div>
+    </div>
+  </section>
+
+  <script src="../dist/serko-globe.js" defer></script>
+</body>
+</html>

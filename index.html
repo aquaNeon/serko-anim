@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Serko hero globe — dev harness</title>
+<style>
+  
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #0b0b0c;
+    background: #fff;
+  }
+
+  .hero { position: relative; min-height: 1305px; overflow: hidden; }
+
+  .hero__bg {
+    position: absolute; inset: 0; z-index: 10;
+    background:
+      radial-gradient(90% 60% at 50% 105%, #fdf0e8 0%, rgba(255,255,255,0) 60%),
+      radial-gradient(70% 50% at 15% 90%, #eef2fb 0%, rgba(255,255,255,0) 60%),
+      #fff;
+  }
+
+  #globe-root { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+
+  .hero__copy { position: relative; z-index: 30; text-align: center; padding: 80px 120px 0; }
+  .eyebrow { font-size: 14px; letter-spacing: .01em; margin: 0 0 32px; }
+  h1 { font-size: 80px; line-height: 1; letter-spacing: -.03em; font-weight: 500; margin: 0 0 32px; }
+  h1 .grad {
+    background: linear-gradient(90deg, #ff8a3d, #4f9df7 45%, #a86ff0 72%, #ff86c8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { font-size: 18px; line-height: 1.5; max-width: 632px; margin: 0 auto 32px; }
+  .btns { display: flex; gap: 8px; justify-content: center; }
+  .btn { height: 48px; padding: 0 20px; border-radius: 999px; border: 0;
+         display: inline-flex; align-items: center; gap: 8px; font: inherit;
+         font-size: 16px; cursor: pointer; }
+  .btn--primary { color: #fff; background: linear-gradient(90deg, #ff7a45, #d94fd0); }
+  .btn--ghost { background: #fff; border: 1px solid #e4e4e7; }
+
+  .globe-anchor { position: relative; margin: 0 20px; height: 559px; }
+
+  .dev-panel {
+    position: fixed; right: 12px; bottom: 12px; z-index: 100;
+    background: rgba(255,255,255,.94); border: 1px solid #e4e4e7; border-radius: 10px;
+    padding: 10px 12px; font: 11px ui-monospace, monospace; line-height: 1.9;
+    box-shadow: 0 6px 24px rgba(0,0,0,.08);
+  }
+  .dev-panel label { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .dev-panel input[type=range] { width: 120px; }
+  .dev-panel__grp { padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid #f0f0f2; }
+  .dev-panel button { font: inherit; cursor: pointer; }
+  .dev-panel a { color: #0b0b0c; }
+</style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero__bg"></div>
+
+    <div id="globe-root">
+      
+      <div data-globe-place data-id="origin"
+           data-lat="37.7749" data-lng="-122.4194" data-label="San Francisco"></div>
+      <div data-globe-place data-id="destination"
+           data-lat="40.7128" data-lng="-74.0060" data-label="New York"></div>
+    </div>
+
+    <div class="hero__copy">
+      <p class="eyebrow">AI travel agent</p>
+      <h1>The last travel <span class="grad">agent</span><br />you'll ever need.</h1>
+      <p class="sub">Serko.ai finds the best flights and hotels, learns how you like to travel,
+        and refunds you 100% if plans change.</p>
+      <div class="btns">
+        <button class="btn btn--primary">Start booking ›</button>
+        <button class="btn btn--ghost">FAQs ⌄</button>
+      </div>
+      <div style="height:80px"></div>
+      <div class="globe-anchor" data-globe-anchor></div>
+    </div>
+  </section>
+
+  <div class="dev-panel">
+    <div class="dev-panel__grp">
+      <label>radius <input id="r" type="range" min="0.30" max="0.70" step="0.001" value="0.403"><span id="rv">0.403</span></label>
+      <label>centerY <input id="c" type="range" min="0.60" max="1.60" step="0.005" value="0.925"><span id="cv">0.925</span></label>
+      <label>cam lat <input id="la" type="range" min="-90" max="90" step="1" value="-4"><span id="lav">-4</span></label>
+      <label>cam lng <input id="ln" type="range" min="-180" max="180" step="1" value="-91"><span id="lnv">-91</span></label>
+    </div>
+    <div class="dev-panel__grp">
+      <label>grid step <input id="gs" type="range" min="4" max="30" step="1" value="10"><span id="gsv">10</span></label>
+      <label>grid alpha <input id="ga" type="range" min="0" max="0.5" step="0.005" value="0.13"><span id="gav">0.13</span></label>
+    </div>
+    <div class="dev-panel__grp">
+      <label>dot step <input id="ds" type="range" min="1.2" max="6" step="0.1" value="2.4"><span id="dsv">2.4</span></label>
+      <label>land px <input id="lsz" type="range" min="0.5" max="5" step="0.05" value="2"><span id="lszv">2</span></label>
+      <label>sea px <input id="osz" type="range" min="0.5" max="5" step="0.05" value="1.15"><span id="oszv">1.15</span></label>
+      <label>sea alpha <input id="oa" type="range" min="0" max="1" step="0.01" value="0.75"><span id="oav">0.75</span></label>
+    </div>
+    <div class="dev-panel__grp">
+      <label>rim alpha <input id="ra" type="range" min="0" max="1" step="0.01" value="0.28"><span id="rav">0.28</span></label>
+    </div>
+    <a href="?debug">markers</a> · <span id="fps">–</span> fps · <span id="dc">–</span> dots
+    <button id="dump" style="margin-left:6px">copy values</button>
+  </div>
+
+  <script type="module" src="/src/index.js"></script>
+  <script type="module">
+        const ready = setInterval(() => {
+          if (!window.__globe) return;
+          clearInterval(ready);
+          const { stage, layout } = window.__globe;
+          const state = {
+            gridStep: 10,
+            gridAlpha: 0.13,
+            dotStep: 2.4,
+            landSize: 2,
+            oceanSize: 1.15,
+            oceanOpacity: 0.75,
+            rimAlpha: 0.28
+          };
+          const dc = document.getElementById("dc");
+          const showCount = () => {
+            dc.textContent = stage.dots.userData.stats.count;
+          };
+          showCount();
+          const bind = (id, out, apply) => {
+            const el = document.getElementById(id);
+            const lbl = document.getElementById(out);
+            el.addEventListener("input", () => {
+              const v = parseFloat(el.value);
+              lbl.textContent = v;
+              apply(v);
+              stage._needsResize = true;
+            });
+          };
+          const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
+          bind("r", "rv", (v) => layout.radiusScale = v);
+          bind("c", "cv", (v) => layout.centerYFactor = v);
+          bind("la", "lav", (v) => {
+            layout.cameraLat = v;
+            aim();
+          });
+          bind("ln", "lnv", (v) => {
+            layout.cameraLng = v;
+            aim();
+          });
+          bind("gs", "gsv", (v) => {
+            state.gridStep = v;
+            stage.setGrid({ latStep: v, lngStep: v });
+          });
+          bind("ga", "gav", (v) => {
+            state.gridAlpha = v;
+            stage.grid.material.uniforms.uOpacity.value = v;
+          });
+          bind("ds", "dsv", (v) => {
+            state.dotStep = v;
+            stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
+            showCount();
+          });
+          bind("lsz", "lszv", (v) => {
+            state.landSize = v;
+            stage.dots.material.uniforms.uLandSize.value = v;
+          });
+          bind("osz", "oszv", (v) => {
+            state.oceanSize = v;
+            stage.dots.material.uniforms.uOceanSize.value = v;
+          });
+          bind("oa", "oav", (v) => {
+            state.oceanOpacity = v;
+            stage.dots.material.uniforms.uOceanOpacity.value = v;
+          });
+          bind("ra", "rav", (v) => {
+            state.rimAlpha = v;
+            stage.rim.material.opacity = v;
+          });
+          document.getElementById("dump").addEventListener("click", () => {
+            const out = JSON.stringify({ layout, ...state }, null, 2);
+            navigator.clipboard?.writeText(out);
+            console.log("[globe] tuned values", out);
+          });
+          let n = 0, last = performance.now();
+          const fps = document.getElementById("fps");
+          stage.onFrame((t) => {
+            n++;
+            if (t - last > 500) {
+              fps.textContent = Math.round(n * 1e3 / (t - last));
+              n = 0;
+              last = t;
+            }
+          });
+        }, 50);
+  </script>
+</body>
+</html>
