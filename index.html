@@ -43,6 +43,30 @@
 
   .globe-anchor { position: relative; margin: 0 20px; height: 559px; }
 
+  .stub-layer { position: relative; z-index: 35; width: 357px; margin: 24px auto 0;
+    text-align: left; }
+  .stub-prompt { font-size: 15px; line-height: 1.4; color: rgba(0,0,0,.88);
+    min-height: 22px; }
+  .stub-prompt[data-typing="1"]::after { content: ""; display: inline-block;
+    width: 1px; height: 1em; background: currentColor; margin-left: 2px;
+    vertical-align: -2px; animation: blink .9s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0 } }
+  .stub-chip { display: flex; align-items: center; gap: 12px; width: 357px;
+    height: 49px; padding: 0 16px; border-radius: 16px; background: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.08); font-size: 15px;
+    color: rgba(0,0,0,.88); }
+  .stub-chip__avatar { width: 24px; height: 28px; border-radius: 12px;
+    background: linear-gradient(to top, #F489AD, #FF897F 35%, #FF8C51 70%); }
+
+  .stub-pins { position: absolute; inset: 0; z-index: 45; pointer-events: none; }
+  .stub-card { width: 160px; padding: 16px; border-radius: 34px; background: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.1), 0 12px 28px rgba(0,0,0,.1);
+    font-size: 12px; color: #1a1a1a; text-align: left; }
+  .stub-card__logo { width: 22px; height: 12px; border-radius: 2px;
+    background: linear-gradient(90deg, #25B3ED, #ED1C24); margin-bottom: 10px; }
+  .stub-card__title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .stub-card__row { color: rgba(0,0,0,.55); line-height: 1.9; }
+
   .dev-panel {
     position: fixed; right: 12px; bottom: 12px; z-index: 100;
     background: rgba(255,255,255,.94); border: 1px solid #e4e4e7; border-radius: 10px;
@@ -82,6 +106,28 @@
       </div>
       <div style="height:80px"></div>
       <div class="globe-anchor" data-globe-anchor></div>
+    </div>
+
+    <div class="stub-layer">
+      <div class="stub-prompt" data-globe-cue data-in="0.3" data-out="2.6"
+           data-anim="type" data-type-speed="30">Find me a flight to New York next Thursday</div>
+
+      <div class="stub-chip" data-globe-cue data-in="2.8" data-anim="rise">
+        <span class="stub-chip__avatar"></span>
+        <span>Using Paula&rsquo;s personal choices</span>
+      </div>
+    </div>
+
+    <div class="stub-pins">
+      <div class="stub-card" data-globe-pin
+           data-lat="37.7749" data-lng="-122.4194"
+           data-offset-x="0" data-offset-y="-46"
+           data-in="5.4" data-anim="pop">
+        <div class="stub-card__logo"></div>
+        <div class="stub-card__title">SFO &rarr; JFK</div>
+        <div class="stub-card__row">08:15 &middot; nonstop</div>
+        <div class="stub-card__row">Seat 14A</div>
+      </div>
     </div>
   </section>
 
@@ -124,165 +170,165 @@
 
   <script type="module" src="/src/index.js"></script>
   <script type="module">
-            const ready = setInterval(() => {
-              if (!window.__globe) return;
-              clearInterval(ready);
-              const { stage, layout } = window.__globe;
-              const state = {
-                gridStep: 10,
-                gridAlpha: 0.13,
-                dotStep: 2.4,
-                landSize: 2,
-                oceanSize: 1.15,
-                oceanOpacity: 0.75,
-                rimAlpha: 0.28
-              };
-              const dc = document.getElementById("dc");
-              const showCount = () => {
-                dc.textContent = stage.dots.userData.stats.count;
-              };
-              showCount();
-              const bind = (id, out, apply) => {
-                const el = document.getElementById(id);
-                const lbl = document.getElementById(out);
-                el.addEventListener("input", () => {
-                  const v = parseFloat(el.value);
-                  lbl.textContent = v;
-                  apply(v);
-                  stage._needsResize = true;
+                const ready = setInterval(() => {
+                  if (!window.__globe) return;
+                  clearInterval(ready);
+                  const { stage, layout } = window.__globe;
+                  const state = {
+                    gridStep: 10,
+                    gridAlpha: 0.13,
+                    dotStep: 2.4,
+                    landSize: 2,
+                    oceanSize: 1.15,
+                    oceanOpacity: 0.75,
+                    rimAlpha: 0.28
+                  };
+                  const dc = document.getElementById("dc");
+                  const showCount = () => {
+                    dc.textContent = stage.dots.userData.stats.count;
+                  };
+                  showCount();
+                  const bind = (id, out, apply) => {
+                    const el = document.getElementById(id);
+                    const lbl = document.getElementById(out);
+                    el.addEventListener("input", () => {
+                      const v = parseFloat(el.value);
+                      lbl.textContent = v;
+                      apply(v);
+                      stage._needsResize = true;
+                    });
+                  };
+                  const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
+                  bind("r", "rv", (v) => layout.radiusScale = v);
+                  bind("c", "cv", (v) => layout.centerYFactor = v);
+                  bind("la", "lav", (v) => {
+                    layout.cameraLat = v;
+                    aim();
+                  });
+                  bind("ln", "lnv", (v) => {
+                    layout.cameraLng = v;
+                    aim();
+                  });
+                  bind("gs", "gsv", (v) => {
+                    state.gridStep = v;
+                    stage.setGrid({ latStep: v, lngStep: v });
+                  });
+                  bind("ga", "gav", (v) => {
+                    state.gridAlpha = v;
+                    stage.grid.material.uniforms.uOpacity.value = v;
+                  });
+                  bind("ds", "dsv", (v) => {
+                    state.dotStep = v;
+                    stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
+                    showCount();
+                  });
+                  bind("lsz", "lszv", (v) => {
+                    state.landSize = v;
+                    stage.dots.material.uniforms.uLandSize.value = v;
+                  });
+                  bind("osz", "oszv", (v) => {
+                    state.oceanSize = v;
+                    stage.dots.material.uniforms.uOceanSize.value = v;
+                  });
+                  bind("oa", "oav", (v) => {
+                    state.oceanOpacity = v;
+                    stage.dots.material.uniforms.uOceanOpacity.value = v;
+                  });
+                  bind("ra", "rav", (v) => {
+                    state.rimAlpha = v;
+                    stage.rim.material.opacity = v;
+                  });
+                  const flow = window.__globe.flow;
+              const route = stage.routes[0];
+        
+              if (flow && route) {
+                const scrub = document.getElementById("sc");
+                const scrubLabel = document.getElementById("scv");
+                scrub.max = String(flow.duration);
+                scrub.step = "0.01";
+        
+                let scrubbing = false;
+                scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
+                scrub.addEventListener("pointerup", () => { scrubbing = false; });
+                scrub.addEventListener("input", () => {
+                  flow.seek(parseFloat(scrub.value));
+                  scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
                 });
-              };
-              const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
-              bind("r", "rv", (v) => layout.radiusScale = v);
-              bind("c", "cv", (v) => layout.centerYFactor = v);
-              bind("la", "lav", (v) => {
-                layout.cameraLat = v;
-                aim();
-              });
-              bind("ln", "lnv", (v) => {
-                layout.cameraLng = v;
-                aim();
-              });
-              bind("gs", "gsv", (v) => {
-                state.gridStep = v;
-                stage.setGrid({ latStep: v, lngStep: v });
-              });
-              bind("ga", "gav", (v) => {
-                state.gridAlpha = v;
-                stage.grid.material.uniforms.uOpacity.value = v;
-              });
-              bind("ds", "dsv", (v) => {
-                state.dotStep = v;
-                stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
-                showCount();
-              });
-              bind("lsz", "lszv", (v) => {
-                state.landSize = v;
-                stage.dots.material.uniforms.uLandSize.value = v;
-              });
-              bind("osz", "oszv", (v) => {
-                state.oceanSize = v;
-                stage.dots.material.uniforms.uOceanSize.value = v;
-              });
-              bind("oa", "oav", (v) => {
-                state.oceanOpacity = v;
-                stage.dots.material.uniforms.uOceanOpacity.value = v;
-              });
-              bind("ra", "rav", (v) => {
-                state.rimAlpha = v;
-                stage.rim.material.opacity = v;
-              });
-              const flow = window.__globe.flow;
-          const route = stage.routes[0];
-    
-          if (flow && route) {
-            const scrub = document.getElementById("sc");
-            const scrubLabel = document.getElementById("scv");
-            scrub.max = String(flow.duration);
-            scrub.step = "0.01";
-    
-            let scrubbing = false;
-            scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
-            scrub.addEventListener("pointerup", () => { scrubbing = false; });
-            scrub.addEventListener("input", () => {
-              flow.seek(parseFloat(scrub.value));
-              scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
-            });
-    
-            stage.onFrame(() => {
-              if (!scrubbing) {
-                scrub.value = String(flow.time);
-                scrubLabel.textContent = flow.time.toFixed(2) + "s";
+        
+                stage.onFrame(() => {
+                  if (!scrubbing) {
+                    scrub.value = String(flow.time);
+                    scrubLabel.textContent = flow.time.toFixed(2) + "s";
+                  }
+                });
+        
+                const playpause = document.getElementById("playpause");
+                playpause.addEventListener("click", () => {
+                  if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
+                  else { flow.play(); playpause.textContent = "pause"; }
+                });
+                document.getElementById("replay").addEventListener("click", () => {
+                  flow.restart();
+                  playpause.textContent = "pause";
+                });
+                document.getElementById("lp").addEventListener("change", (e) => {
+                  flow.loop = e.target.checked;
+                });
+        
+                let speed = 1;
+                bind("sp", "spv", (v) => { speed = v; });
+                const rawAdvance = flow.advance.bind(flow);
+                flow.advance = (dt) => rawAdvance(dt * speed);
+        
+                bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
+                bind("aw", "awv", (v) => {
+                  state.arcWidth = v;
+                  stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
+                });
+                bind("dw", "dwv", (v) => {
+                  state.dropWidth = v;
+                  stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
+                });
+                bind("dl", "dlv", (v) => {
+                  state.tailLength = v;
+                  for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
+                    m.uniforms.uTailLength.value = v;
+                  }
+                });
               }
-            });
-    
-            const playpause = document.getElementById("playpause");
-            playpause.addEventListener("click", () => {
-              if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
-              else { flow.play(); playpause.textContent = "pause"; }
-            });
-            document.getElementById("replay").addEventListener("click", () => {
-              flow.restart();
-              playpause.textContent = "pause";
-            });
-            document.getElementById("lp").addEventListener("change", (e) => {
-              flow.loop = e.target.checked;
-            });
-    
-            let speed = 1;
-            bind("sp", "spv", (v) => { speed = v; });
-            const rawAdvance = flow.advance.bind(flow);
-            flow.advance = (dt) => rawAdvance(dt * speed);
-    
-            bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
-            bind("aw", "awv", (v) => {
-              state.arcWidth = v;
-              stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
-            });
-            bind("dw", "dwv", (v) => {
-              state.dropWidth = v;
-              stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
-            });
-            bind("dl", "dlv", (v) => {
-              state.tailLength = v;
-              for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
-                m.uniforms.uTailLength.value = v;
+        
+              function rebuildRoute(opts) {
+                const old = stage.routes[0];
+                if (!old) return;
+                stage.scene.remove(old.group);
+                old.dispose();
+                stage.routes.length = 0;
+                const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
+                  lift: opts.lift ?? state.arcLift,
+                  width: state.arcWidth,
+                  dropWidth: state.dropWidth,
+                  tailLength: state.tailLength,
+                });
+                window.__globe.flow.route = next;
+                window.__globe.flow.seek(window.__globe.flow.time);
               }
-            });
-          }
-    
-          function rebuildRoute(opts) {
-            const old = stage.routes[0];
-            if (!old) return;
-            stage.scene.remove(old.group);
-            old.dispose();
-            stage.routes.length = 0;
-            const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
-              lift: opts.lift ?? state.arcLift,
-              width: state.arcWidth,
-              dropWidth: state.dropWidth,
-              tailLength: state.tailLength,
-            });
-            window.__globe.flow.route = next;
-            window.__globe.flow.seek(window.__globe.flow.time);
-          }
-    
-          document.getElementById("dump").addEventListener("click", () => {
-                const out = JSON.stringify({ layout, ...state }, null, 2);
-                navigator.clipboard?.writeText(out);
-                console.log("[globe] tuned values", out);
-              });
-              let n = 0, last = performance.now();
-              const fps = document.getElementById("fps");
-              stage.onFrame((t) => {
-                n++;
-                if (t - last > 500) {
-                  fps.textContent = Math.round(n * 1e3 / (t - last));
-                  n = 0;
-                  last = t;
-                }
-              });
-            }, 50);
+        
+              document.getElementById("dump").addEventListener("click", () => {
+                    const out = JSON.stringify({ layout, ...state }, null, 2);
+                    navigator.clipboard?.writeText(out);
+                    console.log("[globe] tuned values", out);
+                  });
+                  let n = 0, last = performance.now();
+                  const fps = document.getElementById("fps");
+                  stage.onFrame((t) => {
+                    n++;
+                    if (t - last > 500) {
+                      fps.textContent = Math.round(n * 1e3 / (t - last));
+                      n = 0;
+                      last = t;
+                    }
+                  });
+                }, 50);
   </script>
 </body>
 </html>
