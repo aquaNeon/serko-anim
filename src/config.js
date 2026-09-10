@@ -10,6 +10,7 @@ const DEFAULT_LAYOUT = {
 
   cameraLat: -4,
   cameraLng: -91,
+  globeStart: 0,
   radiusMaxVh: 0,
   apexClearance: null
 };
@@ -47,6 +48,7 @@ function readLayout(rootEl) {
     centerYFactor: num(rootEl, "data-center-y", DEFAULT_LAYOUT.centerYFactor),
     cameraLat: num(rootEl, "data-camera-lat", DEFAULT_LAYOUT.cameraLat),
     cameraLng: num(rootEl, "data-camera-lng", DEFAULT_LAYOUT.cameraLng),
+    globeStart: num(rootEl, "data-globe-start", DEFAULT_LAYOUT.globeStart),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)

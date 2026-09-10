@@ -1,3 +1,4 @@
+import { Typewriter } from './typewriter.js'
 const DEFAULT_DUR = 0.6
 
 function num(el, attr, fallback) {
@@ -29,15 +30,16 @@ function parse(el) {
     outAt: el.hasAttribute('data-out') ? num(el, 'data-out', Infinity) : null,
     dur: num(el, 'data-dur', DEFAULT_DUR),
     typeSpeed: num(el, 'data-type-speed', 26),
-    fullText: null,
+    typer: null,
     typedCount: -1,
   }
 
   if (anim === 'type') {
-    item.fullText = el.textContent.replace(/\s+/g, ' ').trim()
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
-    el.textContent = ''
+    item.typer = new Typewriter(el, {
+      skipSelector: el.getAttribute('data-type-skip') || null,
+    })
   }
 
   el.style.willChange = 'transform, opacity'
@@ -59,7 +61,7 @@ export class Overlays {
   get maxTime() {
     return this.items.reduce((m, i) => {
       const end = i.outAt !== null ? i.outAt + i.dur : i.inAt + i.dur
-      const typed = i.fullText ? i.inAt + i.fullText.length / i.typeSpeed : 0
+      const typed = i.typer ? i.inAt + i.typer.total / i.typeSpeed : 0
       return Math.max(m, end, typed)
     }, 0)
   }
@@ -115,12 +117,12 @@ export class Overlays {
   }
 
   _type(item, time) {
-    if (item.fullText === null) return
+    if (!item.typer) return
     const elapsed = time - item.inAt
-    const n = elapsed <= 0 ? 0 : Math.min(item.fullText.length, Math.floor(elapsed * item.typeSpeed))
+    const n = elapsed <= 0 ? 0 : Math.min(item.typer.total, Math.floor(elapsed * item.typeSpeed))
     if (n === item.typedCount) return
     item.typedCount = n
-    item.el.textContent = item.fullText.slice(0, n)
-    item.el.dataset.typing = n < item.fullText.length ? '1' : '0'
+    item.typer.reveal(n)
+    item.el.dataset.typing = item.typer.done ? '0' : '1'
   }
 }

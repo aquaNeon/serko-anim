@@ -35,6 +35,7 @@ function boot() {
       route,
       originPin,
       destPin,
+      offset: layout.globeStart,
       loop: root.hasAttribute('data-globe-loop'),
     })
 

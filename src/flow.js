@@ -21,17 +21,20 @@ export const DEFAULT_BEATS = [
 ]
 
 export class Flow {
-  constructor({ route, originPin, destPin, beats = DEFAULT_BEATS, loop = false, loopDelay = 2.5 }) {
+  constructor({ route, originPin, destPin, beats = DEFAULT_BEATS, offset = 0, loop = false, loopDelay = 2.5 }) {
     this.route = route
     this.originPin = originPin
     this.destPin = destPin
-    this.beats = beats
+    this.offset = offset
+    this.beats = offset
+      ? beats.map((b) => ({ ...b, at: b.at + offset }))
+      : beats
     this.loop = loop
     this.loopDelay = loopDelay
     this.time = 0
     this.playing = false
 
-    this.duration = beats.reduce((m, b) => Math.max(m, b.at + b.dur), 0)
+    this.duration = this.beats.reduce((m, b) => Math.max(m, b.at + b.dur), 0)
 
     this.values = { originPin: 0, arcDraw: 0, dropHead: 0, destPin: 0 }
     this._apply()
