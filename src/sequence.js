@@ -43,7 +43,12 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'No early mornings',
-      style: { marginLeft: '4px', textAlign: 'left' },
+      style: {
+        marginLeft: '4px',
+        marginRight: 'auto',
+        textAlign: 'left',
+        flex: '0 0 auto',
+      },
     },
     in: 7.0,
     anim: 'type',
