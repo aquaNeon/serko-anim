@@ -167,3 +167,26 @@ old bundle.
 
 ~127 KB gzipped, three.js tree-shaken. Load it deferred; it is not needed for
 first paint.
+
+
+## Overlay elements
+
+Mark any Webflow element to be driven by the animation.
+
+| Attribute | Default | |
+|---|---|---|
+| `data-globe-cue` | | timeline-driven, Webflow positions it |
+| `data-globe-pin` | | anchored to a lat/lng on the globe |
+| `data-in` | `0` | seconds |
+| `data-out` | never | seconds |
+| `data-dur` | `0.6` | transition length |
+| `data-anim` | `fade` | `fade` / `rise` / `pop` / `type` |
+| `data-type-speed` | `26` | characters per second |
+| `data-type-skip` | | selector inside the element the typewriter ignores |
+| `data-display` | `block` | display value to restore if the element starts `display: none` |
+| `data-lat` / `data-lng` | | required for `data-globe-pin` |
+| `data-offset-x` / `data-offset-y` | `0` | px nudge from the projected point |
+
+An element that starts `display: none` is switched on when its cue fires and
+back off when it leaves. Set `data-display` if it needs something other than
+`block` - `flex` for a row, for instance.

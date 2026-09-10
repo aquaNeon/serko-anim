@@ -32,6 +32,8 @@ function parse(el) {
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     typedCount: -1,
+    hiddenByDisplay: false,
+    revealDisplay: '',
   }
 
   if (anim === 'type') {
@@ -40,6 +42,12 @@ function parse(el) {
     item.typer = new Typewriter(el, {
       skipSelector: el.getAttribute('data-type-skip') || null,
     })
+  }
+
+  const computed = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null
+  if (computed && computed.display === 'none') {
+    item.hiddenByDisplay = true
+    item.revealDisplay = el.getAttribute('data-display') || 'block'
   }
 
   el.style.willChange = 'transform, opacity'
@@ -81,7 +89,12 @@ export class Overlays {
     if (amount <= 0.001) {
       el.style.opacity = '0'
       el.style.pointerEvents = 'none'
+      if (item.hiddenByDisplay) el.style.display = 'none'
       return
+    }
+
+    if (item.hiddenByDisplay && el.style.display !== item.revealDisplay) {
+      el.style.display = item.revealDisplay
     }
 
     let opacity = amount
@@ -102,6 +115,7 @@ export class Overlays {
       const p = stage.project(item.lat, item.lng)
       if (!p.visible) {
         el.style.opacity = '0'
+        if (item.hiddenByDisplay) el.style.display = 'none'
         return
       }
       const limb = Math.min(1, p.depth / 0.12)
