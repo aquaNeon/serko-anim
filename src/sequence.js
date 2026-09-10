@@ -31,6 +31,13 @@ export const SEQUENCE = [
     display: 'flex',
   },
   {
+    selector: '.hero1_profile_choice_check_mark',
+    in: 6.85,
+    dur: 0.5,
+    anim: 'draw',
+    optional: true,
+  },
+  {
     selector: '.hero1_profile_choice_confirm',
     create: {
       cloneFrom: '.hero1_profile_choice_text',

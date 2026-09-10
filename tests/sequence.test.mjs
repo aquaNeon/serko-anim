@@ -74,7 +74,7 @@ test('every shipped sequence entry is well formed', () => {
       assert.ok(entry.out > entry.in, `${entry.selector} out must follow in`)
     }
     if (entry.anim !== undefined) {
-      assert.ok(['fade', 'rise', 'pop', 'type'].includes(entry.anim),
+      assert.ok(['fade', 'rise', 'pop', 'type', 'draw'].includes(entry.anim),
         `${entry.selector} has unknown anim ${entry.anim}`)
     }
   }

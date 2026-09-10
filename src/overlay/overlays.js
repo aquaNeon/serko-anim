@@ -28,9 +28,11 @@ function parse(el) {
     offsetY: num(el, 'data-offset-y', 0),
     inAt: num(el, 'data-in', 0),
     outAt: el.hasAttribute('data-out') ? num(el, 'data-out', Infinity) : null,
+    collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
     dur: num(el, 'data-dur', DEFAULT_DUR),
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
+    strokes: null,
     typedCount: -1,
     hiddenByDisplay: false,
     revealDisplay: '',
@@ -49,6 +51,21 @@ function parse(el) {
       byWord,
     })
     if (!el.hasAttribute('data-type-speed')) item.typeSpeed = byWord ? 4.5 : 26
+  }
+
+  if (anim === 'draw') {
+    const target = el.getAttribute('data-draw-target') || 'path'
+    item.strokes = Array.from(el.querySelectorAll(target))
+      .filter((p) => typeof p.getTotalLength === 'function')
+      .map((p) => {
+        let length = 0
+        try { length = p.getTotalLength() } catch { length = 0 }
+        if (!length) return null
+        p.style.strokeDasharray = String(length)
+        p.style.strokeDashoffset = String(length)
+        return { path: p, length }
+      })
+      .filter(Boolean)
   }
 
   const computed = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null
@@ -92,17 +109,21 @@ export class Overlays {
     const el = item.el
 
     if (item.anim === 'type') this._type(item, time)
+    if (item.anim === 'draw') this._draw(item, enter)
+
+    const gone = item.outAt !== null && time >= item.outAt + item.dur
 
     if (amount <= 0.001) {
       el.style.opacity = '0'
       el.style.pointerEvents = 'none'
-      if (item.hiddenByDisplay) el.style.display = 'none'
+      if (item.hiddenByDisplay || (gone && item.collapse)) {
+        el.style.display = 'none'
+      }
       return
     }
 
-    if (item.hiddenByDisplay && el.style.display !== item.revealDisplay) {
-      el.style.display = item.revealDisplay
-    }
+    const wanted = item.hiddenByDisplay ? item.revealDisplay : ''
+    if (el.style.display !== wanted) el.style.display = wanted
 
     let opacity = amount
     let dx = item.offsetX
@@ -115,6 +136,8 @@ export class Overlays {
       scale = 0.86 + 0.14 * easeOutBack(enter)
       opacity = clamp01(enter * 1.6) * (1 - exit)
     } else if (item.anim === 'type') {
+      opacity = enter > 0 ? 1 - exit : 0
+    } else if (item.anim === 'draw') {
       opacity = enter > 0 ? 1 - exit : 0
     }
 
@@ -135,6 +158,14 @@ export class Overlays {
 
     el.style.opacity = String(opacity)
     el.style.pointerEvents = opacity > 0.9 ? '' : 'none'
+  }
+
+  _draw(item, enter) {
+    if (!item.strokes || !item.strokes.length) return
+    const p = easeOutCubic(clamp01(enter))
+    for (const s of item.strokes) {
+      s.path.style.strokeDashoffset = String(s.length * (1 - p))
+    }
   }
 
   _type(item, time) {
