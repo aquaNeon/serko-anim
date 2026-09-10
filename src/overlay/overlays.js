@@ -54,7 +54,7 @@ function parse(el) {
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
-    if (rect.width) {
+    if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
       el.style.minWidth = `${Math.ceil(rect.width)}px`
       el.style.maxWidth = '100%'
     }
