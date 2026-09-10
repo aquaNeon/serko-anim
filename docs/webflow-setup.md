@@ -51,12 +51,15 @@ without a redeploy. Put them inside `#globe-root`:
 
 If no places are found the built-in San Francisco / New York pair is used.
 
+The first place is the route origin, the second the destination. Order in the
+DOM is what decides, not the `data-id` values.
+
 ### 4. Add the script
 
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.1.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.2.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -67,8 +70,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.1.0/dist/serko-globe.js"
-        integrity="sha384-r0Z4mlYL/ldbPo6jmU/GqX4RIEj/NXtrxleiPaUWx2PDaAoREcKV3LRdXCsKf403"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.2.0/dist/serko-globe.js"
+        integrity="sha384-GnBK2tRL4+omc6gjhtklN2cwGleUfr8gh2RSqmk/rOSnmGOtSe/ncOH84E6tqsJ0"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -91,6 +94,13 @@ Layout can be overridden per-site on the root element:
 | `data-center-y` | `0.925` | sphere centre, in radii below the anchor's top edge |
 | `data-camera-lat` | `-4` | where the camera looks |
 | `data-camera-lng` | `-91` | where the camera looks |
+| `data-globe-loop` | off | present = replay the flight on a loop |
+
+The animation runs once on load and holds its end state. Add `data-globe-loop`
+to the root element to have it repeat.
+
+Visitors with `prefers-reduced-motion: reduce` are shown the finished state
+immediately, with no animation.
 
 ```html
 <div id="globe-root" data-radius-scale="0.42" data-camera-lng="-85"></div>

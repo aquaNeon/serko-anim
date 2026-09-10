@@ -153,3 +153,77 @@ editor can swap New York for Chicago in the Designer without a redeploy:
 
 Layout can also be overridden per-site with `data-radius-scale`, `data-center-y`,
 `data-camera-lat` and `data-camera-lng` on the root element.
+
+## Route arc
+
+### Why a ribbon
+
+`gl.lineWidth()` clamps to 1px on effectively every driver, so a 2px line has to
+be built as geometry. Each of the 192 sampled points along the arc is duplicated
+and pushed sideways, and the quads between them are filled — a ribbon of
+triangles that reads as a line.
+
+The sideways push happens in **screen space in the vertex shader**, scaled by the
+viewport in pixels. The line is therefore exactly `uWidth` pixels wide wherever
+it sits on the sphere and at any viewport size, with no geometry rebuilt on
+resize. That is what welds the arc endpoint to its city dot.
+
+### The lift profile
+
+The arc rides above the surface on `r = 1 + lift · sin(π·t)`. Because `sin` is
+zero at both ends, the endpoints land at radius exactly 1 — the same surface
+point the DOM pin projects to — while the middle bows into a flight path.
+
+### Draw-on, gradient and drop are one mechanism
+
+Every vertex carries `aAlong`, its position 0..1 along the path. Everything else
+is a comparison against it in the fragment shader:
+
+- `uDrawProgress` — fragments past it are discarded, giving the draw-on
+- `uHeadT` — where the travelling drop currently is
+- saturation is `aAlong · (1 - step(uHeadT))`: a linear ramp from origin to
+  destination, cut off ahead of the drop
+
+That last line resolves what looked like two different briefs. The static spec
+wants a gradient that is saturated at the destination; the animation wants dark
+behind the drop and base blue ahead. They are the same expression — when the
+drop reaches the end, the cutoff disappears and what remains is the static
+gradient. The "mask a few pixels ahead of the drop" detail also falls out for
+free, since ahead of `uHeadT` is already base blue.
+
+The drop itself reuses the arc's geometry buffer with a second material. Its
+width tapers along a short window behind `uHeadT`, rounded over the last 20% to
+cap the head — a comet, following the arc's curvature for nothing.
+
+### Occlusion
+
+Exact for a sphere under an orthographic camera: a point is hidden when its
+component along the view axis is negative *and* its perpendicular distance from
+that axis is less than 1. Cheaper and more correct than a depth buffer, and it
+keeps the canvas transparent.
+
+## Pins
+
+DOM, not canvas — pill width hugs its label, which needs real font metrics.
+
+Measurements come from `design/hero-motion-spec.md`. The surface point is the
+element's transform origin; the pill sits 31px above it, the stem spans 24px
+with an 8px gap below the pill, and the dot carries its white ring and shadow as
+`box-shadow`.
+
+They update inside `stage.onFrame`, so they move in the same tick as the canvas.
+Different ticks would show as the arc sliding off its dot during a resize.
+
+## Flow
+
+A small keyframe timeline in `src/flow.js`. Beats are data — `{track, at, dur,
+from, to, ease}` — so retiming is editing `DEFAULT_BEATS`, not logic.
+
+GSAP would have cost more than the globe for four tweens.
+
+Pin beats use `outBack`, which overshoots past 1 deliberately to give the pill
+its pop. `Pin.setAmount` therefore must **not** clamp: the raw value drives the
+transforms and a clamped copy drives opacity. Clamping in the setter silently
+throws the overshoot away and the pins land flat.
+
+`prefers-reduced-motion` jumps straight to the end state rather than animating.
