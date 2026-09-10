@@ -14,25 +14,29 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_search_wrap',
-    in: 0.2,
-    out: 6.2,
+    in: [0.2, 11.5],
+    out: [6.2],
     dur: 0.45,
     anim: 'fade',
   },
   {
     selector: '.hero1_profile_route_wrap',
     in: 3.2,
+    out: 8.4,
+    dur: 0.5,
     anim: 'rise',
   },
   {
     selector: '.hero1_profile_choice_check',
     in: 6.7,
+    out: 11.0,
+    dur: 0.4,
     anim: 'pop',
     display: 'flex',
   },
   {
     selector: '.hero1_profile_choice_check_mark',
-    in: 6.85,
+    in: [6.85, 8.9],
     dur: 0.5,
     anim: 'draw',
     optional: true,
@@ -51,14 +55,45 @@ export const SEQUENCE = [
       },
     },
     in: 7.0,
+    out: 8.6,
+    dur: 0.4,
     anim: 'type',
     typeSpeed: 4.5,
     display: 'block',
     optional: true,
   },
   {
+    selector: '.hero1_profile_choice_confirm_two',
+    create: {
+      cloneFrom: '.hero1_profile_choice_text',
+      insertAfter: '.hero1_profile_choice_check',
+      text: 'Premium economy',
+      style: {
+        marginLeft: '4px',
+        marginRight: 'auto',
+        textAlign: 'left',
+        flex: '0 0 auto',
+      },
+    },
+    in: 9.1,
+    out: 11.0,
+    dur: 0.4,
+    anim: 'type',
+    typeSpeed: 4.5,
+    display: 'block',
+    optional: true,
+  },
+  {
+    selector: '.hero1_profile_choice_prompt_two',
+    in: 11.7,
+    anim: 'type',
+    typeSpeed: 4.5,
+    display: 'flex',
+    optional: true,
+  },
+  {
     selector: '.hero1_profile_choice_line',
-    in: 7.6,
+    in: 14.0,
     stagger: 1.6,
     anim: 'type',
     typeSpeed: 4.5,
@@ -142,10 +177,12 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       for (const [key, attr] of Object.entries(ATTR)) {
         if (entry[key] === undefined) continue
         if (el.hasAttribute(attr)) continue
+        const shift = (v) => Math.round((v + offset) * 1000) / 1000
+        const raw = entry[key]
         const value =
           key === 'in' || key === 'out'
-            ? Math.round((entry[key] + offset) * 1000) / 1000
-            : entry[key]
+            ? Array.isArray(raw) ? raw.map(shift).join(',') : shift(raw)
+            : raw
         el.setAttribute(attr, String(value))
       }
       applied.push(entry.selector)

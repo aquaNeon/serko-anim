@@ -1,6 +1,16 @@
 import { Typewriter } from './typewriter.js'
 const DEFAULT_DUR = 0.6
 
+function nums(el, attr, fallback) {
+  const raw = el.getAttribute(attr)
+  if (raw === null || raw.trim() === '') return fallback
+  const parts = raw
+    .split(',')
+    .map((v) => Number.parseFloat(v.trim()))
+    .filter((v) => Number.isFinite(v))
+  return parts.length ? parts : fallback
+}
+
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr)
   if (raw === null || raw.trim() === '') return fallback
@@ -26,8 +36,8 @@ function parse(el) {
     lng: num(el, 'data-lng', 0),
     offsetX: num(el, 'data-offset-x', 0),
     offsetY: num(el, 'data-offset-y', 0),
-    inAt: num(el, 'data-in', 0),
-    outAt: el.hasAttribute('data-out') ? num(el, 'data-out', Infinity) : null,
+    ins: nums(el, 'data-in', [0]),
+    outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
     dur: num(el, 'data-dur', DEFAULT_DUR),
     typeSpeed: num(el, 'data-type-speed', 26),
@@ -86,6 +96,21 @@ function parse(el) {
   return item
 }
 
+function activeWindow(item, time) {
+  let index = -1
+  for (let i = 0; i < item.ins.length; i++) {
+    if (time >= item.ins[i]) index = i
+  }
+  if (index < 0) {
+    return { index: -1, start: item.ins[0] ?? 0, end: item.outs[0] ?? null }
+  }
+  return {
+    index,
+    start: item.ins[index],
+    end: item.outs[index] === undefined ? null : item.outs[index],
+  }
+}
+
 export class Overlays {
   constructor(stage, root = document) {
     const nodes = root.querySelectorAll('[data-globe-cue], [data-globe-pin]')
@@ -95,8 +120,10 @@ export class Overlays {
 
   get maxTime() {
     return this.items.reduce((m, i) => {
-      const end = i.outAt !== null ? i.outAt + i.dur : i.inAt + i.dur
-      const typed = i.typer ? i.inAt + i.typer.total / i.typeSpeed : 0
+      const lastIn = i.ins[i.ins.length - 1]
+      const lastOut = i.outs.length ? i.outs[i.outs.length - 1] : null
+      const end = Math.max(lastIn, lastOut === null ? 0 : lastOut) + i.dur
+      const typed = i.typer ? lastIn + i.typer.total / i.typeSpeed : 0
       return Math.max(m, end, typed)
     }, 0)
   }
@@ -106,17 +133,18 @@ export class Overlays {
   }
 
   _updateItem(item, time, stage) {
-    const enter = clamp01((time - item.inAt) / item.dur)
-    const exit = item.outAt === null ? 0 : clamp01((time - item.outAt) / item.dur)
+    const w = activeWindow(item, time)
+    const enter = w.index < 0 ? 0 : clamp01((time - w.start) / item.dur)
+    const exit = w.end === null ? 0 : clamp01((time - w.end) / item.dur)
     const amount = enter * (1 - exit)
     const el = item.el
 
-    if (item.anim === 'type') this._type(item, time)
+    if (item.anim === 'type') this._type(item, time, w.start)
     if (item.anim === 'draw') this._draw(item, enter)
 
-    const gone = item.outAt !== null && time >= item.outAt + item.dur
+    const gone = w.end !== null && time >= w.end + item.dur
 
-    if (item.collapse && item.outAt !== null) {
+    if (item.collapse && w.end !== null) {
       if (exit > 0 && exit < 1) {
         if (item.exitWidth === null) {
           item.exitWidth = el.offsetWidth
@@ -191,9 +219,9 @@ export class Overlays {
     }
   }
 
-  _type(item, time) {
+  _type(item, time, start) {
     if (!item.typer) return
-    const elapsed = time - item.inAt
+    const elapsed = time - start
     const n = elapsed <= 0 ? 0 : Math.min(item.typer.total, Math.floor(elapsed * item.typeSpeed))
     if (n === item.typedCount) return
     item.typedCount = n

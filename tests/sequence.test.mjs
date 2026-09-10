@@ -64,14 +64,33 @@ test('a renamed class is reported, not silently ignored', () => {
   }
 })
 
+const asList = (v) => (Array.isArray(v) ? v : [v])
+
 test('every shipped sequence entry is well formed', () => {
   for (const entry of SEQUENCE) {
     assert.ok(entry.selector && entry.selector.startsWith('.'),
       `bad selector: ${entry.selector}`)
-    assert.equal(typeof entry.in, 'number', `${entry.selector} needs a numeric in`)
-    assert.ok(entry.in >= 0, `${entry.selector} in must not be negative`)
+
+    const ins = asList(entry.in)
+    for (const v of ins) {
+      assert.equal(typeof v, 'number', `${entry.selector} needs numeric in`)
+      assert.ok(v >= 0, `${entry.selector} in must not be negative`)
+    }
+    for (let i = 1; i < ins.length; i++) {
+      assert.ok(ins[i] > ins[i - 1], `${entry.selector} in times must ascend`)
+    }
+
     if (entry.out !== undefined) {
-      assert.ok(entry.out > entry.in, `${entry.selector} out must follow in`)
+      const outs = asList(entry.out)
+      assert.ok(outs.length <= ins.length,
+        `${entry.selector} has more out points than in points`)
+      outs.forEach((o, i) => {
+        assert.ok(o > ins[i], `${entry.selector} out[${i}] must follow its in`)
+        if (ins[i + 1] !== undefined) {
+          assert.ok(ins[i + 1] >= o,
+            `${entry.selector} window ${i} overlaps the next one`)
+        }
+      })
     }
     if (entry.anim !== undefined) {
       assert.ok(['fade', 'rise', 'pop', 'type', 'draw'].includes(entry.anim),
@@ -207,4 +226,15 @@ test('creation is skipped when there is nowhere to put it', () => {
   }], root)
   assert.deepEqual(created, [])
   assert.deepEqual(missing, ['.made'])
+})
+
+test('array in/out points survive stagger as a comma list', () => {
+  const els = [makeEl('w'), makeEl('w')]
+  const root = makeRoot({ '.w': els })
+  applySequence([{ selector: '.w', in: [0.2, 5], out: [2], stagger: 1 }], root)
+
+  assert.equal(els[0].getAttribute('data-in'), '0.2,5')
+  assert.equal(els[0].getAttribute('data-out'), '2')
+  assert.equal(els[1].getAttribute('data-in'), '1.2,6')
+  assert.equal(els[1].getAttribute('data-out'), '3')
 })
