@@ -348,3 +348,16 @@ has already stopped moving.
 `data-stagger` is the gap between children as a fraction of the duration.
 `data-stagger-target` takes a selector if only some descendants should stagger
 rather than the direct children.
+
+
+## Anchored cards must not be positioned in the Designer
+
+An element with `data-globe-pin` is positioned by the globe. If it also carries
+`position: absolute` with top/left offsets from Webflow, those offsets resolve
+against the wrapper the globe puts it in and it lands somewhere arbitrary -
+usually far from its city.
+
+The positioning is now reset when the card is adopted, and a warning names the
+element, but it is cleaner to remove it in the Designer. Style the card however
+you like - size, padding, colours, the layout of its contents - just leave its
+position alone.

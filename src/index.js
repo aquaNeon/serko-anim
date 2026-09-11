@@ -119,6 +119,7 @@ function boot() {
           slotHeight: i.host !== i.el ? i.host.style.height : 'n/a',
           cardWidth: i.el.offsetWidth,
           cardHeight: i.el.offsetHeight,
+          authoredPosition: i.el.dataset.globeAuthoredPosition || 'static',
           sizeMismatch:
             i.host !== i.el &&
             (Math.abs(i.el.offsetWidth - parseFloat(i.host.style.width || 0)) > 2 ||

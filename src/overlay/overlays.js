@@ -130,8 +130,28 @@ function reparentAnchored(items, stageRoot) {
     }
 
     if (item.hiddenByDisplay) item.el.style.display = item.revealDisplay
-    const width = item.el.offsetWidth
-    const height = item.el.offsetHeight
+
+    const el = item.el
+    const authored = getComputedStyle(el).position
+    if (authored !== 'static') {
+      el.dataset.globeAuthoredPosition = authored
+      console.warn(
+        '[globe] ' + (el.getAttribute('class') || '').split(' ')[0] +
+        ' is position:' + authored + ' in Webflow. An anchored card is ' +
+        'positioned by the globe, so that has been reset - remove it in the ' +
+        'Designer to avoid surprises.'
+      )
+    }
+    el.style.position = 'static'
+    el.style.top = 'auto'
+    el.style.right = 'auto'
+    el.style.bottom = 'auto'
+    el.style.left = 'auto'
+    el.style.margin = '0'
+    el.style.transform = 'none'
+
+    const width = el.offsetWidth
+    const height = el.offsetHeight
 
     const slot = doc.createElement('div')
     slot.className = 'globe-anchor-slot'
