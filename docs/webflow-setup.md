@@ -371,3 +371,21 @@ position alone.
 | `data-grow-from` | `0.6` | scale the `grow` animation starts from |
 | `data-stagger` | `0.12` | gap between children, as a fraction of the duration |
 | `data-stagger-target` | direct children | selector for which descendants stagger |
+
+
+## Typing reveals, it does not retype
+
+Each word is wrapped in a span and faded in. The text is never removed from the
+DOM, so the line keeps its final wrapping from the first frame and cannot
+reflow part-way through - which is what made a long line visibly jump from one
+row to two as it filled in.
+
+It also means the element must be allowed to occupy its space before its cue.
+Set it to `opacity: 0` rather than `display: none` if it needs to be invisible
+at load: the words carry their own opacity, so the element itself can stay
+laid out.
+
+`grow` now reverses on the way out - the element scales back down to
+`data-grow-from` and fades, mirroring its entrance. The width collapse used for
+other animations is skipped for it, since collapsing on X while scaling reads
+as a mask rather than an exit.

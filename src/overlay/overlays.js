@@ -20,6 +20,7 @@ function num(el, attr, fallback) {
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
+const easeInCubic = (t) => t * t * t
 const easeOutBack = (t) => {
   const c = 1.70158
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2)
@@ -58,6 +59,7 @@ function parse(el) {
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`
+    el.style.visibility = 'visible'
 
     const byWord = (el.getAttribute('data-type-by') || 'word').toLowerCase() !== 'char'
     item.typer = new Typewriter(el, {
@@ -243,7 +245,7 @@ export class Overlays {
 
     const gone = w.end !== null && time >= w.end + item.dur
 
-    if (item.collapse) {
+    if (item.collapse && item.anim !== 'grow') {
       const shrinking = w.end !== null && exit > 0 && exit < 1
       if (shrinking) {
         if (item.exitWidth === null) {
@@ -292,8 +294,9 @@ export class Overlays {
       opacity = enter > 0 ? 1 - exit : 0
     } else if (item.anim === 'grow') {
       const body = easeOutCubic(clamp01(enter / 0.5))
-      scale = item.growFrom + (1 - item.growFrom) * body
-      opacity = clamp01(enter / 0.25) * (1 - exit)
+      const leave = exit > 0 ? 1 - easeInCubic(exit) : 1
+      scale = item.growFrom + (1 - item.growFrom) * body * leave
+      opacity = clamp01(enter / 0.25) * (1 - easeInCubic(exit))
       this._stagger(item, enter, exit)
     }
 
