@@ -222,7 +222,7 @@ Mark any Webflow element to be driven by the animation.
 | `data-in` | `0` | seconds |
 | `data-out` | never | seconds |
 | `data-dur` | `0.6` | transition length |
-| `data-anim` | `fade` | `fade` / `rise` / `pop` / `type` |
+| `data-anim` | `fade` | `fade` / `rise` / `pop` / `type` / `draw` / `grow` |
 | `data-type-speed` | `26` | characters per second |
 | `data-type-skip` | | selector inside the element the typewriter ignores |
 | `data-display` | `block` | display value to restore if the element starts `display: none` |
@@ -330,3 +330,21 @@ away from the heading.
 
 `__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
 can confirm which side of the breakpoint you are on.
+
+
+## The grow animation
+
+`data-anim="grow"` scales an element up on Y from its bottom edge, then brings
+its children in one after another:
+
+```html
+<div class="hero1_profile_route_wrap" data-anim="grow" data-stagger="0.12">
+```
+
+The scale is deliberately quick - it is done in the first 45% of the duration -
+so the element establishes itself and the contents then arrive into a box that
+has already stopped moving.
+
+`data-stagger` is the gap between children as a fraction of the duration.
+`data-stagger-target` takes a selector if only some descendants should stagger
+rather than the direct children.

@@ -18,9 +18,9 @@ export const DEFAULT_BEATS = [
   { track: 'arcDraw', at: 0.65, dur: 1.5, from: 0, to: 1, ease: 'inOutCubic' },
   { track: 'destPin', at: 2.05, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
   { track: 'dropHead', at: 2.6, dur: 1.8, from: 0, to: 1, ease: 'inOutCubic' },
-  { track: 'originPin', at: 1.6, dur: 0.35, from: 1, to: 0, ease: 'outCubic' },
+  { track: 'originPin', at: 1.4, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
   { track: 'originPin', at: 5.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
-  { track: 'destPin', at: 10.0, dur: 0.35, from: 1, to: 0, ease: 'outCubic' },
+  { track: 'destPin', at: 9.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
   { track: 'destPin', at: 13.7, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
 ]
 

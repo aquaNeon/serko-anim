@@ -44,6 +44,8 @@ function parse(el) {
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     strokes: null,
+    kids: null,
+    kidStep: 0.12,
     exitWidth: null,
     baseMinWidth: '',
     baseMaxWidth: '',
@@ -62,6 +64,18 @@ function parse(el) {
       byWord,
     })
     if (!el.hasAttribute('data-type-speed')) item.typeSpeed = byWord ? 4.5 : 26
+  }
+
+  if (anim === 'grow') {
+    const sel = el.getAttribute('data-stagger-target')
+    const kids = sel
+      ? Array.from(el.querySelectorAll(sel))
+      : Array.from(el.children)
+    item.kids = kids
+    item.kidStep = num(el, 'data-stagger', 0.12)
+    for (const k of kids) {
+      k.style.willChange = 'transform, opacity'
+    }
   }
 
   if (anim === 'draw') {
@@ -251,6 +265,11 @@ export class Overlays {
       opacity = enter > 0 ? 1 - exit : 0
     } else if (item.anim === 'draw') {
       opacity = enter > 0 ? 1 - exit : 0
+    } else if (item.anim === 'grow') {
+      const body = easeOutCubic(clamp01(enter / 0.45))
+      scale = body
+      opacity = clamp01(enter / 0.2) * (1 - exit)
+      this._stagger(item, enter, exit)
     }
 
     if (item.anchored) {
@@ -262,14 +281,32 @@ export class Overlays {
       }
       const limb = Math.min(1, p.depth / 0.12)
       opacity *= limb
+      const fit = item.anim === 'grow' ? `scaleY(${scale})` : `scale(${scale})`
       el.style.transform =
-        `translate(${p.x + dx}px, ${p.y + dy}px) translate(-50%, -100%) scale(${scale})`
+        `translate(${p.x + dx}px, ${p.y + dy}px) translate(-50%, -100%) ${fit}`
+      if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
     } else {
-      el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`
+      const t = item.anim === 'grow'
+        ? `translate(${dx}px, ${dy}px) scaleY(${scale})`
+        : `translate(${dx}px, ${dy}px) scale(${scale})`
+      el.style.transform = t
+      if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
     }
 
     el.style.opacity = String(opacity)
     el.style.pointerEvents = opacity > 0.9 ? '' : 'none'
+  }
+
+  _stagger(item, enter, exit) {
+    if (!item.kids || !item.kids.length) return
+    const step = item.kidStep
+    item.kids.forEach((kid, i) => {
+      const start = 0.35 + i * step
+      const local = clamp01((enter - start) / 0.3)
+      const eased = easeOutCubic(local)
+      kid.style.opacity = String(eased * (1 - exit))
+      kid.style.transform = `translateY(${(1 - eased) * 8}px)`
+    })
   }
 
   _draw(item, enter) {
