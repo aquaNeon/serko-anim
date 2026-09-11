@@ -10,7 +10,11 @@ function isAtomic(el) {
 function splitTextNode(node, byWord) {
   const text = node.nodeValue
   const doc = node.ownerDocument
-  const frag = doc.createDocumentFragment()
+  const holder = doc.createElement('span')
+  holder.className = 'globe-type-run'
+  holder.style.display = 'inline'
+  holder.style.whiteSpace = 'inherit'
+  const frag = holder
   const units = []
 
   const pattern = byWord ? /\S+\s*/g : /[\s\S]/g
@@ -22,6 +26,8 @@ function splitTextNode(node, byWord) {
     }
     const span = doc.createElement('span')
     span.className = 'globe-type-unit'
+    span.style.display = 'inline'
+    span.style.whiteSpace = 'pre-wrap'
     span.style.opacity = '0'
     span.style.willChange = 'opacity'
     span.textContent = m[0]
@@ -33,7 +39,7 @@ function splitTextNode(node, byWord) {
     frag.appendChild(doc.createTextNode(text.slice(consumed)))
   }
 
-  node.parentNode.replaceChild(frag, node)
+  node.parentNode.replaceChild(holder, node)
   return units
 }
 
