@@ -41,6 +41,8 @@ function parse(el) {
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
     dur: num(el, 'data-dur', DEFAULT_DUR),
+    outDur: num(el, 'data-out-dur', num(el, 'data-dur', DEFAULT_DUR)),
+    growOut: num(el, 'data-grow-out', num(el, 'data-grow-from', 0.6)),
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     strokes: null,
@@ -228,7 +230,7 @@ export class Overlays {
     return this.items.reduce((m, i) => {
       const lastIn = i.ins[i.ins.length - 1]
       const lastOut = i.outs.length ? i.outs[i.outs.length - 1] : null
-      const end = Math.max(lastIn, lastOut === null ? 0 : lastOut) + i.dur
+      const end = Math.max(lastIn + i.dur, lastOut === null ? 0 : lastOut + i.outDur)
       const typed = i.typer ? lastIn + i.typer.total / i.typeSpeed : 0
       return Math.max(m, end, typed)
     }, 0)
@@ -241,14 +243,14 @@ export class Overlays {
   _updateItem(item, time, stage) {
     const w = activeWindow(item, time)
     const enter = w.index < 0 ? 0 : clamp01((time - w.start) / item.dur)
-    const exit = w.end === null ? 0 : clamp01((time - w.end) / item.dur)
+    const exit = w.end === null ? 0 : clamp01((time - w.end) / item.outDur)
     const amount = enter * (1 - exit)
     const el = item.host
 
     if (item.anim === 'type') this._type(item, time, w.start)
     if (item.anim === 'draw') this._draw(item, enter)
 
-    const gone = w.end !== null && time >= w.end + item.dur
+    const gone = w.end !== null && time >= w.end + item.outDur
 
     if (amount <= 0.001) {
       el.style.opacity = '0'
@@ -278,8 +280,10 @@ export class Overlays {
       opacity = enter > 0 ? 1 - exit : 0
     } else if (item.anim === 'grow') {
       const body = easeOutCubic(clamp01(enter / 0.5))
-      const leave = exit > 0 ? 1 - easeInCubic(exit) : 1
-      scale = item.growFrom + (1 - item.growFrom) * body * leave
+      const grown = item.growFrom + (1 - item.growFrom) * body
+      scale = exit > 0
+        ? grown + (item.growOut - grown) * easeInCubic(exit)
+        : grown
       opacity = clamp01(enter / 0.25) * (1 - easeInCubic(exit))
       this._stagger(item, enter, exit)
     }

@@ -411,3 +411,18 @@ anything that is meant to wrap.
 Exiting no longer animates width at all - an element fades and is removed from
 the layout once it has gone. Animating width on the way out made long lines
 re-wrap as they shrank.
+
+
+## Leaving faster than arriving
+
+An exit usually wants to be quicker than an entrance - the element has already
+been read, so lingering feels slow.
+
+| Attribute | Default | |
+|---|---|---|
+| `data-out-dur` | same as `data-dur` | how long the exit takes |
+| `data-grow-out` | same as `data-grow-from` | scale the `grow` animation leaves at |
+
+The cards arrive over 0.9s and leave in 0.32s, shrinking only slightly on the
+way out - a small scale reads as a dismissal, a large one reads as the element
+being sucked away.
