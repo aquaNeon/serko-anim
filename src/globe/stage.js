@@ -198,6 +198,13 @@ class Stage {
       }
     }
 
+    if (vw < this.layout.mobileBelow && this.layout.mobileScale !== 1) {
+      const shrink = this.layout.mobileScale;
+      const apexBefore = centerY - radiusPx;
+      radiusPx *= shrink;
+      centerY = apexBefore + radiusPx;
+    }
+
     const centerPx = { x: centerX, y: centerY };
     this.globeCam.layout(w, h, centerPx, radiusPx);
     const [lo, hi] = SIZE_SCALE_RANGE;

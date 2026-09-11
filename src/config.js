@@ -21,6 +21,8 @@ const DEFAULT_LAYOUT = {
   hasRefWidth: false,
   scaleMin: 1,
   scaleMax: 1,
+  mobileScale: 1,
+  mobileBelow: 768,
   radiusMaxVh: 0,
   apexClearance: null
 };
@@ -69,6 +71,8 @@ function readLayout(rootEl) {
     hasRefWidth: rootEl.hasAttribute("data-ref-width"),
     scaleMin: num(rootEl, "data-scale-min", DEFAULT_LAYOUT.scaleMin),
     scaleMax: num(rootEl, "data-scale-max", DEFAULT_LAYOUT.scaleMax),
+    mobileScale: num(rootEl, "data-mobile-scale", DEFAULT_LAYOUT.mobileScale),
+    mobileBelow: num(rootEl, "data-mobile-below", DEFAULT_LAYOUT.mobileBelow),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)

@@ -104,6 +104,9 @@ function boot() {
       apexClearance: layout.apexClearance,
       refWidth: layout.hasRefWidth ? layout.refWidth : 'NOT SET',
       radiusScale: layout.radiusScale,
+      mobileScale: layout.mobileScale,
+      mobileBelow: layout.mobileBelow,
+      mobileActive: document.documentElement.clientWidth < layout.mobileBelow,
     }
     console.log('%c[globe report]', 'font-weight:bold', report)
     return report

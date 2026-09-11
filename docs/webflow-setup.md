@@ -104,6 +104,8 @@ Layout can be overridden per-site on the root element:
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
 | `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
+| `data-mobile-scale` | `1` | scale the globe by this below the mobile breakpoint |
+| `data-mobile-below` | `768` | the width that counts as mobile |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
@@ -308,3 +310,23 @@ console.
 
 `data-fit-route` is a different way of choosing the size - by how much of the
 screen the two places should span - and is not needed just to hold the size.
+
+
+## Scaling on mobile only
+
+`data-mobile-scale` is a single multiplier applied below `data-mobile-below`,
+independent of everything else - so it can be dialled in without touching the
+desktop size:
+
+```html
+<div id="globe-root" data-ref-width="1440" data-radius-scale="0.472"
+     data-mobile-scale="0.9" data-mobile-below="768">
+```
+
+The globe is full size at and above the breakpoint, and exactly
+`data-mobile-scale` below it. The top edge stays where `data-apex-clearance`
+puts it, so shrinking pulls the globe up from the bottom rather than moving it
+away from the heading.
+
+`__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
+can confirm which side of the breakpoint you are on.
