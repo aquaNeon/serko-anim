@@ -107,6 +107,23 @@ function boot() {
       mobileScale: layout.mobileScale,
       mobileBelow: layout.mobileBelow,
       mobileActive: document.documentElement.clientWidth < layout.mobileBelow,
+      anchoredCards: (window.__globeOverlays ? window.__globeOverlays.items : [])
+        .filter((i) => i.anchored)
+        .map((i) => ({
+          cls: (i.el.getAttribute('class') || '').split(' ')[0],
+          lat: i.lat,
+          lng: i.lng,
+          offsetY: i.offsetY,
+          inSlot: i.host !== i.el,
+          slotWidth: i.host !== i.el ? i.host.style.width : 'n/a',
+          slotHeight: i.host !== i.el ? i.host.style.height : 'n/a',
+          cardWidth: i.el.offsetWidth,
+          cardHeight: i.el.offsetHeight,
+          sizeMismatch:
+            i.host !== i.el &&
+            (Math.abs(i.el.offsetWidth - parseFloat(i.host.style.width || 0)) > 2 ||
+             Math.abs(i.el.offsetHeight - parseFloat(i.host.style.height || 0)) > 2),
+        })),
     }
     console.log('%c[globe report]', 'font-weight:bold', report)
     return report

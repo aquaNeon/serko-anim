@@ -130,7 +130,8 @@ function reparentAnchored(items, stageRoot) {
     }
 
     if (item.hiddenByDisplay) item.el.style.display = item.revealDisplay
-    const width = item.el.getBoundingClientRect().width
+    const width = item.el.offsetWidth
+    const height = item.el.offsetHeight
 
     const slot = doc.createElement('div')
     slot.className = 'globe-anchor-slot'
@@ -140,6 +141,7 @@ function reparentAnchored(items, stageRoot) {
     slot.style.margin = '0'
     slot.style.willChange = 'transform, opacity'
     if (width) slot.style.width = `${Math.ceil(width)}px`
+    if (height) slot.style.height = `${Math.ceil(height)}px`
 
     layer.appendChild(slot)
     slot.appendChild(item.el)
@@ -148,6 +150,7 @@ function reparentAnchored(items, stageRoot) {
       slot.style.display = 'none'
       item.revealDisplay = 'block'
     }
+    item.slotHeight = Math.ceil(height) || 0
     item.host = slot
   }
 }
@@ -281,9 +284,10 @@ export class Overlays {
       }
       const limb = Math.min(1, p.depth / 0.12)
       opacity *= limb
+      const h = item.slotHeight || el.offsetHeight || 0
       const fit = item.anim === 'grow' ? `scaleY(${scale})` : `scale(${scale})`
       el.style.transform =
-        `translate(${p.x + dx}px, ${p.y + dy}px) translate(-50%, -100%) ${fit}`
+        `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) ${fit}`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
     } else {
       const t = item.anim === 'grow'
