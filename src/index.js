@@ -1,3 +1,4 @@
+const BUILD = '2026-09-11 11:59'
 import { Stage } from './globe/stage.js'
 import { readLayout, readPlaces } from './config.js'
 import { createDebugMarkers } from './overlay/debug.js'
@@ -65,6 +66,48 @@ function boot() {
   if (debug) createDebugMarkers(stage)
 
   window.__globe = { stage, layout, places, flow }
+
+  window.__globeReport = () => {
+    const cam = stage.globeCam
+    const rootRect = root.getBoundingClientRect()
+    const boxRect = stage.box.getBoundingClientRect()
+    const clipping = []
+    let node = root.parentElement
+    while (node && node !== document.documentElement) {
+      const cs = getComputedStyle(node)
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') {
+        clipping.push(
+          (node.getAttribute('class') || node.tagName) +
+          ' (' + Math.round(node.getBoundingClientRect().width) + 'px)'
+        )
+      }
+      node = node.parentElement
+    }
+
+    const report = {
+      build: BUILD,
+      viewport: document.documentElement.clientWidth,
+      attributesSeen: Array.from(root.attributes)
+        .filter((a) => a.name.startsWith('data-'))
+        .map((a) => a.name + (a.value ? '="' + a.value + '"' : '')),
+      sizedBy: layout.fitRoute > 0 ? 'fit-route (fixed)'
+        : layout.hasRefWidth ? 'ref-width (fixed)'
+        : 'container width (SHRINKS)',
+      radiusPx: Math.round(cam.radiusPx),
+      globeDiameter: Math.round(cam.radiusPx * 2),
+      containerWidth: Math.round(rootRect.width),
+      canvasBoxWidth: Math.round(boxRect.width),
+      canvasEscapedTo: stage.box.parentElement === root
+        ? 'not moved'
+        : (stage.box.parentElement.getAttribute('class') || stage.box.parentElement.tagName),
+      clippingAncestors: clipping.length ? clipping : 'none',
+      apexClearance: layout.apexClearance,
+      refWidth: layout.hasRefWidth ? layout.refWidth : 'NOT SET',
+      radiusScale: layout.radiusScale,
+    }
+    console.log('%c[globe report]', 'font-weight:bold', report)
+    return report
+  }
 }
 
 if (document.readyState === 'loading') {
