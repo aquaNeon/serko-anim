@@ -90,19 +90,21 @@ class Stage {
 
     if (this.layout.fitRoute > 0 && this.route) {
       const { from, to } = this.route;
-      const theta = angularDistance(from.lat, from.lng, to.lat, to.lng);
-      const span = Math.max(1, w * this.layout.fitRoute);
-      radiusPx = span / (2 * Math.max(1e-6, Math.sin(theta / 2)));
-
       const mid = midpoint(from.lat, from.lng, to.lat, to.lng);
-      this.globeCam.lookAtLatLng(mid.lat, mid.lng);
+      const lat = Math.max(-89, Math.min(89, mid.lat + this.layout.tilt));
+      this.globeCam.lookAtLatLng(lat, mid.lng + this.layout.spin);
 
-      this.globeCam.layout(w, h, { x: centerX, y: 0 }, radiusPx);
-      const a = this.globeCam.project(from.lat, from.lng);
-      const b = this.globeCam.project(to.lat, to.lng);
-      const routeMidY = (a.y + b.y) / 2;
+      this.globeCam.layout(w, h, { x: centerX, y: 0 }, 1);
+      const ua = this.globeCam.project(from.lat, from.lng);
+      const ub = this.globeCam.project(to.lat, to.lng);
+      const perUnit = Math.hypot(ub.x - ua.x, ub.y - ua.y);
+
+      const span = Math.max(1, w * this.layout.fitRoute);
+      radiusPx = span / Math.max(1e-6, perUnit);
+
+      const unitMidY = (ua.y + ub.y) / 2;
       const band = anchorRect.height || h;
-      centerY = anchorTop + band * this.layout.routeY - routeMidY;
+      centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
     } else {
       radiusPx = anchorRect.width * this.layout.radiusScale;
       if (this.layout.radiusMaxVh > 0) {

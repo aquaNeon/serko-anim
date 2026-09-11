@@ -13,6 +13,8 @@ const DEFAULT_LAYOUT = {
   globeStart: 0,
   fitRoute: 0,
   routeY: 0.34,
+  tilt: 0,
+  spin: 0,
   radiusMaxVh: 0,
   apexClearance: null
 };
@@ -53,6 +55,8 @@ function readLayout(rootEl) {
     globeStart: num(rootEl, "data-globe-start", DEFAULT_LAYOUT.globeStart),
     fitRoute: num(rootEl, "data-fit-route", DEFAULT_LAYOUT.fitRoute),
     routeY: num(rootEl, "data-route-y", DEFAULT_LAYOUT.routeY),
+    tilt: num(rootEl, "data-tilt", DEFAULT_LAYOUT.tilt),
+    spin: num(rootEl, "data-spin", DEFAULT_LAYOUT.spin),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)

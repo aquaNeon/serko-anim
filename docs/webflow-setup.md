@@ -102,6 +102,8 @@ Layout can be overridden per-site on the root element:
 | `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
+| `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
+| `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
 
 ### Keeping the route in the same place on every screen
@@ -123,6 +125,13 @@ flight always sits the same distance below the UI above it.
 
 With `data-fit-route` set, `data-radius-scale`, `data-center-y`,
 `data-camera-lat` and `data-camera-lng` are ignored.
+
+### Tilt and spin
+
+`data-tilt` and `data-spin` nudge the camera off the route's midpoint - tilt
+towards the pole, spin around the axis. The radius is measured from the actual
+projected distance between the two places rather than a formula, so the route
+holds its span and position whatever the tilt.
 
 ### Stopping the globe overlapping content above it
 
