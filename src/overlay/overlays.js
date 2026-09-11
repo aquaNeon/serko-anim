@@ -161,6 +161,8 @@ function reparentAnchored(items, stageRoot) {
     el.style.left = 'auto'
     el.style.margin = '0'
     el.style.transform = 'none'
+    el.style.opacity = '1'
+    el.style.visibility = 'visible'
 
     const width = el.offsetWidth
     const height = el.offsetHeight
@@ -189,18 +191,37 @@ function reparentAnchored(items, stageRoot) {
   }
 }
 
+function widestState(el) {
+  const lines = Array.from(el.children).filter(
+    (c) => c.hasAttribute && (c.hasAttribute('data-globe-cue') || c.hasAttribute('data-globe-pin'))
+  )
+  if (lines.length < 2) return el.offsetWidth
+
+  const saved = lines.map((c) => c.style.display)
+  let widest = 0
+  for (let i = 0; i < lines.length; i++) {
+    lines.forEach((c, j) => { c.style.display = i === j ? '' : 'none' })
+    widest = Math.max(widest, el.offsetWidth)
+  }
+  lines.forEach((c, i) => { c.style.display = saved[i] })
+  return widest
+}
+
 function lockSizes(root) {
   const targets = root.querySelectorAll('[data-lock-width="true"], [data-lock-height="true"]')
   for (const el of targets) {
-    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null
-    if (!rect) continue
-    if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
-      el.style.width = `${Math.ceil(rect.width)}px`
-      el.style.flexGrow = '0'
-      el.style.flexShrink = '0'
+    if (!el.getBoundingClientRect) continue
+    if (el.getAttribute('data-lock-width') === 'true') {
+      const w = widestState(el)
+      if (w) {
+        el.style.width = `${Math.ceil(w)}px`
+        el.style.flexGrow = '0'
+        el.style.flexShrink = '0'
+      }
     }
-    if (el.getAttribute('data-lock-height') === 'true' && rect.height) {
-      el.style.height = `${Math.ceil(rect.height)}px`
+    if (el.getAttribute('data-lock-height') === 'true') {
+      const h = el.offsetHeight
+      if (h) el.style.height = `${Math.ceil(h)}px`
     }
   }
 }

@@ -442,29 +442,15 @@ recalled, not spoken, and the difference in movement says so without a label.
 ## Stopping the flash before the script runs
 
 The script is deferred, so the browser paints once before anything is hidden.
-Anything that should not be visible at load needs to start hidden in CSS.
+Give anything that should not be visible at load `opacity: 0` in Webflow.
 
-Hiding it outright makes it invisible in the Designer too, which is awkward to
-work with. Webflow puts `w-editor` on the html element inside the Designer, so
-this keeps it visible there and hidden everywhere else:
-
-```css
-.hero1_profile_route_wrap,
-.hero1_profile_hotel_wrap,
-.hero1_profile_choice_hotel { opacity: 0; }
-
-html.w-editor .hero1_profile_route_wrap,
-html.w-editor .hero1_profile_hotel_wrap,
-html.w-editor .hero1_profile_choice_hotel { opacity: 1 !important; }
-```
-
-Both rules must sit in the same embed. If the Designer override is in a
-different block than the rule that hides them, whichever loads last wins and the
-result flips depending on order.
+That is all that is needed. The animation sets opacity itself from the cue
+onward, and an adopted card has its authored opacity cleared when it is moved
+into the globe, so a class that hides it at load cannot also hide it when it
+should appear.
 
 Use `opacity`, not `display: none`, for anything that is typed or wiped - the
 element has to be laid out for its words to be measured.
-
 
 ## Lines that share one slot
 
