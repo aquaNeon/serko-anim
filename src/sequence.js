@@ -8,7 +8,6 @@ export const SEQUENCE = [
     selector: '.hero1_profile_choice_wrap',
     in: 0.2,
     anim: 'rise',
-    lockWidth: true,
     lockHeight: true,
   },
   {
@@ -43,7 +42,7 @@ export const SEQUENCE = [
   {
     selector: '.hero1_profile_choice_check',
     in: [6.7, 15.0],
-    out: [11.0, 19.3],
+    out: [11.0],
     dur: 0.4,
     anim: 'pop',
     display: 'flex',
@@ -112,9 +111,7 @@ export const SEQUENCE = [
       classes: ['hero1_profile_choice_pref'],
     },
     in: 17.1,
-    out: 19.0,
     dur: 0.34,
-    outDur: 0.24,
     anim: 'wipe',
     display: 'block',
     optional: true,

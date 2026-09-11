@@ -453,10 +453,38 @@ this keeps it visible there and hidden everywhere else:
 .hero1_profile_hotel_wrap,
 .hero1_profile_choice_hotel { opacity: 0; }
 
-.w-editor .hero1_profile_route_wrap,
-.w-editor .hero1_profile_hotel_wrap,
-.w-editor .hero1_profile_choice_hotel { opacity: 1; }
+html.w-editor .hero1_profile_route_wrap,
+html.w-editor .hero1_profile_hotel_wrap,
+html.w-editor .hero1_profile_choice_hotel { opacity: 1 !important; }
 ```
+
+Both rules must sit in the same embed. If the Designer override is in a
+different block than the rule that hides them, whichever loads last wins and the
+result flips depending on order.
 
 Use `opacity`, not `display: none`, for anything that is typed or wiped - the
 element has to be laid out for its words to be measured.
+
+
+## Lines that share one slot
+
+The search bar shows one line at a time, but every line exists in the DOM from
+the start. Left in normal flow they sit side by side and the bar grows wide
+enough to hold all of them at once.
+
+Take them out of flow so they stack:
+
+```css
+.hero1_profile_choice_wrap { position: relative; width: 357px; }
+
+.hero1_profile_choice_text_wrap,
+.hero1_profile_choice_hotel {
+  position: absolute; top: 0; bottom: 0; left: 16px;
+  display: flex; align-items: center;
+}
+```
+
+Give the bar its width directly. It used to be measured from its content, back
+when typing emptied the element and the bar would otherwise collapse - now that
+the words reveal by opacity the text never leaves, so there is nothing to
+measure around and a plain width is both simpler and stable.
