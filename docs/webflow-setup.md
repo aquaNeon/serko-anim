@@ -389,3 +389,26 @@ laid out.
 `data-grow-from` and fades, mirroring its entrance. The width collapse used for
 other animations is skipped for it, since collapsing on X while scaling reads
 as a mask rather than an exit.
+
+
+## Text that must not wrap
+
+A typed line inside a flex row is a flex item, and flex items shrink to fit. If
+the row is narrower than the text, the text wraps - and because the width is
+locked at the fully laid-out state, it stays wrapped.
+
+Stop the text compressing:
+
+```css
+.hero1_profile_choice_text {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+```
+
+Then widen the bar until the whole line fits. `data-lock-width` measures
+whatever that turns out to be.
+
+Exiting no longer animates width at all - an element fades and is removed from
+the layout once it has gone. Animating width on the way out made long lines
+re-wrap as they shrank.

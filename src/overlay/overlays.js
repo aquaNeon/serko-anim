@@ -40,7 +40,6 @@ function parse(el) {
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
-    collapseNoWrap: el.getAttribute('data-collapse-nowrap') === 'true',
     dur: num(el, 'data-dur', DEFAULT_DUR),
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
@@ -48,9 +47,6 @@ function parse(el) {
     kids: null,
     kidStep: 0.12,
     growFrom: 0.6,
-    exitWidth: null,
-    baseMinWidth: '',
-    baseMaxWidth: '',
     typedCount: -1,
     hiddenByDisplay: false,
     revealDisplay: '',
@@ -244,27 +240,6 @@ export class Overlays {
     if (item.anim === 'draw') this._draw(item, enter)
 
     const gone = w.end !== null && time >= w.end + item.dur
-
-    if (item.collapse && item.anim !== 'grow') {
-      const shrinking = w.end !== null && exit > 0 && exit < 1
-      if (shrinking) {
-        if (item.exitWidth === null) {
-          item.exitWidth = el.offsetWidth
-          item.baseMinWidth = el.style.minWidth
-          item.baseMaxWidth = el.style.maxWidth
-          el.style.overflow = 'hidden'
-          if (item.collapseNoWrap) el.style.whiteSpace = 'nowrap'
-        }
-        el.style.minWidth = '0px'
-        el.style.maxWidth = `${item.exitWidth * (1 - exit)}px`
-      } else if (exit === 0 && item.exitWidth !== null) {
-        el.style.minWidth = item.baseMinWidth
-        el.style.maxWidth = item.baseMaxWidth
-        el.style.overflow = ''
-        el.style.whiteSpace = ''
-        item.exitWidth = null
-      }
-    }
 
     if (amount <= 0.001) {
       el.style.opacity = '0'
