@@ -83,6 +83,7 @@
   .hero1_profile_hitel_details { color: rgba(0,0,0,.55); }
   .hero1_profile_route_text.is-mixed { font-size: 15px; font-weight: 600; }
   .globe-anchor { position: relative; height: 559px; }
+  #globe-root { position: absolute; inset: 0; z-index: 20; }
 
     text-align: left; }
     min-height: 22px; }
@@ -116,14 +117,6 @@
 <body>
   <section class="hero">
     <div class="hero__bg"></div>
-
-    <div id="globe-root" data-fit-route="0.30" data-apex-clearance="40" data-full-bleed>
-      
-      <div data-globe-place data-id="origin"
-           data-lat="37.7749" data-lng="-122.4194" data-label="San Francisco"></div>
-      <div data-globe-place data-id="destination"
-           data-lat="40.7128" data-lng="-74.0060" data-label="New York"></div>
-    </div>
 
     <div class="hero__copy">
       <p class="eyebrow">Eyebrow label</p>
@@ -196,7 +189,15 @@
           </div>
         </div>
       </div>
-      <div class="globe-anchor" data-globe-anchor></div>
+      <div class="globe-anchor" data-globe-anchor>
+        <div id="globe-root" data-fit-route="0.30" data-apex-clearance="40" data-full-bleed>
+      
+      <div data-globe-place data-id="origin"
+           data-lat="37.7749" data-lng="-122.4194" data-label="San Francisco"></div>
+      <div data-globe-place data-id="destination"
+           data-lat="40.7128" data-lng="-74.0060" data-label="New York"></div>
+        </div>
+      </div>
     </div>
 
     </div>
@@ -242,169 +243,169 @@
 
   <script type="module" src="/src/index.js"></script>
   <script type="module">
-                                                const ready = setInterval(() => {
-                                                  if (!window.__globe) return;
-                                                  clearInterval(ready);
-                                                  const { stage, layout } = window.__globe;
-                                                  const state = {
-                                                    gridStep: 10,
-                                                    gridAlpha: 0.13,
-                                                    dotStep: 2.4,
-                                                    landSize: 2,
-                                                    oceanSize: 1.15,
-                                                    oceanOpacity: 0.75,
-                                                    rimAlpha: 0.28
-                                                  };
-                                                  const dc = document.getElementById("dc");
-                                                  const showCount = () => {
-                                                    dc.textContent = stage.dots.userData.stats.count;
-                                                  };
-                                                  showCount();
-                                                  const bind = (id, out, apply) => {
-                                                    const el = document.getElementById(id);
-                                                    const lbl = document.getElementById(out);
-                                                    el.addEventListener("input", () => {
-                                                      const v = parseFloat(el.value);
-                                                      lbl.textContent = v;
-                                                      apply(v);
-                                                      stage._needsResize = true;
+                                                    const ready = setInterval(() => {
+                                                      if (!window.__globe) return;
+                                                      clearInterval(ready);
+                                                      const { stage, layout } = window.__globe;
+                                                      const state = {
+                                                        gridStep: 10,
+                                                        gridAlpha: 0.13,
+                                                        dotStep: 2.4,
+                                                        landSize: 2,
+                                                        oceanSize: 1.15,
+                                                        oceanOpacity: 0.75,
+                                                        rimAlpha: 0.28
+                                                      };
+                                                      const dc = document.getElementById("dc");
+                                                      const showCount = () => {
+                                                        dc.textContent = stage.dots.userData.stats.count;
+                                                      };
+                                                      showCount();
+                                                      const bind = (id, out, apply) => {
+                                                        const el = document.getElementById(id);
+                                                        const lbl = document.getElementById(out);
+                                                        el.addEventListener("input", () => {
+                                                          const v = parseFloat(el.value);
+                                                          lbl.textContent = v;
+                                                          apply(v);
+                                                          stage._needsResize = true;
+                                                        });
+                                                      };
+                                                      const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
+                                                      bind("r", "rv", (v) => layout.radiusScale = v);
+                                                      bind("c", "cv", (v) => layout.centerYFactor = v);
+                                                      bind("la", "lav", (v) => {
+                                                        layout.cameraLat = v;
+                                                        aim();
+                                                      });
+                                                      bind("ln", "lnv", (v) => {
+                                                        layout.cameraLng = v;
+                                                        aim();
+                                                      });
+                                                      bind("gs", "gsv", (v) => {
+                                                        state.gridStep = v;
+                                                        stage.setGrid({ latStep: v, lngStep: v });
+                                                      });
+                                                      bind("ga", "gav", (v) => {
+                                                        state.gridAlpha = v;
+                                                        stage.grid.material.uniforms.uOpacity.value = v;
+                                                      });
+                                                      bind("ds", "dsv", (v) => {
+                                                        state.dotStep = v;
+                                                        stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
+                                                        showCount();
+                                                      });
+                                                      bind("lsz", "lszv", (v) => {
+                                                        state.landSize = v;
+                                                        stage.dots.material.uniforms.uLandSize.value = v;
+                                                      });
+                                                      bind("osz", "oszv", (v) => {
+                                                        state.oceanSize = v;
+                                                        stage.dots.material.uniforms.uOceanSize.value = v;
+                                                      });
+                                                      bind("oa", "oav", (v) => {
+                                                        state.oceanOpacity = v;
+                                                        stage.dots.material.uniforms.uOceanOpacity.value = v;
+                                                      });
+                                                      bind("ra", "rav", (v) => {
+                                                        state.rimAlpha = v;
+                                                        stage.rim.material.opacity = v;
+                                                      });
+                                                      const flow = window.__globe.flow;
+                                                  const route = stage.routes[0];
+                                            
+                                                  if (flow && route) {
+                                                    const scrub = document.getElementById("sc");
+                                                    const scrubLabel = document.getElementById("scv");
+                                                    scrub.max = String(flow.duration);
+                                                    scrub.step = "0.01";
+                                            
+                                                    let scrubbing = false;
+                                                    scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
+                                                    scrub.addEventListener("pointerup", () => { scrubbing = false; });
+                                                    scrub.addEventListener("input", () => {
+                                                      flow.seek(parseFloat(scrub.value));
+                                                      scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
                                                     });
-                                                  };
-                                                  const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
-                                                  bind("r", "rv", (v) => layout.radiusScale = v);
-                                                  bind("c", "cv", (v) => layout.centerYFactor = v);
-                                                  bind("la", "lav", (v) => {
-                                                    layout.cameraLat = v;
-                                                    aim();
-                                                  });
-                                                  bind("ln", "lnv", (v) => {
-                                                    layout.cameraLng = v;
-                                                    aim();
-                                                  });
-                                                  bind("gs", "gsv", (v) => {
-                                                    state.gridStep = v;
-                                                    stage.setGrid({ latStep: v, lngStep: v });
-                                                  });
-                                                  bind("ga", "gav", (v) => {
-                                                    state.gridAlpha = v;
-                                                    stage.grid.material.uniforms.uOpacity.value = v;
-                                                  });
-                                                  bind("ds", "dsv", (v) => {
-                                                    state.dotStep = v;
-                                                    stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
-                                                    showCount();
-                                                  });
-                                                  bind("lsz", "lszv", (v) => {
-                                                    state.landSize = v;
-                                                    stage.dots.material.uniforms.uLandSize.value = v;
-                                                  });
-                                                  bind("osz", "oszv", (v) => {
-                                                    state.oceanSize = v;
-                                                    stage.dots.material.uniforms.uOceanSize.value = v;
-                                                  });
-                                                  bind("oa", "oav", (v) => {
-                                                    state.oceanOpacity = v;
-                                                    stage.dots.material.uniforms.uOceanOpacity.value = v;
-                                                  });
-                                                  bind("ra", "rav", (v) => {
-                                                    state.rimAlpha = v;
-                                                    stage.rim.material.opacity = v;
-                                                  });
-                                                  const flow = window.__globe.flow;
-                                              const route = stage.routes[0];
-                                        
-                                              if (flow && route) {
-                                                const scrub = document.getElementById("sc");
-                                                const scrubLabel = document.getElementById("scv");
-                                                scrub.max = String(flow.duration);
-                                                scrub.step = "0.01";
-                                        
-                                                let scrubbing = false;
-                                                scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
-                                                scrub.addEventListener("pointerup", () => { scrubbing = false; });
-                                                scrub.addEventListener("input", () => {
-                                                  flow.seek(parseFloat(scrub.value));
-                                                  scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
-                                                });
-                                        
-                                                stage.onFrame(() => {
-                                                  if (!scrubbing) {
-                                                    scrub.value = String(flow.time);
-                                                    scrubLabel.textContent = flow.time.toFixed(2) + "s";
+                                            
+                                                    stage.onFrame(() => {
+                                                      if (!scrubbing) {
+                                                        scrub.value = String(flow.time);
+                                                        scrubLabel.textContent = flow.time.toFixed(2) + "s";
+                                                      }
+                                                    });
+                                            
+                                                    const playpause = document.getElementById("playpause");
+                                                    playpause.addEventListener("click", () => {
+                                                      if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
+                                                      else { flow.play(); playpause.textContent = "pause"; }
+                                                    });
+                                                    document.getElementById("replay").addEventListener("click", () => {
+                                                      flow.restart();
+                                                      playpause.textContent = "pause";
+                                                    });
+                                                    document.getElementById("lp").addEventListener("change", (e) => {
+                                                      flow.loop = e.target.checked;
+                                                    });
+                                            
+                                                    let speed = 1;
+                                                    bind("sp", "spv", (v) => { speed = v; });
+                                                    const rawAdvance = flow.advance.bind(flow);
+                                                    flow.advance = (dt) => rawAdvance(dt * speed);
+                                            
+                                                    bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
+                                                    bind("aw", "awv", (v) => {
+                                                      state.arcWidth = v;
+                                                      stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
+                                                    });
+                                                    bind("dw", "dwv", (v) => {
+                                                      state.dropWidth = v;
+                                                      stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
+                                                    });
+                                                    bind("aa", "aav", (v) => {
+                                              state.arcBaseOpacity = v;
+                                              stage.routes[0].arcMaterial.uniforms.uBaseOpacity.value = v;
+                                            });
+                                            bind("dl", "dlv", (v) => {
+                                                      state.tailLength = v;
+                                                      for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
+                                                        m.uniforms.uTailLength.value = v;
+                                                      }
+                                                    });
                                                   }
-                                                });
-                                        
-                                                const playpause = document.getElementById("playpause");
-                                                playpause.addEventListener("click", () => {
-                                                  if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
-                                                  else { flow.play(); playpause.textContent = "pause"; }
-                                                });
-                                                document.getElementById("replay").addEventListener("click", () => {
-                                                  flow.restart();
-                                                  playpause.textContent = "pause";
-                                                });
-                                                document.getElementById("lp").addEventListener("change", (e) => {
-                                                  flow.loop = e.target.checked;
-                                                });
-                                        
-                                                let speed = 1;
-                                                bind("sp", "spv", (v) => { speed = v; });
-                                                const rawAdvance = flow.advance.bind(flow);
-                                                flow.advance = (dt) => rawAdvance(dt * speed);
-                                        
-                                                bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
-                                                bind("aw", "awv", (v) => {
-                                                  state.arcWidth = v;
-                                                  stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
-                                                });
-                                                bind("dw", "dwv", (v) => {
-                                                  state.dropWidth = v;
-                                                  stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
-                                                });
-                                                bind("aa", "aav", (v) => {
-                                          state.arcBaseOpacity = v;
-                                          stage.routes[0].arcMaterial.uniforms.uBaseOpacity.value = v;
-                                        });
-                                        bind("dl", "dlv", (v) => {
-                                                  state.tailLength = v;
-                                                  for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
-                                                    m.uniforms.uTailLength.value = v;
+                                            
+                                                  function rebuildRoute(opts) {
+                                                    const old = stage.routes[0];
+                                                    if (!old) return;
+                                                    stage.scene.remove(old.group);
+                                                    old.dispose();
+                                                    stage.routes.length = 0;
+                                                    const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
+                                                      lift: opts.lift ?? state.arcLift,
+                                                      width: state.arcWidth,
+                                                      dropWidth: state.dropWidth,
+                                                      tailLength: state.tailLength,
+                                                    });
+                                                    window.__globe.flow.route = next;
+                                                    window.__globe.flow.seek(window.__globe.flow.time);
                                                   }
-                                                });
-                                              }
-                                        
-                                              function rebuildRoute(opts) {
-                                                const old = stage.routes[0];
-                                                if (!old) return;
-                                                stage.scene.remove(old.group);
-                                                old.dispose();
-                                                stage.routes.length = 0;
-                                                const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
-                                                  lift: opts.lift ?? state.arcLift,
-                                                  width: state.arcWidth,
-                                                  dropWidth: state.dropWidth,
-                                                  tailLength: state.tailLength,
-                                                });
-                                                window.__globe.flow.route = next;
-                                                window.__globe.flow.seek(window.__globe.flow.time);
-                                              }
-                                        
-                                              document.getElementById("dump").addEventListener("click", () => {
-                                                    const out = JSON.stringify({ layout, ...state }, null, 2);
-                                                    navigator.clipboard?.writeText(out);
-                                                    console.log("[globe] tuned values", out);
-                                                  });
-                                                  let n = 0, last = performance.now();
-                                                  const fps = document.getElementById("fps");
-                                                  stage.onFrame((t) => {
-                                                    n++;
-                                                    if (t - last > 500) {
-                                                      fps.textContent = Math.round(n * 1e3 / (t - last));
-                                                      n = 0;
-                                                      last = t;
-                                                    }
-                                                  });
-                                                }, 50);
+                                            
+                                                  document.getElementById("dump").addEventListener("click", () => {
+                                                        const out = JSON.stringify({ layout, ...state }, null, 2);
+                                                        navigator.clipboard?.writeText(out);
+                                                        console.log("[globe] tuned values", out);
+                                                      });
+                                                      let n = 0, last = performance.now();
+                                                      const fps = document.getElementById("fps");
+                                                      stage.onFrame((t) => {
+                                                        n++;
+                                                        if (t - last > 500) {
+                                                          fps.textContent = Math.round(n * 1e3 / (t - last));
+                                                          n = 0;
+                                                          last = t;
+                                                        }
+                                                      });
+                                                    }, 50);
   </script>
 </body>
 </html>
