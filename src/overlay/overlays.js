@@ -46,6 +46,7 @@ function parse(el) {
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     strokes: null,
+    wipeFrom: (el.getAttribute('data-wipe-from') || 'left').toLowerCase(),
     kids: null,
     kidStep: 0.12,
     growFrom: 0.6,
@@ -257,6 +258,7 @@ export class Overlays {
     if (amount <= 0.001) {
       el.style.opacity = '0'
       el.style.pointerEvents = 'none'
+      if (item.anim === 'wipe') el.style.clipPath = 'inset(0 100% 0 0)'
       if (item.hiddenByDisplay || (gone && item.collapse)) {
         el.style.display = 'none'
       }
@@ -280,6 +282,16 @@ export class Overlays {
       opacity = enter > 0 ? 1 - exit : 0
     } else if (item.anim === 'draw') {
       opacity = enter > 0 ? 1 - exit : 0
+    } else if (item.anim === 'wipe') {
+      const reveal = easeOutCubic(clamp01(enter))
+      const hide = exit > 0 ? easeInCubic(exit) : 0
+      const from = item.wipeFrom
+      const open = Math.max(0, reveal - hide)
+      el.style.clipPath =
+        from === 'right'
+          ? `inset(0 0 0 ${(1 - open) * 100}%)`
+          : `inset(0 ${(1 - open) * 100}% 0 0)`
+      opacity = clamp01(enter / 0.35) * (1 - hide)
     } else if (item.anim === 'grow') {
       const body = easeOutCubic(clamp01(enter / 0.5))
       const grown = item.growFrom + (1 - item.growFrom) * body

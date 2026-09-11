@@ -426,3 +426,37 @@ been read, so lingering feels slow.
 The cards arrive over 0.9s and leave in 0.32s, shrinking only slightly on the
 way out - a small scale reads as a dismissal, a large one reads as the element
 being sucked away.
+
+
+## Two ways text can arrive
+
+`type` reveals word by word, like speech being transcribed. Use it for anything
+the user is saying.
+
+`wipe` reveals with a clip-path sweep plus opacity, in about a third of a
+second. Use it for values that were already known - a saved preference is
+recalled, not spoken, and the difference in movement says so without a label.
+
+`data-wipe-from="right"` sweeps the other way.
+
+## Stopping the flash before the script runs
+
+The script is deferred, so the browser paints once before anything is hidden.
+Anything that should not be visible at load needs to start hidden in CSS.
+
+Hiding it outright makes it invisible in the Designer too, which is awkward to
+work with. Webflow puts `w-editor` on the html element inside the Designer, so
+this keeps it visible there and hidden everywhere else:
+
+```css
+.hero1_profile_route_wrap,
+.hero1_profile_hotel_wrap,
+.hero1_profile_choice_hotel { opacity: 0; }
+
+.w-editor .hero1_profile_route_wrap,
+.w-editor .hero1_profile_hotel_wrap,
+.w-editor .hero1_profile_choice_hotel { opacity: 1; }
+```
+
+Use `opacity`, not `display: none`, for anything that is typed or wiped - the
+element has to be laid out for its words to be measured.
