@@ -8,7 +8,6 @@ export const SEQUENCE = [
     selector: '.hero1_profile_choice_wrap',
     in: 0.2,
     anim: 'rise',
-    lockWidth: true,
     lockHeight: true,
   },
   {
@@ -201,9 +200,10 @@ function groupSlot(root, name, anchorSel, fallbackEl) {
 
   const slot = doc.createElement('div')
   slot.className = 'globe-slot globe-slot-' + name
-  slot.style.position = 'relative'
-  slot.style.flex = '0 0 auto'
-  slot.style.alignSelf = 'stretch'
+  slot.style.position = 'absolute'
+  slot.style.top = '0'
+  slot.style.bottom = '0'
+  slot.dataset.globeSlotAfter = anchorSel || ''
   anchor.parentNode.insertBefore(slot, anchor.nextSibling)
   return slot
 }
@@ -231,6 +231,25 @@ function sizeGroupSlots(root) {
       if (!kid.dataset.globeDisplay) kid.dataset.globeDisplay = 'flex'
     }
     if (widest) slot.style.width = `${Math.ceil(widest)}px`
+
+    const parent = slot.parentElement
+    if (parent && getComputedStyle(parent).position === 'static') {
+      parent.style.position = 'relative'
+    }
+    const afterSel = slot.dataset.globeSlotAfter
+    const after = afterSel ? root.querySelector(afterSel) : null
+    let left = 0
+    if (after && after !== slot) {
+      const wasDisplay = after.style.display
+      const wasVis = after.style.visibility
+      after.style.display = 'flex'
+      after.style.visibility = 'hidden'
+      const w = after.offsetWidth
+      left = w ? after.offsetLeft + w + 14 : 0
+      after.style.display = wasDisplay
+      after.style.visibility = wasVis
+    }
+    slot.style.left = `${left}px`
   }
 }
 
