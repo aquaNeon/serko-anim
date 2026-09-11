@@ -9,6 +9,7 @@ export const SEQUENCE = [
     in: 0.2,
     anim: 'rise',
     lockHeight: true,
+    style: { width: '450px' },
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
@@ -75,7 +76,7 @@ export const SEQUENCE = [
     dur: 0.34,
     outDur: 0.24,
     anim: 'wipe',
-    display: 'block',
+    display: 'flex',
     optional: true,
   },
   {
@@ -99,7 +100,7 @@ export const SEQUENCE = [
     dur: 0.34,
     outDur: 0.24,
     anim: 'wipe',
-    display: 'block',
+    display: 'flex',
     optional: true,
   },
   {
@@ -123,7 +124,7 @@ export const SEQUENCE = [
     dur: 0.34,
     outDur: 0.24,
     anim: 'wipe',
-    display: 'block',
+    display: 'flex',
     optional: true,
   },
   {
@@ -145,7 +146,7 @@ export const SEQUENCE = [
     in: 17.1,
     dur: 0.34,
     anim: 'wipe',
-    display: 'block',
+    display: 'flex',
     optional: true,
   },
   {
