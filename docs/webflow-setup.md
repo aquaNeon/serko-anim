@@ -104,7 +104,7 @@ Layout can be overridden per-site on the root element:
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
 | `data-ref-width` | `1440` | the width the globe's size is designed against |
-| `data-scale-min` | `0.9` | never shrink below this fraction - crop instead |
+| `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
@@ -276,9 +276,9 @@ and `data-scale-max` bound how far it may deviate:
      data-ref-width="1440" data-scale-min="0.9">
 ```
 
-At or above the reference width the globe is exactly its designed size. Below
-it, it shrinks at most to `data-scale-min` and is cropped the rest of the way.
-Set `data-scale-min="1"` to never shrink at all.
+By default the globe never shrinks: it holds the size it has at
+`data-ref-width` and the viewport simply crops it. Set `data-scale-min="0.9"`
+to allow up to 10% of shrink on small screens before cropping takes over.
 
 ## Escaping a clipping container
 

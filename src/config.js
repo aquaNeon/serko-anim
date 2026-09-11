@@ -18,7 +18,7 @@ const DEFAULT_LAYOUT = {
   aimAtRoute: false,
   fullBleed: false,
   refWidth: 1440,
-  scaleMin: 0.9,
+  scaleMin: 1,
   scaleMax: 1,
   radiusMaxVh: 0,
   apexClearance: null
