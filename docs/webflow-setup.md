@@ -119,12 +119,17 @@ their angular separation, so they hold that span at any screen size:
 <div id="globe-root" data-fit-route="0.30" data-route-y="0.34">
 ```
 
-The camera also aims at the midpoint of the two places rather than a fixed
-lat/lng, and `data-route-y` positions the route within the anchor - so the
-flight always sits the same distance below the UI above it.
+`data-route-y` positions the route within the anchor, so the flight sits the
+same distance below the UI above it whatever the screen size.
 
-With `data-fit-route` set, `data-radius-scale`, `data-center-y`,
-`data-camera-lat` and `data-camera-lng` are ignored.
+The camera keeps pointing wherever `data-camera-lat` / `data-camera-lng` say -
+fitting the route changes the globe's **size and position only**, never its
+orientation. Add `data-aim-at-route` if you do want the camera to centre on the
+two places, but note that swings the globe round to the midpoint, which on a
+transatlantic route means looking down from the north.
+
+With `data-fit-route` set, `data-radius-scale` and `data-center-y` are ignored.
+`data-camera-lat` and `data-camera-lng` still apply.
 
 ### Tilt and spin
 

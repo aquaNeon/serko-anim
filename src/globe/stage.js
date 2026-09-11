@@ -90,9 +90,11 @@ class Stage {
 
     if (this.layout.fitRoute > 0 && this.route) {
       const { from, to } = this.route;
-      const mid = midpoint(from.lat, from.lng, to.lat, to.lng);
-      const lat = Math.max(-89, Math.min(89, mid.lat + this.layout.tilt));
-      this.globeCam.lookAtLatLng(lat, mid.lng + this.layout.spin);
+      const aim = this.layout.aimAtRoute
+        ? midpoint(from.lat, from.lng, to.lat, to.lng)
+        : { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
+      const lat = Math.max(-89, Math.min(89, aim.lat + this.layout.tilt));
+      this.globeCam.lookAtLatLng(lat, aim.lng + this.layout.spin);
 
       this.globeCam.layout(w, h, { x: centerX, y: 0 }, 1);
       const ua = this.globeCam.project(from.lat, from.lng);
