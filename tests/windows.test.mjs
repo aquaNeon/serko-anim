@@ -118,3 +118,26 @@ test('an element that returns is not left collapsed', () => {
   assert.ok(!back.max || back.max === '',
     `came back still pinned at maxWidth ${back.max}`)
 })
+
+test('collapsing does not force nowrap on multi-line content', () => {
+  const { ov, el } = makeOverlays({
+    'data-in': '1',
+    'data-out': '3',
+    'data-dur': '0.5',
+  })
+  ov.update(3.2, { project: () => ({ visible: true, depth: 1, x: 0, y: 0 }) })
+  assert.notEqual(el.style.whiteSpace, 'nowrap',
+    'nowrap makes a multi-line card blow out to one very wide line')
+  assert.equal(el.style.overflow, 'hidden', 'but it must still clip while shrinking')
+})
+
+test('nowrap is available for single-line labels that want it', () => {
+  const { ov, el } = makeOverlays({
+    'data-in': '1',
+    'data-out': '3',
+    'data-dur': '0.5',
+    'data-collapse-nowrap': 'true',
+  })
+  ov.update(3.2, { project: () => ({ visible: true, depth: 1, x: 0, y: 0 }) })
+  assert.equal(el.style.whiteSpace, 'nowrap')
+})

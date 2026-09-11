@@ -39,6 +39,7 @@ function parse(el) {
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
+    collapseNoWrap: el.getAttribute('data-collapse-nowrap') === 'true',
     dur: num(el, 'data-dur', DEFAULT_DUR),
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
@@ -187,7 +188,7 @@ export class Overlays {
           item.baseMinWidth = el.style.minWidth
           item.baseMaxWidth = el.style.maxWidth
           el.style.overflow = 'hidden'
-          el.style.whiteSpace = 'nowrap'
+          if (item.collapseNoWrap) el.style.whiteSpace = 'nowrap'
         }
         el.style.minWidth = '0px'
         el.style.maxWidth = `${item.exitWidth * (1 - exit)}px`
