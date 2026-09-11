@@ -21,7 +21,7 @@ export const DEFAULT_BEATS = [
   { track: 'originPill', at: 1.4, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
   { track: 'originPill', at: 5.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
   { track: 'destPill', at: 9.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
-  { track: 'destPill', at: 16.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+  { track: 'destPill', at: 13.7, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
 ]
 
 export class Flow {

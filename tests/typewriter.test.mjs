@@ -3,173 +3,105 @@ import assert from 'node:assert/strict'
 
 let Typewriter
 
-function makeDoc() {
-  const doc = {
-    createElement: (tag) => makeEl(tag),
-    createTextNode: (value) => makeText(value),
-    createDocumentFragment: () => {
-      const frag = makeEl('#fragment')
-      frag.isFragment = true
-      return frag
-    },
+before(async () => {
+  class FakeNode {
+    constructor() { this.childNodes = [] }
   }
-  return doc
-}
+  globalThis.Node = { TEXT_NODE: 3, ELEMENT_NODE: 1 }
 
-let doc
-
-function makeText(value) {
-  return {
+  const makeText = (value) => ({
     nodeType: 3,
     nodeValue: value,
-    parentNode: null,
+    _original: value,
     parentElement: null,
-    ownerDocument: null,
-  }
-}
+  })
 
-function makeEl(tag, children = [], attrs = {}) {
-  const el = {
-    nodeType: 1,
-    tagName: tag,
-    style: {},
-    childNodes: [],
-    className: '',
-    parentNode: null,
-    parentElement: null,
-    isFragment: false,
-    classList: {
-      contains: (c) => el.className.split(' ').includes(c),
-    },
-    hasAttribute: (n) => n in attrs,
-    getAttribute: (n) => (n in attrs ? attrs[n] : null),
-    querySelectorAll: () => [],
-    contains: (other) => {
-      const walk = (node) =>
-        node === other || (node.childNodes || []).some(walk)
-      return walk(el)
-    },
-    get textContent() {
-      const walk = (node) =>
-        node.nodeType === 3 ? node.nodeValue : (node.childNodes || []).map(walk).join('')
-      return el.childNodes.map(walk).join('')
-    },
-    set textContent(v) {
-      el.childNodes = [makeText(v)]
-    },
-    appendChild: (c) => {
-      if (c.isFragment) {
-        for (const k of c.childNodes) {
-          k.parentNode = el
-          k.parentElement = el
-          el.childNodes.push(k)
+  const makeEl = (tag, children = [], attrs = {}) => {
+    const el = {
+      nodeType: 1,
+      tagName: tag,
+      style: {},
+      _attrs: attrs,
+      childNodes: children,
+      hasAttribute: (n) => n in attrs,
+      getAttribute: (n) => (n in attrs ? attrs[n] : null),
+      querySelectorAll: () => [],
+      contains: (other) => {
+        const walk = (node) => {
+          if (node === other) return true
+          return (node.childNodes || []).some(walk)
         }
-        c.childNodes = []
-        return c
-      }
-      c.parentNode = el
-      c.parentElement = el
-      el.childNodes.push(c)
-      return c
-    },
-    replaceChild: (fresh, old) => {
-      const i = el.childNodes.indexOf(old)
-      const incoming = fresh.isFragment ? fresh.childNodes : [fresh]
-      for (const k of incoming) {
-        k.parentNode = el
-        k.parentElement = el
-      }
-      el.childNodes.splice(i, 1, ...incoming)
-      if (fresh.isFragment) fresh.childNodes = []
-      return old
-    },
+        return walk(el)
+      },
+      get textContent() {
+        const walk = (node) =>
+          node.nodeType === 3 ? node.nodeValue : (node.childNodes || []).map(walk).join('')
+        return (el.childNodes || []).map(walk).join('')
+      },
+    }
+    for (const c of children) if (c.nodeType === 3) c.parentElement = el
+    return el
   }
-  el.ownerDocument = doc
-  for (const c of children) {
-    c.parentNode = el
-    c.parentElement = el
-    c.ownerDocument = doc
-    el.childNodes.push(c)
-  }
-  return el
-}
 
-before(async () => {
-  globalThis.Node = { TEXT_NODE: 3, ELEMENT_NODE: 1 }
-  doc = makeDoc()
+  globalThis.__makeText = makeText
+  globalThis.__makeEl = makeEl
   ;({ Typewriter } = await import('../src/overlay/typewriter.js'))
 })
 
 function buildSearchBar() {
-  doc = makeDoc()
-  const t1 = makeText('Fly American Airlines')
-  const img = makeEl('IMG')
-  const emojiWrap = makeEl('DIV', [img])
-  const t2 = makeText('Outbound to New York')
-  const root = makeEl('DIV', [
-    makeEl('DIV', [t1]),
+  const t1 = globalThis.__makeText('Fly American Airlines')
+  const img = globalThis.__makeEl('IMG', [])
+  const emojiWrap = globalThis.__makeEl('DIV', [img])
+  const t2 = globalThis.__makeText('Outbound to New York')
+  const textWrap = globalThis.__makeEl('DIV', [
+    globalThis.__makeEl('DIV', [t1]),
     emojiWrap,
-    makeEl('DIV', [t2]),
+    globalThis.__makeEl('DIV', [t2]),
   ])
-  return { root, img, emojiWrap }
+  const root = globalThis.__makeEl('DIV', [textWrap])
+  return { root, t1, t2, img, emojiWrap }
 }
 
-const shownUnits = (tw) =>
-  tw.units.filter((u) => u.el.style.opacity === '1').length
-
-test('text is split into word units, not removed', () => {
-  const { root } = buildSearchBar()
-  const before = root.textContent
-  const tw = new Typewriter(root)
-  assert.equal(root.textContent, before,
-    'the text must still be present so the layout cannot reflow')
-  assert.equal(tw.total, 3 + 1 + 4, 'three words, one atom, four words')
-})
-
-test('nothing is visible before it is revealed', () => {
-  const { root } = buildSearchBar()
-  const tw = new Typewriter(root)
-  assert.equal(shownUnits(tw), 0)
-})
-
-test('units reveal one at a time, in order', () => {
-  const { root } = buildSearchBar()
-  const tw = new Typewriter(root)
-  for (let n = 0; n <= tw.total; n++) {
-    tw.reveal(n)
-    assert.equal(shownUnits(tw), n)
-    tw.units.forEach((u, i) => {
-      assert.equal(u.el.style.opacity, i < n ? '1' : '0',
-        `unit ${i} wrong at step ${n}`)
-    })
-  }
-})
-
-test('the image is an atom and survives', () => {
-  const { root, emojiWrap } = buildSearchBar()
-  const tw = new Typewriter(root)
-  const atom = tw.units.find((u) => u.kind === 'atom')
-  assert.ok(atom, 'the image must be tracked as an atom')
-  assert.equal(atom.el, emojiWrap)
-  tw.reveal(tw.total)
-  assert.equal(emojiWrap.style.opacity, '1')
-})
-
-test('the image waits for the words before it', () => {
-  const { root, emojiWrap } = buildSearchBar()
-  const tw = new Typewriter(root)
-  tw.reveal(2)
-  assert.equal(emojiWrap.style.opacity, '0')
-  tw.reveal(4)
-  assert.equal(emojiWrap.style.opacity, '1')
-})
-
-test('rewinding hides again, so scrubbing works', () => {
-  const { root } = buildSearchBar()
+test('the inline image survives typing', () => {
+  const { root, img, emojiWrap } = buildSearchBar()
   const tw = new Typewriter(root)
   tw.reveal(tw.total)
-  tw.reveal(2)
-  assert.equal(shownUnits(tw), 2)
+  assert.ok(img, 'image node must still exist')
+  assert.notEqual(emojiWrap.style.display, 'none', 'image should be shown when fully typed')
+})
+
+test('the image is hidden until the text before it is typed', () => {
+  const { root, emojiWrap } = buildSearchBar()
+  const tw = new Typewriter(root)
+  tw.reveal(5)
+  assert.equal(emojiWrap.style.display, 'none')
+})
+
+test('text reveals progressively, in order', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root)
+
+  tw.reveal(0)
+  assert.equal(t1.nodeValue, '')
+  assert.equal(t2.nodeValue, '')
+
+  tw.reveal(3)
+  assert.equal(t1.nodeValue, 'Fly')
+  assert.equal(t2.nodeValue, '', 'later text must not start before earlier finishes')
+
+  tw.reveal(t1._original.length)
+  assert.equal(t1.nodeValue, t1._original)
+  assert.equal(t2.nodeValue, '')
+
+  tw.reveal(tw.total)
+  assert.equal(t1.nodeValue, t1._original)
+  assert.equal(t2.nodeValue, t2._original)
+})
+
+test('total covers both text runs plus the atom', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root)
+  assert.equal(tw.total, t1._original.length + t2._original.length + 4)
 })
 
 test('done only once everything is revealed', () => {
@@ -181,9 +113,66 @@ test('done only once everything is revealed', () => {
   assert.equal(tw.done, true)
 })
 
-test('character mode splits into characters', () => {
-  doc = makeDoc()
-  const root = makeEl('DIV', [makeText('Fly')])
-  const tw = new Typewriter(root, { byWord: false })
-  assert.equal(tw.total, 3)
+test('rewinding hides content again, so scrubbing works', () => {
+  const { root, t1, emojiWrap } = buildSearchBar()
+  const tw = new Typewriter(root)
+  tw.reveal(tw.total)
+  tw.reveal(2)
+  assert.equal(t1.nodeValue, 'Fl')
+  assert.equal(emojiWrap.style.display, 'none')
+})
+
+test('skipSelector leaves matched subtrees alone', () => {
+  const arrow = globalThis.__makeEl('SVG', [])
+  const t1 = globalThis.__makeText('Hello')
+  const root = globalThis.__makeEl('DIV', [globalThis.__makeEl('DIV', [t1]), arrow])
+  root.querySelectorAll = () => [arrow]
+  const tw = new Typewriter(root, { skipSelector: 'svg' })
+  assert.equal(tw.total, 5, 'skipped atom must not cost steps')
+  tw.reveal(0)
+  assert.notEqual(arrow.style.display, 'none', 'skipped element stays visible')
+})
+
+test('word mode reveals whole words, not characters', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+
+  tw.reveal(1)
+  assert.equal(t1.nodeValue, 'Fly')
+  tw.reveal(2)
+  assert.equal(t1.nodeValue, 'Fly American')
+  tw.reveal(3)
+  assert.equal(t1.nodeValue, 'Fly American Airlines')
+  assert.equal(t2.nodeValue, '')
+})
+
+test('word mode counts words plus one per atom', () => {
+  const { root } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  assert.equal(tw.total, 3 + 1 + 4, 'three words, one atom, four words')
+})
+
+test('word mode never leaves a partial word on screen', () => {
+  const { root, t1, t2 } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  for (let n = 0; n <= tw.total; n++) {
+    tw.reveal(n)
+    for (const node of [t1, t2]) {
+      const shown = node.nodeValue
+      if (shown === '' || shown === node._original) continue
+      assert.ok(!/\s$/.test(shown), `"${shown}" ends mid-gap`)
+      const nextChar = node._original[shown.length]
+      assert.ok(nextChar === undefined || /\s/.test(nextChar),
+        `"${shown}" cuts a word in half`)
+    }
+  }
+})
+
+test('word mode still hides the image until its turn', () => {
+  const { root, emojiWrap } = buildSearchBar()
+  const tw = new Typewriter(root, { byWord: true })
+  tw.reveal(2)
+  assert.equal(emojiWrap.style.display, 'none')
+  tw.reveal(4)
+  assert.notEqual(emojiWrap.style.display, 'none')
 })

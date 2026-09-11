@@ -7,7 +7,6 @@ const CSS = `
   line-height: 21px; white-space: nowrap; font-family: inherit;
   overflow: hidden; box-sizing: border-box; will-change: width, transform; }
 .globe-pin__label { display: block; padding: 0 14px; }
-.hero1_profile_choice_pref { margin-left: 0; }
 .globe-pin__stem { position: absolute; left: 50%; bottom: -1px; width: 2px;
   height: 24px; margin-left: -1px; background: #000; opacity: .7;
   transform-origin: 50% 100%; }
