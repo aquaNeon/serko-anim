@@ -86,7 +86,8 @@ function parse(el) {
   }
 
   el.style.willChange = 'transform, opacity'
-  if (anchored) {
+  item.host = el
+  if (anchored && el.getAttribute('data-reparent') !== 'true') {
     el.style.position = 'absolute'
     el.style.top = '0'
     el.style.left = '0'
@@ -96,13 +97,16 @@ function parse(el) {
 }
 
 function reparentAnchored(items, stageRoot) {
+  const doc = stageRoot.ownerDocument
   let layer = stageRoot.querySelector('.globe-overlay-layer')
+
   for (const item of items) {
     if (!item.anchored) continue
     if (item.el.getAttribute('data-reparent') !== 'true') continue
-    if (stageRoot.contains(item.el)) continue
+    if (item.host !== item.el) continue
+
     if (!layer) {
-      layer = stageRoot.ownerDocument.createElement('div')
+      layer = doc.createElement('div')
       layer.className = 'globe-overlay-layer'
       layer.style.position = 'absolute'
       layer.style.inset = '0'
@@ -110,7 +114,27 @@ function reparentAnchored(items, stageRoot) {
       layer.style.zIndex = '45'
       stageRoot.appendChild(layer)
     }
-    layer.appendChild(item.el)
+
+    if (item.hiddenByDisplay) item.el.style.display = item.revealDisplay
+    const width = item.el.getBoundingClientRect().width
+
+    const slot = doc.createElement('div')
+    slot.className = 'globe-anchor-slot'
+    slot.style.position = 'absolute'
+    slot.style.top = '0'
+    slot.style.left = '0'
+    slot.style.margin = '0'
+    slot.style.willChange = 'transform, opacity'
+    if (width) slot.style.width = `${Math.ceil(width)}px`
+
+    layer.appendChild(slot)
+    slot.appendChild(item.el)
+    item.el.style.willChange = ''
+    if (item.hiddenByDisplay) {
+      slot.style.display = 'none'
+      item.revealDisplay = 'block'
+    }
+    item.host = slot
   }
 }
 
@@ -173,7 +197,7 @@ export class Overlays {
     const enter = w.index < 0 ? 0 : clamp01((time - w.start) / item.dur)
     const exit = w.end === null ? 0 : clamp01((time - w.end) / item.dur)
     const amount = enter * (1 - exit)
-    const el = item.el
+    const el = item.host
 
     if (item.anim === 'type') this._type(item, time, w.start)
     if (item.anim === 'draw') this._draw(item, enter)
