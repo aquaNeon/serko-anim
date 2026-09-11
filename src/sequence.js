@@ -21,6 +21,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_search_wrap',
+    collapse: false,
     in: [0.2, 11.5],
     out: [6.2, 14.7],
     dur: 0.45,
@@ -191,6 +192,7 @@ const ATTR = {
   noWrap: 'data-no-wrap',
   out: 'data-out',
   dur: 'data-dur',
+  collapse: 'data-collapse',
   outDur: 'data-out-dur',
   growOut: 'data-grow-out',
   anim: 'data-anim',
