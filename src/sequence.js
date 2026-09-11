@@ -13,6 +13,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
+    noWrap: true,
     in: 0.6,
     out: 6.2,
     dur: 0.45,
@@ -84,6 +85,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_hotel',
+    noWrap: true,
     in: 11.7,
     anim: 'type',
     typeSpeed: 4.5,
@@ -117,6 +119,7 @@ export const GLOBE_START = 3.0
 
 const ATTR = {
   in: 'data-in',
+  noWrap: 'data-no-wrap',
   out: 'data-out',
   dur: 'data-dur',
   anim: 'data-anim',

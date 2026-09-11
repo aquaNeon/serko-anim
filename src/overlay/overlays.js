@@ -52,6 +52,15 @@ function parse(el) {
     revealDisplay: '',
   }
 
+  if (el.getAttribute('data-no-wrap') === 'true') {
+    el.style.whiteSpace = 'nowrap'
+    el.style.flexShrink = '0'
+    for (const kid of Array.from(el.children)) {
+      kid.style.whiteSpace = 'nowrap'
+      kid.style.flexShrink = '0'
+    }
+  }
+
   if (anim === 'type') {
     const rect = el.getBoundingClientRect()
     if (rect.height) el.style.minHeight = `${Math.ceil(rect.height)}px`

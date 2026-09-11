@@ -394,20 +394,19 @@ as a mask rather than an exit.
 ## Text that must not wrap
 
 A typed line inside a flex row is a flex item, and flex items shrink to fit. If
-the row is narrower than the text, the text wraps - and because the width is
-locked at the fully laid-out state, it stays wrapped.
+the row is narrower than the text the text wraps, and because the width is
+locked at the fully laid-out state it stays wrapped.
 
-Stop the text compressing:
+`data-no-wrap="true"` on the line stops it compressing - it sets `nowrap` and
+`flex-shrink: 0` on the element and its children, so the line keeps its natural
+width and the bar is measured wide enough to hold it:
 
-```css
-.hero1_profile_choice_text {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+```html
+<div class="hero1_profile_choice_text_wrap" data-no-wrap="true">
 ```
 
-Then widen the bar until the whole line fits. `data-lock-width` measures
-whatever that turns out to be.
+It is set on both prompt lines in the shipped sequence. Leave it off for
+anything that is meant to wrap.
 
 Exiting no longer animates width at all - an element fades and is removed from
 the layout once it has gone. Animating width on the way out made long lines
