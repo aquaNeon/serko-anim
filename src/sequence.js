@@ -23,7 +23,7 @@ export const SEQUENCE = [
   {
     selector: '.hero1_profile_search_wrap',
     in: [0.2, 11.5],
-    out: [6.2],
+    out: [6.2, 14.7],
     dur: 0.45,
     anim: 'fade',
   },
@@ -42,15 +42,15 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_check',
-    in: 6.7,
-    out: 11.0,
+    in: [6.7, 15.0],
+    out: [11.0, 19.3],
     dur: 0.4,
     anim: 'pop',
     display: 'flex',
   },
   {
     selector: '.hero1_profile_choice_check_mark',
-    in: [6.85, 8.9],
+    in: [6.85, 8.9, 15.15, 17.05],
     dur: 0.5,
     anim: 'draw',
     optional: true,
@@ -61,6 +61,7 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'No early mornings',
+      classes: ['hero1_profile_choice_pref'],
     },
     in: 7.0,
     out: 8.6,
@@ -76,6 +77,7 @@ export const SEQUENCE = [
       cloneFrom: '.hero1_profile_choice_text',
       insertAfter: '.hero1_profile_choice_check',
       text: 'Premium economy',
+      classes: ['hero1_profile_choice_pref'],
     },
     in: 9.1,
     out: 11.0,
@@ -86,9 +88,43 @@ export const SEQUENCE = [
     optional: true,
   },
   {
+    selector: '.hero1_profile_choice_confirm_three',
+    create: {
+      cloneFrom: '.hero1_profile_choice_text',
+      insertAfter: '.hero1_profile_choice_check',
+      text: 'Walkable location',
+      classes: ['hero1_profile_choice_pref'],
+    },
+    in: 15.2,
+    out: 16.9,
+    dur: 0.34,
+    outDur: 0.24,
+    anim: 'wipe',
+    display: 'block',
+    optional: true,
+  },
+  {
+    selector: '.hero1_profile_choice_confirm_four',
+    create: {
+      cloneFrom: '.hero1_profile_choice_text',
+      insertAfter: '.hero1_profile_choice_check',
+      text: 'Mid-range price',
+      classes: ['hero1_profile_choice_pref'],
+    },
+    in: 17.1,
+    out: 19.0,
+    dur: 0.34,
+    outDur: 0.24,
+    anim: 'wipe',
+    display: 'block',
+    optional: true,
+  },
+  {
     selector: '.hero1_profile_choice_hotel',
     noWrap: true,
     in: 11.7,
+    out: 14.7,
+    outDur: 0.3,
     anim: 'type',
     typeSpeed: 4.5,
     display: 'flex',
@@ -101,7 +137,7 @@ export const SEQUENCE = [
     offsetY: -31,
     reparent: true,
     in: 13.35,
-    out: 16.5,
+    out: 19.4,
     dur: 0.9,
     outDur: 0.32,
     growOut: 0.86,
@@ -110,7 +146,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_line',
-    in: 14.0,
+    in: 19.8,
     stagger: 1.6,
     anim: 'type',
     typeSpeed: 4.5,
@@ -152,7 +188,7 @@ function ownedClasses(sequence) {
 }
 
 function createElement(entry, root, owned) {
-  const { cloneFrom, appendTo, insertAfter, text, style } = entry.create
+  const { cloneFrom, appendTo, insertAfter, text, style, classes } = entry.create
   const parent = appendTo ? root.querySelector(appendTo) : null
   const sibling = insertAfter ? root.querySelector(insertAfter) : null
   if (!parent && !sibling) return null
@@ -175,6 +211,7 @@ function createElement(entry, root, owned) {
   for (const cls of entry.selector.split('.').filter(Boolean)) {
     el.classList.add(cls)
   }
+  for (const cls of classes || []) el.classList.add(cls)
   if (text !== undefined) el.textContent = text
   if (style) Object.assign(el.style, style)
   el.style.display = 'none'
