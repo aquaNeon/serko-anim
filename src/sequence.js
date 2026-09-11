@@ -8,7 +8,7 @@ export const SEQUENCE = [
     selector: '.hero1_profile_choice_wrap',
     in: 0.2,
     anim: 'rise',
-    style: { width: '450px' },
+    style: { width: '450px', minHeight: '49px' },
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
