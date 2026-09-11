@@ -1,4 +1,4 @@
-const BUILD = '2026-09-11 11:59'
+const BUILD = typeof __GLOBE_BUILD__ === 'string' ? __GLOBE_BUILD__ : 'dev'
 import { Stage } from './globe/stage.js'
 import { readLayout, readPlaces } from './config.js'
 import { createDebugMarkers } from './overlay/debug.js'

@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  define: {
+    __GLOBE_BUILD__: JSON.stringify(
+      new Date().toISOString().slice(0, 19).replace('T', ' ')
+    ),
+  },
   build: {
     lib: {
       entry: 'src/index.js',
