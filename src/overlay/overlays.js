@@ -182,7 +182,9 @@ function reparentAnchored(items, stageRoot) {
       item.revealDisplay = 'block'
     }
     item.slotHeight = Math.ceil(height) || 0
+    item.slotWidth = Math.ceil(width) || 0
     item.host = slot
+
   }
 }
 
@@ -297,7 +299,16 @@ export class Overlays {
       }
       const limb = Math.min(1, p.depth / 0.12)
       opacity *= limb
-      const h = item.slotHeight || el.offsetHeight || 0
+      const h = item.el.offsetHeight || item.slotHeight || 0
+      if (h && Math.abs(h - item.slotHeight) > 0.5) {
+        item.slotHeight = h
+        el.style.height = `${h}px`
+      }
+      const wNow = item.el.offsetWidth
+      if (wNow && Math.abs(wNow - (item.slotWidth || 0)) > 0.5) {
+        item.slotWidth = wNow
+        el.style.width = `${wNow}px`
+      }
       el.style.transform =
         `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) scale(${scale})`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
