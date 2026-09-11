@@ -102,6 +102,7 @@ Layout can be overridden per-site on the root element:
 | `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
+| `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
@@ -226,3 +227,32 @@ Mark any Webflow element to be driven by the animation.
 An element that starts `display: none` is switched on when its cue fires and
 back off when it leaves. Set `data-display` if it needs something other than
 `block` - `flex` for a row, for instance.
+
+
+## Globe in a container, without clipping it
+
+Putting `#globe-root` inside a max-width container is usually what you want -
+it crops the bottom where the layout says, and keeps the anchor aligned to the
+grid. But it also clips the globe's left and right edges, because the canvas can
+only paint inside its own box.
+
+`data-full-bleed` separates the two. The canvas and the overlay layers are
+widened to the window and shifted to sit behind the container, while the anchor
+keeps positioning the globe against the container as before:
+
+```html
+<div id="globe-root" data-full-bleed data-fit-route="0.30"
+     data-apex-clearance="40">
+```
+
+So the bottom crops where you put it, and the sides never do.
+
+## Fixed space below the heading
+
+`data-apex-clearance` is the number of pixels between the top of the globe and
+whatever sits above it - so the globe behaves like an image you placed with a
+set margin, rather than something that drifts as the screen changes.
+
+It works alongside `data-fit-route`: the route still sets the globe's size,
+while the clearance sets its vertical position. When both are set, clearance
+wins over `data-route-y`.

@@ -175,7 +175,7 @@ export class Overlays {
     lockSizes(root)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
-    if (stage && stage.root) reparentAnchored(this.items, stage.root)
+    if (stage && stage.root) reparentAnchored(this.items, stage.box || stage.root)
   }
 
   get maxTime() {

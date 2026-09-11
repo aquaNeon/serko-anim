@@ -34,7 +34,7 @@ export function createPinLayer(stage) {
     zIndex: '40',
     overflow: 'hidden',
   })
-  stage.root.appendChild(layer)
+  ;(stage.box || stage.root).appendChild(layer)
   return layer
 }
 

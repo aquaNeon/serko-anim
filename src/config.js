@@ -16,6 +16,7 @@ const DEFAULT_LAYOUT = {
   tilt: 0,
   spin: 0,
   aimAtRoute: false,
+  fullBleed: false,
   radiusMaxVh: 0,
   apexClearance: null
 };
@@ -59,6 +60,7 @@ function readLayout(rootEl) {
     tilt: num(rootEl, "data-tilt", DEFAULT_LAYOUT.tilt),
     spin: num(rootEl, "data-spin", DEFAULT_LAYOUT.spin),
     aimAtRoute: rootEl.hasAttribute("data-aim-at-route"),
+    fullBleed: rootEl.hasAttribute("data-full-bleed"),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)

@@ -13,6 +13,17 @@ class Stage {
     if (!rootEl.style.pointerEvents) rootEl.style.pointerEvents = "none";
     this.layout = layout;
     this.anchor = document.querySelector("[data-globe-anchor]") || rootEl;
+    this.box = document.createElement("div");
+    this.box.className = "globe-box";
+    Object.assign(this.box.style, {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      height: "100%",
+      pointerEvents: "none"
+    });
+    rootEl.appendChild(this.box);
+
     this.canvas = document.createElement("canvas");
     this.canvas.className = "globe-canvas";
     Object.assign(this.canvas.style, {
@@ -23,7 +34,7 @@ class Stage {
       display: "block",
       pointerEvents: "none"
     });
-    rootEl.appendChild(this.canvas);
+    this.box.appendChild(this.canvas);
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
@@ -72,8 +83,17 @@ class Stage {
     return this.globeCam.project(lat, lng, surfaceOffset);
   }
   _applyLayout() {
-    const rect = this.root.getBoundingClientRect();
+    const rootRect = this.root.getBoundingClientRect();
     const anchorRect = this.anchor.getBoundingClientRect();
+
+    const vw = window.innerWidth || rootRect.width;
+    const bleedLeft = this.layout.fullBleed ? rootRect.left : 0;
+    const boxWidth = this.layout.fullBleed ? vw : rootRect.width;
+    this.box.style.left = `${-bleedLeft}px`;
+    this.box.style.width = `${boxWidth}px`;
+
+    const rect = { left: rootRect.left - bleedLeft, top: rootRect.top,
+                   width: boxWidth, height: rootRect.height };
     const w = Math.max(1, Math.round(rect.width));
     const h = Math.max(1, Math.round(rect.height));
     const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
@@ -84,7 +104,7 @@ class Stage {
       this.dots.material.uniforms.uPixelRatio.value = dpr;
     }
     const anchorTop = anchorRect.top - rect.top;
-    const centerX = anchorRect.left - rect.left + anchorRect.width / 2;
+    const centerX = anchorRect.left - rootRect.left + bleedLeft + anchorRect.width / 2;
     let radiusPx;
     let centerY;
 
@@ -105,8 +125,12 @@ class Stage {
       radiusPx = span / Math.max(1e-6, perUnit);
 
       const unitMidY = (ua.y + ub.y) / 2;
-      const band = anchorRect.height || h;
-      centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
+      if (this.layout.apexClearance !== null) {
+        centerY = anchorTop + this.layout.apexClearance + radiusPx;
+      } else {
+        const band = anchorRect.height || h;
+        centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
+      }
     } else {
       radiusPx = anchorRect.width * this.layout.radiusScale;
       if (this.layout.radiusMaxVh > 0) {
