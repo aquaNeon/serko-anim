@@ -91,6 +91,18 @@ export const SEQUENCE = [
     optional: true,
   },
   {
+    selector: '.hero1_profile_hotel_wrap',
+    lat: 40.7128,
+    lng: -74.006,
+    offsetY: -31,
+    reparent: true,
+    in: 13.0,
+    out: 16.5,
+    dur: 0.5,
+    anim: 'pop',
+    optional: true,
+  },
+  {
     selector: '.hero1_profile_choice_line',
     in: 14.0,
     stagger: 1.6,
