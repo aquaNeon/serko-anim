@@ -18,6 +18,8 @@ export const DEFAULT_BEATS = [
   { track: 'arcDraw', at: 0.65, dur: 1.5, from: 0, to: 1, ease: 'inOutCubic' },
   { track: 'destPin', at: 2.05, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
   { track: 'dropHead', at: 2.6, dur: 1.8, from: 0, to: 1, ease: 'inOutCubic' },
+  { track: 'originPin', at: 1.6, dur: 0.35, from: 1, to: 0, ease: 'outCubic' },
+  { track: 'originPin', at: 5.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
 ]
 
 export class Flow {
@@ -36,7 +38,14 @@ export class Flow {
 
     this.duration = this.beats.reduce((m, b) => Math.max(m, b.at + b.dur), 0)
 
+    this.beats = this.beats.slice().sort((a, b) => a.at - b.at)
+    this._initial = {}
+    for (const beat of this.beats) {
+      if (!(beat.track in this._initial)) this._initial[beat.track] = beat.from
+    }
+
     this.values = { originPin: 0, arcDraw: 0, dropHead: 0, destPin: 0 }
+    Object.assign(this.values, this._initial)
     this._apply()
   }
 
@@ -81,7 +90,11 @@ export class Flow {
   }
 
   _sample() {
+    for (const track of Object.keys(this._initial)) {
+      this.values[track] = this._initial[track]
+    }
     for (const beat of this.beats) {
+      if (this.time < beat.at) continue
       const raw = (this.time - beat.at) / beat.dur
       const clamped = Math.min(1, Math.max(0, raw))
       const ease = EASINGS[beat.ease] || EASINGS.linear

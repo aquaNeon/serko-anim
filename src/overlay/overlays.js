@@ -89,8 +89,28 @@ function parse(el) {
     el.style.position = 'absolute'
     el.style.top = '0'
     el.style.left = '0'
+    el.style.margin = '0'
   }
   return item
+}
+
+function reparentAnchored(items, stageRoot) {
+  let layer = stageRoot.querySelector('.globe-overlay-layer')
+  for (const item of items) {
+    if (!item.anchored) continue
+    if (item.el.getAttribute('data-reparent') !== 'true') continue
+    if (stageRoot.contains(item.el)) continue
+    if (!layer) {
+      layer = stageRoot.ownerDocument.createElement('div')
+      layer.className = 'globe-overlay-layer'
+      layer.style.position = 'absolute'
+      layer.style.inset = '0'
+      layer.style.pointerEvents = 'none'
+      layer.style.zIndex = '45'
+      stageRoot.appendChild(layer)
+    }
+    layer.appendChild(item.el)
+  }
 }
 
 function lockSizes(root) {
@@ -130,6 +150,7 @@ export class Overlays {
     lockSizes(root)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
+    if (stage && stage.root) reparentAnchored(this.items, stage.root)
   }
 
   get maxTime() {
@@ -158,8 +179,9 @@ export class Overlays {
 
     const gone = w.end !== null && time >= w.end + item.dur
 
-    if (item.collapse && w.end !== null) {
-      if (exit > 0 && exit < 1) {
+    if (item.collapse) {
+      const shrinking = w.end !== null && exit > 0 && exit < 1
+      if (shrinking) {
         if (item.exitWidth === null) {
           item.exitWidth = el.offsetWidth
           item.baseMinWidth = el.style.minWidth

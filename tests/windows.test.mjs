@@ -95,3 +95,26 @@ test('maxTime accounts for the last window', () => {
   })
   assert.ok(ov.maxTime >= 11.95, `maxTime ${ov.maxTime} must cover the last window`)
 })
+
+test('an element that returns is not left collapsed', () => {
+  const { ov, el } = makeOverlays({
+    'data-in': '0.2,11.5',
+    'data-out': '6.2',
+    'data-dur': '0.45',
+  })
+  const probe = (t) => {
+    ov.update(t, { project: () => ({ visible: true, depth: 1, x: 0, y: 0 }) })
+    return { max: el.style.maxWidth, display: el.style.display }
+  }
+
+  probe(1)
+  probe(6.4)
+  const mid = probe(6.4)
+  assert.ok(mid.max && mid.max !== '', 'should be shrinking during the exit')
+
+  probe(8)
+  const back = probe(12)
+  assert.notEqual(back.display, 'none', 'must be displayed again')
+  assert.ok(!back.max || back.max === '',
+    `came back still pinned at maxWidth ${back.max}`)
+})

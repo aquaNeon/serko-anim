@@ -28,10 +28,14 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_route_wrap',
-    in: 3.2,
+    lat: 37.7749,
+    lng: -122.4194,
+    offsetY: 6,
+    reparent: true,
+    in: 4.6,
     out: 8.4,
     dur: 0.5,
-    anim: 'rise',
+    anim: 'pop',
   },
   {
     selector: '.hero1_profile_choice_check',
@@ -79,7 +83,7 @@ export const SEQUENCE = [
     optional: true,
   },
   {
-    selector: '.hero1_profile_choice_prompt_two',
+    selector: '.hero1_profile_choice_hotel',
     in: 11.7,
     anim: 'type',
     typeSpeed: 4.5,
@@ -114,6 +118,7 @@ const ATTR = {
   lng: 'data-lng',
   offsetX: 'data-offset-x',
   offsetY: 'data-offset-y',
+  reparent: 'data-reparent',
 }
 
 function ownedClasses(sequence) {
