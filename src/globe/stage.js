@@ -170,16 +170,24 @@ class Stage {
         centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
       }
     } else {
-      if (!this._warnedNoFit) {
-        this._warnedNoFit = true;
-        console.warn(
-          "[globe] no data-fit-route set, so the globe is sized from its " +
-          "container and will shrink with the screen. Add " +
-          'data-fit-route="0.30" data-ref-width="1440" to #globe-root to hold ' +
-          "its size and crop instead."
+      if (this.layout.hasRefWidth) {
+        const ref = this.layout.refWidth;
+        const scale = Math.min(
+          this.layout.scaleMax,
+          Math.max(this.layout.scaleMin, vw / ref)
         );
+        radiusPx = ref * this.layout.radiusScale * scale;
+      } else {
+        if (!this._warnedNoFit) {
+          this._warnedNoFit = true;
+          console.warn(
+            "[globe] the globe is sized from its container, so it shrinks " +
+            'with the screen. Add data-ref-width="1440" to #globe-root to ' +
+            "hold its size and crop instead."
+          );
+        }
+        radiusPx = anchorRect.width * this.layout.radiusScale;
       }
-      radiusPx = anchorRect.width * this.layout.radiusScale;
       if (this.layout.radiusMaxVh > 0) {
         const vh = window.innerHeight || rect.height || 1;
         radiusPx = Math.min(radiusPx, vh * this.layout.radiusMaxVh);

@@ -103,7 +103,7 @@ Layout can be overridden per-site on the root element:
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
-| `data-ref-width` | `1440` | the width the globe's size is designed against |
+| `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
@@ -288,3 +288,23 @@ clips it - which is easy to miss, because the canvas really is the right size.
 The canvas is therefore also **moved** above any clipping ancestor narrower than
 the window. Everything positional still comes from `#globe-root` where you put
 it, so the bottom crops where your layout says and the sides do not.
+
+
+## Holding the size without route fitting
+
+`data-ref-width` alone is enough. With it set, the radius is
+`ref-width x data-radius-scale`, held constant, and the viewport crops the globe
+rather than shrinking it:
+
+```html
+<div id="globe-root" data-full-bleed
+     data-ref-width="1440" data-radius-scale="0.472"
+     data-apex-clearance="40">
+```
+
+Without `data-ref-width` the radius comes from the container's width, so it
+shrinks with the screen. That is the old behaviour and it now warns in the
+console.
+
+`data-fit-route` is a different way of choosing the size - by how much of the
+screen the two places should span - and is not needed just to hold the size.
