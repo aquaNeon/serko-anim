@@ -43,10 +43,10 @@ function parse(el) {
     dur: num(el, 'data-dur', DEFAULT_DUR),
     outDur: num(el, 'data-out-dur', num(el, 'data-dur', DEFAULT_DUR)),
     growOut: num(el, 'data-grow-out', num(el, 'data-grow-from', 0.6)),
+    wipeFrom: (el.getAttribute('data-wipe-from') || 'left').toLowerCase(),
     typeSpeed: num(el, 'data-type-speed', 26),
     typer: null,
     strokes: null,
-    wipeFrom: (el.getAttribute('data-wipe-from') || 'left').toLowerCase(),
     kids: null,
     kidStep: 0.12,
     growFrom: 0.6,
@@ -185,43 +185,22 @@ function reparentAnchored(items, stageRoot) {
       item.revealDisplay = 'block'
     }
     item.slotHeight = Math.ceil(height) || 0
-    item.slotWidth = Math.ceil(width) || 0
     item.host = slot
-
   }
-}
-
-function widestState(el) {
-  const lines = Array.from(el.children).filter(
-    (c) => c.hasAttribute && (c.hasAttribute('data-globe-cue') || c.hasAttribute('data-globe-pin'))
-  )
-  if (lines.length < 2) return el.offsetWidth
-
-  const saved = lines.map((c) => c.style.display)
-  let widest = 0
-  for (let i = 0; i < lines.length; i++) {
-    lines.forEach((c, j) => { c.style.display = i === j ? '' : 'none' })
-    widest = Math.max(widest, el.offsetWidth)
-  }
-  lines.forEach((c, i) => { c.style.display = saved[i] })
-  return widest
 }
 
 function lockSizes(root) {
   const targets = root.querySelectorAll('[data-lock-width="true"], [data-lock-height="true"]')
   for (const el of targets) {
-    if (!el.getBoundingClientRect) continue
-    if (el.getAttribute('data-lock-width') === 'true') {
-      const w = widestState(el)
-      if (w) {
-        el.style.width = `${Math.ceil(w)}px`
-        el.style.flexGrow = '0'
-        el.style.flexShrink = '0'
-      }
+    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null
+    if (!rect) continue
+    if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
+      el.style.width = `${Math.ceil(rect.width)}px`
+      el.style.flexGrow = '0'
+      el.style.flexShrink = '0'
     }
-    if (el.getAttribute('data-lock-height') === 'true') {
-      const h = el.offsetHeight
-      if (h) el.style.height = `${Math.ceil(h)}px`
+    if (el.getAttribute('data-lock-height') === 'true' && rect.height) {
+      el.style.height = `${Math.ceil(rect.height)}px`
     }
   }
 }
@@ -254,7 +233,7 @@ export class Overlays {
     return this.items.reduce((m, i) => {
       const lastIn = i.ins[i.ins.length - 1]
       const lastOut = i.outs.length ? i.outs[i.outs.length - 1] : null
-      const end = Math.max(lastIn + i.dur, lastOut === null ? 0 : lastOut + i.outDur)
+      const end = Math.max(lastIn, lastOut === null ? 0 : lastOut) + i.dur
       const typed = i.typer ? lastIn + i.typer.total / i.typeSpeed : 0
       return Math.max(m, end, typed)
     }, 0)
@@ -306,12 +285,10 @@ export class Overlays {
     } else if (item.anim === 'wipe') {
       const reveal = easeOutCubic(clamp01(enter))
       const hide = exit > 0 ? easeInCubic(exit) : 0
-      const from = item.wipeFrom
       const open = Math.max(0, reveal - hide)
-      el.style.clipPath =
-        from === 'right'
-          ? `inset(0 0 0 ${(1 - open) * 100}%)`
-          : `inset(0 ${(1 - open) * 100}% 0 0)`
+      el.style.clipPath = item.wipeFrom === 'right'
+        ? `inset(0 0 0 ${(1 - open) * 100}%)`
+        : `inset(0 ${(1 - open) * 100}% 0 0)`
       opacity = clamp01(enter / 0.35) * (1 - hide)
     } else if (item.anim === 'grow') {
       const body = easeOutCubic(clamp01(enter / 0.5))
@@ -336,11 +313,6 @@ export class Overlays {
       if (h && Math.abs(h - item.slotHeight) > 0.5) {
         item.slotHeight = h
         el.style.height = `${h}px`
-      }
-      const wNow = item.el.offsetWidth
-      if (wNow && Math.abs(wNow - (item.slotWidth || 0)) > 0.5) {
-        item.slotWidth = wNow
-        el.style.width = `${wNow}px`
       }
       el.style.transform =
         `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) scale(${scale})`
