@@ -93,14 +93,19 @@ function parse(el) {
   return item
 }
 
-function lockWidths(root) {
-  const targets = root.querySelectorAll('[data-lock-width="true"]')
+function lockSizes(root) {
+  const targets = root.querySelectorAll('[data-lock-width="true"], [data-lock-height="true"]')
   for (const el of targets) {
     const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null
-    if (!rect || !rect.width) continue
-    el.style.width = `${Math.ceil(rect.width)}px`
-    el.style.flexGrow = '0'
-    el.style.flexShrink = '0'
+    if (!rect) continue
+    if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
+      el.style.width = `${Math.ceil(rect.width)}px`
+      el.style.flexGrow = '0'
+      el.style.flexShrink = '0'
+    }
+    if (el.getAttribute('data-lock-height') === 'true' && rect.height) {
+      el.style.height = `${Math.ceil(rect.height)}px`
+    }
   }
 }
 
@@ -122,7 +127,7 @@ function activeWindow(item, time) {
 export class Overlays {
   constructor(stage, root = document) {
     const nodes = root.querySelectorAll('[data-globe-cue], [data-globe-pin]')
-    lockWidths(root)
+    lockSizes(root)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
   }

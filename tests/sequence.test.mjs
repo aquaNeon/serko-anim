@@ -71,6 +71,12 @@ test('every shipped sequence entry is well formed', () => {
     assert.ok(entry.selector && entry.selector.startsWith('.'),
       `bad selector: ${entry.selector}`)
 
+    if (entry.layoutOnly) {
+      assert.equal(entry.in, undefined,
+        `${entry.selector} is layoutOnly so it must not carry timing`)
+      continue
+    }
+
     const ins = asList(entry.in)
     for (const v of ins) {
       assert.equal(typeof v, 'number', `${entry.selector} needs numeric in`)
@@ -282,4 +288,14 @@ test('a clone does not inherit another entry identity class', () => {
     `clone kept a foreign identity class: ${made.className}`)
   assert.ok(classes.includes('hero1_profile_choice_text'), 'styling classes are kept')
   assert.ok(classes.includes('hero1_profile_choice_confirm_two'), 'own class added')
+})
+
+test('a layoutOnly entry sets its attributes but is not a cue', () => {
+  const el = makeEl('outer')
+  const root = makeRoot({ '.outer': [el] })
+  applySequence([{ selector: '.outer', layoutOnly: true, lockHeight: true }], root)
+
+  assert.equal(el.getAttribute('data-lock-height'), 'true')
+  assert.equal(el.hasAttribute('data-globe-cue'), false,
+    'layoutOnly must not turn the element into an animated item')
 })

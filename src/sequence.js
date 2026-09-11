@@ -1,9 +1,15 @@
 export const SEQUENCE = [
   {
+    selector: '.hero1_profile_wrap',
+    layoutOnly: true,
+    lockHeight: true,
+  },
+  {
     selector: '.hero1_profile_choice_wrap',
     in: 0.2,
     anim: 'rise',
     lockWidth: true,
+    lockHeight: true,
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
@@ -103,6 +109,7 @@ const ATTR = {
   typeBy: 'data-type-by',
   display: 'data-display',
   lockWidth: 'data-lock-width',
+  lockHeight: 'data-lock-height',
   lat: 'data-lat',
   lng: 'data-lng',
   offsetX: 'data-offset-x',
@@ -177,9 +184,11 @@ export function applySequence(sequence = SEQUENCE, root = document) {
     for (const el of nodes) {
       const offset = entry.stagger ? index * entry.stagger : 0
       index++
-      const marker = entry.lat !== undefined ? 'data-globe-pin' : 'data-globe-cue'
-      if (!el.hasAttribute('data-globe-cue') && !el.hasAttribute('data-globe-pin')) {
-        el.setAttribute(marker, '')
+      if (!entry.layoutOnly) {
+        const marker = entry.lat !== undefined ? 'data-globe-pin' : 'data-globe-cue'
+        if (!el.hasAttribute('data-globe-cue') && !el.hasAttribute('data-globe-pin')) {
+          el.setAttribute(marker, '')
+        }
       }
       if (entry.style) Object.assign(el.style, entry.style)
       for (const [key, attr] of Object.entries(ATTR)) {
