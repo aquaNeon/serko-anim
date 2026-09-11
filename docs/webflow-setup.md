@@ -100,7 +100,29 @@ Layout can be overridden per-site on the root element:
 | `data-camera-lng` | `-91` | where the camera looks |
 | `data-apex-clearance` | off | px the dome's top must sit **below** the anchor's top edge |
 | `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
+| `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
+| `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-globe-loop` | off | present = replay the flight on a loop |
+
+### Keeping the route in the same place on every screen
+
+Sizing the globe from the anchor's width means the two cities drift as the
+viewport changes - fine on the design width, wrong everywhere else.
+
+`data-fit-route` sizes the globe from the **route** instead. Give it the
+fraction of the width the two cities should span and the radius is derived from
+their angular separation, so they hold that span at any screen size:
+
+```html
+<div id="globe-root" data-fit-route="0.30" data-route-y="0.34">
+```
+
+The camera also aims at the midpoint of the two places rather than a fixed
+lat/lng, and `data-route-y` positions the route within the anchor - so the
+flight always sits the same distance below the UI above it.
+
+With `data-fit-route` set, `data-radius-scale`, `data-center-y`,
+`data-camera-lat` and `data-camera-lng` are ignored.
 
 ### Stopping the globe overlapping content above it
 

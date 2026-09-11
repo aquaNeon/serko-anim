@@ -9,6 +9,25 @@ function latLngToVec3(lat, lng, radius = 1, out = new THREE.Vector3()) {
     radius * Math.sin(phi) * Math.sin(theta)
   );
 }
+function angularDistance(aLat, aLng, bLat, bLng) {
+  const d =
+    Math.sin(aLat * DEG) * Math.sin(bLat * DEG) +
+    Math.cos(aLat * DEG) * Math.cos(bLat * DEG) * Math.cos((aLng - bLng) * DEG);
+  return Math.acos(Math.min(1, Math.max(-1, d)));
+}
+function midpoint(aLat, aLng, bLat, bLng) {
+  const dLng = (bLng - aLng) * DEG;
+  const aLatR = aLat * DEG;
+  const bLatR = bLat * DEG;
+  const bx = Math.cos(bLatR) * Math.cos(dLng);
+  const by = Math.cos(bLatR) * Math.sin(dLng);
+  const lat = Math.atan2(
+    Math.sin(aLatR) + Math.sin(bLatR),
+    Math.sqrt((Math.cos(aLatR) + bx) * (Math.cos(aLatR) + bx) + by * by)
+  );
+  const lng = aLng * DEG + Math.atan2(by, Math.cos(aLatR) + bx);
+  return { lat: lat / DEG, lng: lng / DEG };
+}
 class GlobeCamera {
   constructor() {
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
@@ -67,5 +86,7 @@ class GlobeCamera {
 }
 export {
   GlobeCamera,
+  angularDistance,
+  midpoint,
   latLngToVec3
 };

@@ -72,6 +72,14 @@
     background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,.1);
     font-size: 12px; color: #1a1a1a; }
   .hero1_profile_route_text { line-height: 1.9; }
+  .hero1_profile_hotel_wrap { display: none; width: 190px; padding: 12px;
+    border-radius: 28px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,.1);
+    font-size: 12px; color: #1a1a1a; }
+  .hero1_profile_room_img_wrap { width: 100%; height: 64px; border-radius: 18px;
+    background: #cfd6df; }
+  .hero1_profile_hotel_confirm { display: inline-block; margin-top: 8px;
+    padding: 2px 8px; border-radius: 999px; background: rgba(0,0,0,.06); }
+  .hero1_profile_hitel_details { color: rgba(0,0,0,.55); }
   .hero1_profile_route_text.is-mixed { font-size: 15px; font-weight: 600; }
   .globe-anchor { position: relative; margin: 0 20px; height: 559px; }
 
@@ -108,7 +116,7 @@
   <section class="hero">
     <div class="hero__bg"></div>
 
-    <div id="globe-root">
+    <div id="globe-root" data-fit-route="0.30" data-route-y="0.34">
       
       <div data-globe-place data-id="origin"
            data-lat="37.7749" data-lng="-122.4194" data-label="San Francisco"></div>
@@ -126,57 +134,70 @@
         <button class="btn btn--ghost">Secondary ⌄</button>
       </div>
       <div style="height:80px"></div>
+      <div class="hero1_profile_wrap">
+        <div class="hero1_profile_main">
+
+          <div class="hero1_profile_choice_wrap">
+            <div class="hero1_profile_choice_check">
+              <svg class="hero1_profile_choice_check_mark" viewBox="0 0 26 30" fill="none">
+                <path d="M9 15.2 L11.6 17.9 L17.4 11.2" stroke="#fff" stroke-width="2.6"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="hero1_profile_choice_text_wrap">
+              <div class="hero1_profile_choice_text">Fly American Airlines</div>
+              <div class="hero1_profile_choice_emoji"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt=""></div>
+              <div class="hero1_profile_choice_text">Outbound to New York</div>
+            </div>
+
+            <div class="hero1_profile_choice_hotel">
+              <div class="hero1_profile_choice_text">Stay at Marriott Bonvoy</div>
+              <div class="hero1_profile_choice_emoji"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt=""></div>
+            </div>
+
+            <div class="hero1_profile_search_wrap">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M7.25 12.7V4.6L3.5 8.2 7.9 2.8l4.4 5.4-3.75-3.6v8.1z" fill="currentColor" fill-opacity=".26"/></svg>
+            </div>
+          </div>
+
+          <div class="hero1_profile_item">
+            <div class="hero1_profile_inner">
+              <div class="hero1_profile_name_wrap">
+                <div class="hero1_profile_img_wrap"></div>
+                <div class="hero1_profile_name">Paula&rsquo;s Profile</div>
+              </div>
+              <div class="hero1_profile_icon_wrap"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero1_profile_hotel_wrap">
+          <div class="hero1_profile_hotel_room">
+            <div class="hero1_profile_room_img_wrap"></div>
+            <div class="hero1_profile_hotel_confirm">
+              <div class="hero1_profile_hotel_text">Confirmed</div>
+            </div>
+          </div>
+          <div class="hero1_profile_route_inner">
+            <div class="hero1_profile_route_text is-mixed">Marriott Marquis<br>New York</div>
+            <div class="hero1_profile_hitel_details">Deluxe Room, 1 King Be...</div>
+          </div>
+        </div>
+
+        <div class="hero1_profile_route_wrap">
+          <div class="hero1_profile_route_inner">
+            <div class="hero1_profile_route_text is-mixed">SFO to NYC</div>
+            <div class="hero1_profile_route_main">
+              <div class="hero1_profile_route_out"><div class="hero1_profile_route_text">08:15 AM</div></div>
+              <div class="hero1_profile_route_in"><div class="hero1_profile_route_text">02:15 PM</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="globe-anchor" data-globe-anchor></div>
     </div>
 
-    <div class="hero1_profile_wrap">
-      <div class="hero1_profile_main">
-
-        <div class="hero1_profile_choice_wrap">
-          <div class="hero1_profile_choice_check">
-            <svg class="hero1_profile_choice_check_mark" viewBox="0 0 26 30" fill="none">
-              <path d="M9 15.2 L11.6 17.9 L17.4 11.2" stroke="#fff" stroke-width="2.6"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
-          <div class="hero1_profile_choice_text_wrap">
-            <div class="hero1_profile_choice_text">Fly American Airlines</div>
-            <div class="hero1_profile_choice_emoji"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt=""></div>
-            <div class="hero1_profile_choice_text">Outbound to New York</div>
-          </div>
-
-          <div class="hero1_profile_choice_hotel">
-            <div class="hero1_profile_choice_text">Stay at Marriott Bonvoy</div>
-            <div class="hero1_profile_choice_emoji"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt=""></div>
-          </div>
-
-          <div class="hero1_profile_search_wrap">
-            <svg viewBox="0 0 16 16" fill="none"><path d="M7.25 12.7V4.6L3.5 8.2 7.9 2.8l4.4 5.4-3.75-3.6v8.1z" fill="currentColor" fill-opacity=".26"/></svg>
-          </div>
-        </div>
-
-        <div class="hero1_profile_item">
-          <div class="hero1_profile_inner">
-            <div class="hero1_profile_name_wrap">
-              <div class="hero1_profile_img_wrap"></div>
-              <div class="hero1_profile_name">Paula&rsquo;s Profile</div>
-            </div>
-            <div class="hero1_profile_icon_wrap"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero1_profile_route_wrap">
-        <div class="hero1_profile_route_inner">
-          <div class="hero1_profile_route_text is-mixed">SFO to NYC</div>
-          <div class="hero1_profile_route_main">
-            <div class="hero1_profile_route_out"><div class="hero1_profile_route_text">08:15 AM</div></div>
-            <div class="hero1_profile_route_in"><div class="hero1_profile_route_text">02:15 PM</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
     </div>
   </section>
 
@@ -220,169 +241,169 @@
 
   <script type="module" src="/src/index.js"></script>
   <script type="module">
-                                        const ready = setInterval(() => {
-                                          if (!window.__globe) return;
-                                          clearInterval(ready);
-                                          const { stage, layout } = window.__globe;
-                                          const state = {
-                                            gridStep: 10,
-                                            gridAlpha: 0.13,
-                                            dotStep: 2.4,
-                                            landSize: 2,
-                                            oceanSize: 1.15,
-                                            oceanOpacity: 0.75,
-                                            rimAlpha: 0.28
-                                          };
-                                          const dc = document.getElementById("dc");
-                                          const showCount = () => {
-                                            dc.textContent = stage.dots.userData.stats.count;
-                                          };
-                                          showCount();
-                                          const bind = (id, out, apply) => {
-                                            const el = document.getElementById(id);
-                                            const lbl = document.getElementById(out);
-                                            el.addEventListener("input", () => {
-                                              const v = parseFloat(el.value);
-                                              lbl.textContent = v;
-                                              apply(v);
-                                              stage._needsResize = true;
+                                            const ready = setInterval(() => {
+                                              if (!window.__globe) return;
+                                              clearInterval(ready);
+                                              const { stage, layout } = window.__globe;
+                                              const state = {
+                                                gridStep: 10,
+                                                gridAlpha: 0.13,
+                                                dotStep: 2.4,
+                                                landSize: 2,
+                                                oceanSize: 1.15,
+                                                oceanOpacity: 0.75,
+                                                rimAlpha: 0.28
+                                              };
+                                              const dc = document.getElementById("dc");
+                                              const showCount = () => {
+                                                dc.textContent = stage.dots.userData.stats.count;
+                                              };
+                                              showCount();
+                                              const bind = (id, out, apply) => {
+                                                const el = document.getElementById(id);
+                                                const lbl = document.getElementById(out);
+                                                el.addEventListener("input", () => {
+                                                  const v = parseFloat(el.value);
+                                                  lbl.textContent = v;
+                                                  apply(v);
+                                                  stage._needsResize = true;
+                                                });
+                                              };
+                                              const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
+                                              bind("r", "rv", (v) => layout.radiusScale = v);
+                                              bind("c", "cv", (v) => layout.centerYFactor = v);
+                                              bind("la", "lav", (v) => {
+                                                layout.cameraLat = v;
+                                                aim();
+                                              });
+                                              bind("ln", "lnv", (v) => {
+                                                layout.cameraLng = v;
+                                                aim();
+                                              });
+                                              bind("gs", "gsv", (v) => {
+                                                state.gridStep = v;
+                                                stage.setGrid({ latStep: v, lngStep: v });
+                                              });
+                                              bind("ga", "gav", (v) => {
+                                                state.gridAlpha = v;
+                                                stage.grid.material.uniforms.uOpacity.value = v;
+                                              });
+                                              bind("ds", "dsv", (v) => {
+                                                state.dotStep = v;
+                                                stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
+                                                showCount();
+                                              });
+                                              bind("lsz", "lszv", (v) => {
+                                                state.landSize = v;
+                                                stage.dots.material.uniforms.uLandSize.value = v;
+                                              });
+                                              bind("osz", "oszv", (v) => {
+                                                state.oceanSize = v;
+                                                stage.dots.material.uniforms.uOceanSize.value = v;
+                                              });
+                                              bind("oa", "oav", (v) => {
+                                                state.oceanOpacity = v;
+                                                stage.dots.material.uniforms.uOceanOpacity.value = v;
+                                              });
+                                              bind("ra", "rav", (v) => {
+                                                state.rimAlpha = v;
+                                                stage.rim.material.opacity = v;
+                                              });
+                                              const flow = window.__globe.flow;
+                                          const route = stage.routes[0];
+                                    
+                                          if (flow && route) {
+                                            const scrub = document.getElementById("sc");
+                                            const scrubLabel = document.getElementById("scv");
+                                            scrub.max = String(flow.duration);
+                                            scrub.step = "0.01";
+                                    
+                                            let scrubbing = false;
+                                            scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
+                                            scrub.addEventListener("pointerup", () => { scrubbing = false; });
+                                            scrub.addEventListener("input", () => {
+                                              flow.seek(parseFloat(scrub.value));
+                                              scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
                                             });
-                                          };
-                                          const aim = () => stage.globeCam.lookAtLatLng(layout.cameraLat, layout.cameraLng);
-                                          bind("r", "rv", (v) => layout.radiusScale = v);
-                                          bind("c", "cv", (v) => layout.centerYFactor = v);
-                                          bind("la", "lav", (v) => {
-                                            layout.cameraLat = v;
-                                            aim();
-                                          });
-                                          bind("ln", "lnv", (v) => {
-                                            layout.cameraLng = v;
-                                            aim();
-                                          });
-                                          bind("gs", "gsv", (v) => {
-                                            state.gridStep = v;
-                                            stage.setGrid({ latStep: v, lngStep: v });
-                                          });
-                                          bind("ga", "gav", (v) => {
-                                            state.gridAlpha = v;
-                                            stage.grid.material.uniforms.uOpacity.value = v;
-                                          });
-                                          bind("ds", "dsv", (v) => {
-                                            state.dotStep = v;
-                                            stage.setDots({ lattice: { latStep: v, latMin: -58, latMax: 82, lngStep: v } });
-                                            showCount();
-                                          });
-                                          bind("lsz", "lszv", (v) => {
-                                            state.landSize = v;
-                                            stage.dots.material.uniforms.uLandSize.value = v;
-                                          });
-                                          bind("osz", "oszv", (v) => {
-                                            state.oceanSize = v;
-                                            stage.dots.material.uniforms.uOceanSize.value = v;
-                                          });
-                                          bind("oa", "oav", (v) => {
-                                            state.oceanOpacity = v;
-                                            stage.dots.material.uniforms.uOceanOpacity.value = v;
-                                          });
-                                          bind("ra", "rav", (v) => {
-                                            state.rimAlpha = v;
-                                            stage.rim.material.opacity = v;
-                                          });
-                                          const flow = window.__globe.flow;
-                                      const route = stage.routes[0];
-                                
-                                      if (flow && route) {
-                                        const scrub = document.getElementById("sc");
-                                        const scrubLabel = document.getElementById("scv");
-                                        scrub.max = String(flow.duration);
-                                        scrub.step = "0.01";
-                                
-                                        let scrubbing = false;
-                                        scrub.addEventListener("pointerdown", () => { scrubbing = true; flow.pause(); });
-                                        scrub.addEventListener("pointerup", () => { scrubbing = false; });
-                                        scrub.addEventListener("input", () => {
-                                          flow.seek(parseFloat(scrub.value));
-                                          scrubLabel.textContent = parseFloat(scrub.value).toFixed(2) + "s";
-                                        });
-                                
-                                        stage.onFrame(() => {
-                                          if (!scrubbing) {
-                                            scrub.value = String(flow.time);
-                                            scrubLabel.textContent = flow.time.toFixed(2) + "s";
+                                    
+                                            stage.onFrame(() => {
+                                              if (!scrubbing) {
+                                                scrub.value = String(flow.time);
+                                                scrubLabel.textContent = flow.time.toFixed(2) + "s";
+                                              }
+                                            });
+                                    
+                                            const playpause = document.getElementById("playpause");
+                                            playpause.addEventListener("click", () => {
+                                              if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
+                                              else { flow.play(); playpause.textContent = "pause"; }
+                                            });
+                                            document.getElementById("replay").addEventListener("click", () => {
+                                              flow.restart();
+                                              playpause.textContent = "pause";
+                                            });
+                                            document.getElementById("lp").addEventListener("change", (e) => {
+                                              flow.loop = e.target.checked;
+                                            });
+                                    
+                                            let speed = 1;
+                                            bind("sp", "spv", (v) => { speed = v; });
+                                            const rawAdvance = flow.advance.bind(flow);
+                                            flow.advance = (dt) => rawAdvance(dt * speed);
+                                    
+                                            bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
+                                            bind("aw", "awv", (v) => {
+                                              state.arcWidth = v;
+                                              stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
+                                            });
+                                            bind("dw", "dwv", (v) => {
+                                              state.dropWidth = v;
+                                              stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
+                                            });
+                                            bind("aa", "aav", (v) => {
+                                      state.arcBaseOpacity = v;
+                                      stage.routes[0].arcMaterial.uniforms.uBaseOpacity.value = v;
+                                    });
+                                    bind("dl", "dlv", (v) => {
+                                              state.tailLength = v;
+                                              for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
+                                                m.uniforms.uTailLength.value = v;
+                                              }
+                                            });
                                           }
-                                        });
-                                
-                                        const playpause = document.getElementById("playpause");
-                                        playpause.addEventListener("click", () => {
-                                          if (flow.playing) { flow.pause(); playpause.textContent = "play"; }
-                                          else { flow.play(); playpause.textContent = "pause"; }
-                                        });
-                                        document.getElementById("replay").addEventListener("click", () => {
-                                          flow.restart();
-                                          playpause.textContent = "pause";
-                                        });
-                                        document.getElementById("lp").addEventListener("change", (e) => {
-                                          flow.loop = e.target.checked;
-                                        });
-                                
-                                        let speed = 1;
-                                        bind("sp", "spv", (v) => { speed = v; });
-                                        const rawAdvance = flow.advance.bind(flow);
-                                        flow.advance = (dt) => rawAdvance(dt * speed);
-                                
-                                        bind("al", "alv", (v) => { state.arcLift = v; rebuildRoute({ lift: v }); });
-                                        bind("aw", "awv", (v) => {
-                                          state.arcWidth = v;
-                                          stage.routes[0].arcMaterial.uniforms.uWidth.value = v;
-                                        });
-                                        bind("dw", "dwv", (v) => {
-                                          state.dropWidth = v;
-                                          stage.routes[0].dropMaterial.uniforms.uWidth.value = v;
-                                        });
-                                        bind("aa", "aav", (v) => {
-                                  state.arcBaseOpacity = v;
-                                  stage.routes[0].arcMaterial.uniforms.uBaseOpacity.value = v;
-                                });
-                                bind("dl", "dlv", (v) => {
-                                          state.tailLength = v;
-                                          for (const m of [stage.routes[0].arcMaterial, stage.routes[0].dropMaterial]) {
-                                            m.uniforms.uTailLength.value = v;
+                                    
+                                          function rebuildRoute(opts) {
+                                            const old = stage.routes[0];
+                                            if (!old) return;
+                                            stage.scene.remove(old.group);
+                                            old.dispose();
+                                            stage.routes.length = 0;
+                                            const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
+                                              lift: opts.lift ?? state.arcLift,
+                                              width: state.arcWidth,
+                                              dropWidth: state.dropWidth,
+                                              tailLength: state.tailLength,
+                                            });
+                                            window.__globe.flow.route = next;
+                                            window.__globe.flow.seek(window.__globe.flow.time);
                                           }
-                                        });
-                                      }
-                                
-                                      function rebuildRoute(opts) {
-                                        const old = stage.routes[0];
-                                        if (!old) return;
-                                        stage.scene.remove(old.group);
-                                        old.dispose();
-                                        stage.routes.length = 0;
-                                        const next = stage.addRoute(window.__globe.places[0], window.__globe.places[1], {
-                                          lift: opts.lift ?? state.arcLift,
-                                          width: state.arcWidth,
-                                          dropWidth: state.dropWidth,
-                                          tailLength: state.tailLength,
-                                        });
-                                        window.__globe.flow.route = next;
-                                        window.__globe.flow.seek(window.__globe.flow.time);
-                                      }
-                                
-                                      document.getElementById("dump").addEventListener("click", () => {
-                                            const out = JSON.stringify({ layout, ...state }, null, 2);
-                                            navigator.clipboard?.writeText(out);
-                                            console.log("[globe] tuned values", out);
-                                          });
-                                          let n = 0, last = performance.now();
-                                          const fps = document.getElementById("fps");
-                                          stage.onFrame((t) => {
-                                            n++;
-                                            if (t - last > 500) {
-                                              fps.textContent = Math.round(n * 1e3 / (t - last));
-                                              n = 0;
-                                              last = t;
-                                            }
-                                          });
-                                        }, 50);
+                                    
+                                          document.getElementById("dump").addEventListener("click", () => {
+                                                const out = JSON.stringify({ layout, ...state }, null, 2);
+                                                navigator.clipboard?.writeText(out);
+                                                console.log("[globe] tuned values", out);
+                                              });
+                                              let n = 0, last = performance.now();
+                                              const fps = document.getElementById("fps");
+                                              stage.onFrame((t) => {
+                                                n++;
+                                                if (t - last > 500) {
+                                                  fps.textContent = Math.round(n * 1e3 / (t - last));
+                                                  n = 0;
+                                                  last = t;
+                                                }
+                                              });
+                                            }, 50);
   </script>
 </body>
 </html>

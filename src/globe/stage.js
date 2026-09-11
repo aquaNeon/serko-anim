@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GlobeCamera } from "./camera.js";
+import { GlobeCamera, angularDistance, midpoint } from "./camera.js";
 import { createDots } from "./dots.js";
 import { createGrid } from "./grid.js";
 import { createRim } from "./rim.js";
@@ -83,20 +83,39 @@ class Stage {
       this._size = { w, h, dpr };
       this.dots.material.uniforms.uPixelRatio.value = dpr;
     }
-    let radiusPx = anchorRect.width * this.layout.radiusScale;
-    if (this.layout.radiusMaxVh > 0) {
-      const vh = window.innerHeight || rect.height || 1;
-      radiusPx = Math.min(radiusPx, vh * this.layout.radiusMaxVh);
-    }
     const anchorTop = anchorRect.top - rect.top;
-    let centerY = anchorTop + radiusPx * this.layout.centerYFactor;
-    if (this.layout.apexClearance !== null) {
-      centerY = Math.max(centerY, anchorTop + this.layout.apexClearance + radiusPx);
+    const centerX = anchorRect.left - rect.left + anchorRect.width / 2;
+    let radiusPx;
+    let centerY;
+
+    if (this.layout.fitRoute > 0 && this.route) {
+      const { from, to } = this.route;
+      const theta = angularDistance(from.lat, from.lng, to.lat, to.lng);
+      const span = Math.max(1, w * this.layout.fitRoute);
+      radiusPx = span / (2 * Math.max(1e-6, Math.sin(theta / 2)));
+
+      const mid = midpoint(from.lat, from.lng, to.lat, to.lng);
+      this.globeCam.lookAtLatLng(mid.lat, mid.lng);
+
+      this.globeCam.layout(w, h, { x: centerX, y: 0 }, radiusPx);
+      const a = this.globeCam.project(from.lat, from.lng);
+      const b = this.globeCam.project(to.lat, to.lng);
+      const routeMidY = (a.y + b.y) / 2;
+      const band = anchorRect.height || h;
+      centerY = anchorTop + band * this.layout.routeY - routeMidY;
+    } else {
+      radiusPx = anchorRect.width * this.layout.radiusScale;
+      if (this.layout.radiusMaxVh > 0) {
+        const vh = window.innerHeight || rect.height || 1;
+        radiusPx = Math.min(radiusPx, vh * this.layout.radiusMaxVh);
+      }
+      centerY = anchorTop + radiusPx * this.layout.centerYFactor;
+      if (this.layout.apexClearance !== null) {
+        centerY = Math.max(centerY, anchorTop + this.layout.apexClearance + radiusPx);
+      }
     }
-    const centerPx = {
-      x: anchorRect.left - rect.left + anchorRect.width / 2,
-      y: centerY
-    };
+
+    const centerPx = { x: centerX, y: centerY };
     this.globeCam.layout(w, h, centerPx, radiusPx);
     const [lo, hi] = SIZE_SCALE_RANGE;
     this.dots.material.uniforms.uSizeScale.value = Math.min(
@@ -118,6 +137,7 @@ class Stage {
 
   addRoute(from, to, opts) {
     const route = new Route(from, to, opts);
+    this.route = { from, to };
     this.routes.push(route);
     this.scene.add(route.group);
     this._needsResize = true;
