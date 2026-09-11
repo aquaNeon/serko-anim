@@ -30,7 +30,7 @@ export const SEQUENCE = [
     selector: '.hero1_profile_route_wrap',
     lat: 37.7749,
     lng: -122.4194,
-    offsetY: 6,
+    offsetY: -31,
     reparent: true,
     in: 4.6,
     out: 8.4,
