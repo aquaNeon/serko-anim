@@ -103,6 +103,9 @@ Layout can be overridden per-site on the root element:
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
+| `data-ref-width` | `1440` | the width the globe's size is designed against |
+| `data-scale-min` | `0.9` | never shrink below this fraction - crop instead |
+| `data-scale-max` | `1` | never grow above this fraction |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
@@ -256,3 +259,32 @@ set margin, rather than something that drifts as the screen changes.
 It works alongside `data-fit-route`: the route still sets the globe's size,
 while the clearance sets its vertical position. When both are set, clearance
 wins over `data-route-y`.
+
+
+## Holding the globe's size
+
+Deriving the size from the current viewport makes the globe shrink on every
+narrow screen, which reads as the whole scene zooming out. Usually you want the
+opposite: the globe stays the size it was designed at and the viewport simply
+shows less of it.
+
+`data-ref-width` is the width the size is designed against; `data-scale-min`
+and `data-scale-max` bound how far it may deviate:
+
+```html
+<div id="globe-root" data-full-bleed data-fit-route="0.30"
+     data-ref-width="1440" data-scale-min="0.9">
+```
+
+At or above the reference width the globe is exactly its designed size. Below
+it, it shrinks at most to `data-scale-min` and is cropped the rest of the way.
+Set `data-scale-min="1"` to never shrink at all.
+
+## Escaping a clipping container
+
+`data-full-bleed` widens the canvas, but a parent with `overflow: hidden` still
+clips it - which is easy to miss, because the canvas really is the right size.
+
+The canvas is therefore also **moved** above any clipping ancestor narrower than
+the window. Everything positional still comes from `#globe-root` where you put
+it, so the bottom crops where your layout says and the sides do not.

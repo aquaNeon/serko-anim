@@ -17,6 +17,9 @@ const DEFAULT_LAYOUT = {
   spin: 0,
   aimAtRoute: false,
   fullBleed: false,
+  refWidth: 1440,
+  scaleMin: 0.9,
+  scaleMax: 1,
   radiusMaxVh: 0,
   apexClearance: null
 };
@@ -61,6 +64,9 @@ function readLayout(rootEl) {
     spin: num(rootEl, "data-spin", DEFAULT_LAYOUT.spin),
     aimAtRoute: rootEl.hasAttribute("data-aim-at-route"),
     fullBleed: rootEl.hasAttribute("data-full-bleed"),
+    refWidth: num(rootEl, "data-ref-width", DEFAULT_LAYOUT.refWidth),
+    scaleMin: num(rootEl, "data-scale-min", DEFAULT_LAYOUT.scaleMin),
+    scaleMax: num(rootEl, "data-scale-max", DEFAULT_LAYOUT.scaleMax),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)

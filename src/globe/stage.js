@@ -82,17 +82,48 @@ class Stage {
   project(lat, lng, surfaceOffset = 0) {
     return this.globeCam.project(lat, lng, surfaceOffset);
   }
+  _bleedHost(targetWidth) {
+    let outermost = null;
+    let node = this.root.parentElement;
+    while (node && node !== document.body) {
+      const cs = getComputedStyle(node);
+      const clips = cs.overflowX !== "visible" || cs.overflowY !== "visible";
+      if (clips && node.getBoundingClientRect().width < targetWidth - 1) {
+        outermost = node;
+      }
+      node = node.parentElement;
+    }
+    if (!outermost || !outermost.parentElement) return this.root;
+    return outermost.parentElement;
+  }
+
   _applyLayout() {
     const rootRect = this.root.getBoundingClientRect();
     const anchorRect = this.anchor.getBoundingClientRect();
+    const bleed = this.layout.fullBleed;
+    const vw = document.documentElement.clientWidth || rootRect.width;
 
-    const vw = window.innerWidth || rootRect.width;
-    const bleedLeft = this.layout.fullBleed ? rootRect.left : 0;
-    const boxWidth = this.layout.fullBleed ? vw : rootRect.width;
-    this.box.style.left = `${-bleedLeft}px`;
+    let host = this.root;
+    if (bleed) {
+      host = this._bleedHost(vw);
+      if (host !== this.box.parentElement) {
+        if (host !== this.root && getComputedStyle(host).position === "static") {
+          host.style.position = "relative";
+        }
+        host.appendChild(this.box);
+      }
+    }
+
+    const hostRect = host.getBoundingClientRect();
+    const boxWidth = bleed ? vw : rootRect.width;
+    const boxLeft = bleed ? -hostRect.left : 0;
+    this.box.style.left = `${boxLeft}px`;
+    this.box.style.top = `${bleed ? rootRect.top - hostRect.top : 0}px`;
     this.box.style.width = `${boxWidth}px`;
+    this.box.style.height = `${rootRect.height}px`;
 
-    const rect = { left: rootRect.left - bleedLeft, top: rootRect.top,
+    const bleedLeft = bleed ? rootRect.left : 0;
+    const rect = { left: 0, top: rootRect.top,
                    width: boxWidth, height: rootRect.height };
     const w = Math.max(1, Math.round(rect.width));
     const h = Math.max(1, Math.round(rect.height));
@@ -103,8 +134,10 @@ class Stage {
       this._size = { w, h, dpr };
       this.dots.material.uniforms.uPixelRatio.value = dpr;
     }
-    const anchorTop = anchorRect.top - rect.top;
-    const centerX = anchorRect.left - rootRect.left + bleedLeft + anchorRect.width / 2;
+    const anchorTop = anchorRect.top - rootRect.top;
+    const centerX = bleed
+      ? anchorRect.left + anchorRect.width / 2
+      : anchorRect.left - rootRect.left + anchorRect.width / 2;
     let radiusPx;
     let centerY;
 
@@ -121,8 +154,13 @@ class Stage {
       const ub = this.globeCam.project(to.lat, to.lng);
       const perUnit = Math.hypot(ub.x - ua.x, ub.y - ua.y);
 
-      const span = Math.max(1, w * this.layout.fitRoute);
-      radiusPx = span / Math.max(1e-6, perUnit);
+      const ref = this.layout.refWidth || w;
+      const span = Math.max(1, ref * this.layout.fitRoute);
+      const scale = Math.min(
+        this.layout.scaleMax,
+        Math.max(this.layout.scaleMin, w / ref)
+      );
+      radiusPx = (span / Math.max(1e-6, perUnit)) * scale;
 
       const unitMidY = (ua.y + ub.y) / 2;
       if (this.layout.apexClearance !== null) {
