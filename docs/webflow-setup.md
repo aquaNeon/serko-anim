@@ -474,3 +474,17 @@ Give the bar its width directly. It used to be measured from its content, back
 when typing emptied the element and the bar would otherwise collapse - now that
 the words reveal by opacity the text never leaves, so there is nothing to
 measure around and a plain width is both simpler and stable.
+
+
+## Lines that share the bar
+
+Every line of the search bar exists in the DOM from the start. Left in normal
+flow they sit side by side and the bar measures wide enough to hold all of them
+at once - which is why it grew each time a line was added.
+
+Lines that occupy the same place are therefore collected into a slot: the slot
+is measured to its widest line and its children are stacked absolutely inside
+it, so the bar is only ever as wide as one line.
+
+This is handled by the sequence, not by CSS - the prompts share one slot and the
+saved preferences another. Nothing needs setting in Webflow.

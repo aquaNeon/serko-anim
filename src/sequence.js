@@ -13,6 +13,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_text_wrap',
+    group: 'lines',
     noWrap: true,
     in: 0.6,
     out: 6.2,
@@ -62,6 +63,7 @@ export const SEQUENCE = [
       insertAfter: '.hero1_profile_choice_check',
       text: 'No early mornings',
       classes: ['hero1_profile_choice_pref'],
+      group: 'prefs',
     },
     in: 7.0,
     out: 8.6,
@@ -78,6 +80,7 @@ export const SEQUENCE = [
       insertAfter: '.hero1_profile_choice_check',
       text: 'Premium economy',
       classes: ['hero1_profile_choice_pref'],
+      group: 'prefs',
     },
     in: 9.1,
     out: 11.0,
@@ -94,6 +97,7 @@ export const SEQUENCE = [
       insertAfter: '.hero1_profile_choice_check',
       text: 'Walkable location',
       classes: ['hero1_profile_choice_pref'],
+      group: 'prefs',
     },
     in: 15.2,
     out: 16.9,
@@ -110,6 +114,7 @@ export const SEQUENCE = [
       insertAfter: '.hero1_profile_choice_check',
       text: 'Mid-range price',
       classes: ['hero1_profile_choice_pref'],
+      group: 'prefs',
     },
     in: 17.1,
     dur: 0.34,
@@ -119,6 +124,7 @@ export const SEQUENCE = [
   },
   {
     selector: '.hero1_profile_choice_hotel',
+    group: 'lines',
     noWrap: true,
     in: 11.7,
     out: 14.7,
@@ -185,11 +191,54 @@ function ownedClasses(sequence) {
   return owned
 }
 
+function groupSlot(root, name, anchorSel, fallbackEl) {
+  const doc = root.ownerDocument || document
+  const existing = root.querySelector('.globe-slot-' + name)
+  if (existing) return existing
+
+  const anchor = (anchorSel ? root.querySelector(anchorSel) : null) || fallbackEl
+  if (!anchor || !anchor.parentNode) return null
+
+  const slot = doc.createElement('div')
+  slot.className = 'globe-slot globe-slot-' + name
+  slot.style.position = 'relative'
+  slot.style.flex = '0 0 auto'
+  slot.style.alignSelf = 'stretch'
+  anchor.parentNode.insertBefore(slot, anchor.nextSibling)
+  return slot
+}
+
+function sizeGroupSlots(root) {
+  for (const slot of root.querySelectorAll('.globe-slot')) {
+    const kids = Array.from(slot.children)
+    let widest = 0
+    for (const kid of kids) {
+      const savedDisplay = kid.style.display
+      const savedVis = kid.style.visibility
+      kid.style.position = 'static'
+      kid.style.display = 'inline-flex'
+      kid.style.visibility = 'hidden'
+      widest = Math.max(widest, kid.offsetWidth)
+      kid.style.visibility = savedVis
+      kid.style.display = savedDisplay
+    }
+    for (const kid of kids) {
+      kid.style.position = 'absolute'
+      kid.style.top = '0'
+      kid.style.bottom = '0'
+      kid.style.left = '0'
+      kid.style.alignItems = 'center'
+      if (!kid.dataset.globeDisplay) kid.dataset.globeDisplay = 'flex'
+    }
+    if (widest) slot.style.width = `${Math.ceil(widest)}px`
+  }
+}
+
 function createElement(entry, root, owned) {
-  const { cloneFrom, appendTo, insertAfter, text, style, classes } = entry.create
+  const { cloneFrom, appendTo, insertAfter, text, style, classes, group } = entry.create
   const parent = appendTo ? root.querySelector(appendTo) : null
   const sibling = insertAfter ? root.querySelector(insertAfter) : null
-  if (!parent && !sibling) return null
+  if (!parent && !sibling && !group) return null
 
   const template = cloneFrom ? root.querySelector(cloneFrom) : null
   const el = template
@@ -214,7 +263,10 @@ function createElement(entry, root, owned) {
   if (style) Object.assign(el.style, style)
   el.style.display = 'none'
 
-  if (sibling && sibling.parentNode) {
+  const slot = group ? groupSlot(root, group, insertAfter) : null
+  if (slot) {
+    slot.appendChild(el)
+  } else if (sibling && sibling.parentNode) {
     sibling.parentNode.insertBefore(el, sibling.nextSibling)
   } else {
     parent.appendChild(el)
@@ -246,6 +298,11 @@ export function applySequence(sequence = SEQUENCE, root = document) {
     for (const el of nodes) {
       const offset = entry.stagger ? index * entry.stagger : 0
       index++
+      if (entry.group && !entry.create) {
+        const slot = groupSlot(root, entry.group, entry.groupAfter || null, el)
+        if (slot && el.parentNode !== slot) slot.appendChild(el)
+      }
+
       if (!entry.layoutOnly) {
         const marker = entry.lat !== undefined ? 'data-globe-pin' : 'data-globe-cue'
         if (!el.hasAttribute('data-globe-cue') && !el.hasAttribute('data-globe-pin')) {
@@ -267,6 +324,8 @@ export function applySequence(sequence = SEQUENCE, root = document) {
       applied.push(entry.selector)
     }
   }
+
+  sizeGroupSlots(root)
 
   if (missing.length) {
     console.warn(
