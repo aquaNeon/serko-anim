@@ -73,11 +73,17 @@ export class Pin {
 
     layer.appendChild(this.el)
     this._amount = 0
+    this._pill = 1
     this.setAmount(0)
   }
 
   setAmount(a) {
     this._amount = a
+    return this
+  }
+
+  setPill(p) {
+    this._pill = p
     return this
   }
 
@@ -113,9 +119,10 @@ export class Pin {
     this.el.style.opacity = String(clamped * limb)
     this.el.style.transform = `translate(${p.x}px, ${p.y}px)`
 
-    const shape = easeOutCubic(clamp01((clamped - 0.3) / 0.7))
-    const text = clamp01((clamped - 0.55) / 0.45)
-    const puff = clamp01(clamped / 0.3)
+    const pill = clamp01(this._pill) * clamped
+    const shape = easeOutCubic(clamp01((pill - 0.3) / 0.7))
+    const text = clamp01((pill - 0.55) / 0.45)
+    const puff = clamp01(pill / 0.3)
 
     const width = Math.round(
       this.circleWidth + (this.fullWidth - this.circleWidth) * shape

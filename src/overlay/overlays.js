@@ -46,6 +46,7 @@ function parse(el) {
     strokes: null,
     kids: null,
     kidStep: 0.12,
+    growFrom: 0.6,
     exitWidth: null,
     baseMinWidth: '',
     baseMaxWidth: '',
@@ -73,6 +74,7 @@ function parse(el) {
       : Array.from(el.children)
     item.kids = kids
     item.kidStep = num(el, 'data-stagger', 0.12)
+    item.growFrom = num(el, 'data-grow-from', 0.6)
     for (const k of kids) {
       k.style.willChange = 'transform, opacity'
     }
@@ -289,9 +291,9 @@ export class Overlays {
     } else if (item.anim === 'draw') {
       opacity = enter > 0 ? 1 - exit : 0
     } else if (item.anim === 'grow') {
-      const body = easeOutCubic(clamp01(enter / 0.45))
-      scale = body
-      opacity = clamp01(enter / 0.2) * (1 - exit)
+      const body = easeOutCubic(clamp01(enter / 0.5))
+      scale = item.growFrom + (1 - item.growFrom) * body
+      opacity = clamp01(enter / 0.25) * (1 - exit)
       this._stagger(item, enter, exit)
     }
 
@@ -305,15 +307,11 @@ export class Overlays {
       const limb = Math.min(1, p.depth / 0.12)
       opacity *= limb
       const h = item.slotHeight || el.offsetHeight || 0
-      const fit = item.anim === 'grow' ? `scaleY(${scale})` : `scale(${scale})`
       el.style.transform =
-        `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) ${fit}`
+        `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) scale(${scale})`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
     } else {
-      const t = item.anim === 'grow'
-        ? `translate(${dx}px, ${dy}px) scaleY(${scale})`
-        : `translate(${dx}px, ${dy}px) scale(${scale})`
-      el.style.transform = t
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
     }
 

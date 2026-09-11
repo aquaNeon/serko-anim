@@ -341,9 +341,12 @@ its children in one after another:
 <div class="hero1_profile_route_wrap" data-anim="grow" data-stagger="0.12">
 ```
 
-The scale is deliberately quick - it is done in the first 45% of the duration -
-so the element establishes itself and the contents then arrive into a box that
-has already stopped moving.
+The element scales up uniformly from `data-grow-from` (60% by default) with
+opacity, and is at full size by halfway through the duration - so it settles
+before the contents arrive.
+
+An earlier version scaled on Y only, which squashed the card's contents on the
+way in and read as a masking artefact rather than an entrance.
 
 `data-stagger` is the gap between children as a fraction of the duration.
 `data-stagger-target` takes a selector if only some descendants should stagger
@@ -361,3 +364,10 @@ The positioning is now reset when the card is adopted, and a warning names the
 element, but it is cleaner to remove it in the Designer. Style the card however
 you like - size, padding, colours, the layout of its contents - just leave its
 position alone.
+
+
+| Attribute | Default | |
+|---|---|---|
+| `data-grow-from` | `0.6` | scale the `grow` animation starts from |
+| `data-stagger` | `0.12` | gap between children, as a fraction of the duration |
+| `data-stagger-target` | direct children | selector for which descendants stagger |

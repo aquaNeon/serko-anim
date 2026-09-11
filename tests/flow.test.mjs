@@ -14,7 +14,9 @@ function fakeRoute() {
 function fakePin() {
   return {
     amount: 0,
+    pill: 1,
     setAmount(v) { this.amount = v; return this },
+    setPill(v) { this.pill = v; return this },
   }
 }
 
@@ -144,4 +146,33 @@ test('a custom beat list overrides the default', () => {
   assert.equal(flow.duration, 2)
   flow.seek(1)
   assert.ok(Math.abs(route.progress - 0.5) < 1e-9)
+})
+
+test('the pill closes while the dot and stem stay put', () => {
+  const { flow, originPin } = makeFlow()
+
+  flow.seek(0)
+  const early = { amount: originPin.amount, pill: originPin.pill }
+
+  let closed = null
+  for (let t = 0; t <= flow.duration; t += 0.02) {
+    flow.seek(t)
+    if (closed === null && originPin.pill < 0.02 && originPin.amount > 0.98) {
+      closed = +t.toFixed(2)
+    }
+  }
+  assert.ok(closed !== null,
+    'there must be a moment where the pill is gone but the pin is not')
+  assert.ok(early.amount >= 0)
+})
+
+test('the pin itself is never hidden by the card appearing', () => {
+  const { flow, originPin, destPin } = makeFlow()
+  let minAfterEntry = 1
+  for (let t = 1.2; t <= flow.duration; t += 0.02) {
+    flow.seek(t)
+    minAfterEntry = Math.min(minAfterEntry, originPin.amount)
+  }
+  assert.ok(minAfterEntry > 0.98,
+    `origin pin dipped to ${minAfterEntry}; the dot and stem should stay`)
 })

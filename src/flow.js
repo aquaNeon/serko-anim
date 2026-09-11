@@ -18,10 +18,10 @@ export const DEFAULT_BEATS = [
   { track: 'arcDraw', at: 0.65, dur: 1.5, from: 0, to: 1, ease: 'inOutCubic' },
   { track: 'destPin', at: 2.05, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
   { track: 'dropHead', at: 2.6, dur: 1.8, from: 0, to: 1, ease: 'inOutCubic' },
-  { track: 'originPin', at: 1.4, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
-  { track: 'originPin', at: 5.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
-  { track: 'destPin', at: 9.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
-  { track: 'destPin', at: 13.7, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+  { track: 'originPill', at: 1.4, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
+  { track: 'originPill', at: 5.6, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+  { track: 'destPill', at: 9.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
+  { track: 'destPill', at: 13.7, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
 ]
 
 export class Flow {
@@ -46,7 +46,10 @@ export class Flow {
       if (!(beat.track in this._initial)) this._initial[beat.track] = beat.from
     }
 
-    this.values = { originPin: 0, arcDraw: 0, dropHead: 0, destPin: 0 }
+    this.values = {
+      originPin: 0, arcDraw: 0, dropHead: 0, destPin: 0,
+      originPill: 1, destPill: 1
+    }
     Object.assign(this.values, this._initial)
     this._apply()
   }
@@ -108,8 +111,8 @@ export class Flow {
     const v = this.values
     this.route.setProgress(v.arcDraw)
     this.route.setHead(v.dropHead)
-    if (this.originPin) this.originPin.setAmount(v.originPin)
-    if (this.destPin) this.destPin.setAmount(v.destPin)
+    if (this.originPin) this.originPin.setAmount(v.originPin).setPill(v.originPill)
+    if (this.destPin) this.destPin.setAmount(v.destPin).setPill(v.destPill)
   }
 }
 
