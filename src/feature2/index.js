@@ -16,8 +16,7 @@ const CSS = `
 .f2-badge-confirmed{background:#d9f4e1;color:#23864a;opacity:0}
 .f2-soft{background-color:#eeeef3!important}
 .f2-soft,.f2-soft *{color:#121216!important}
-.f2-ring{position:absolute;inset:-5px;border-radius:999px;z-index:-1;opacity:0;pointer-events:none;background:linear-gradient(90deg,#ff8c51,#f489ad 45%,#9b7cf6);filter:blur(5px)}
-.f2-edge{position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.75);opacity:0;pointer-events:none}
+.f2-ring{position:absolute;inset:-3px;border-radius:999px;z-index:-1;opacity:0;pointer-events:none;background:linear-gradient(90deg,#ff8c51,#f489ad 45%,#9b7cf6);filter:blur(6px)}
 .f2-bg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;object-fit:cover;object-position:50% 100%;z-index:-1;pointer-events:none}
 .f2-pill{position:absolute;left:50%;top:50%;box-sizing:border-box;display:flex;align-items:center;gap:2.042em;padding:1.441em;opacity:0;pointer-events:none;font-size:10px;line-height:0}
 .f2-avatar{position:relative;flex:0 0 auto;width:7.35em;height:7.35em;border-radius:50%;overflow:hidden;background:#dedeea}
@@ -54,6 +53,7 @@ const DEFAULTS = {
 }
 
 const PILL = { w: 466.45, h: 102.32 }
+const GLASS_SHADOW = '0 0 0 0.97px rgba(0,0,0,.04), 0 2.92px 7.8px -1.95px rgba(0,0,0,.1), 0 0.97px 0.97px -0.97px rgba(0,0,0,.1)'
 const BARS = [10.01, 23.36, 33.37, 56.72, 33.37, 23.36, 23.36, 33.37, 40.04, 23.36, 23.36, 16.68, 10.01, 10.01, 10.01, 10.01]
 const CLOSE_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="#252525" stroke-width="2.4" stroke-linecap="round"/></svg>'
 
@@ -293,10 +293,6 @@ export class Feature2 {
       badge.className = 'f2-badge f2-badge-disrupted'
       badge.textContent = text(this.section, 'data-f2-disrupted-label', DEFAULTS.disruptedLabel)
       el.appendChild(badge)
-      const edge = doc.createElement('div')
-      edge.className = 'f2-edge'
-      el.appendChild(edge)
-      card.edge = edge
       if (card.button) {
         card.button.classList.add('f2-soft')
         setLabel(card.button, text(this.section, 'data-f2-soft-button', DEFAULTS.softButton))
@@ -305,6 +301,14 @@ export class Feature2 {
         card.button.appendChild(ring)
         card.ring = ring
       }
+    }
+
+    if (i === disrupted + 1) {
+      const hint = doc.createElement('div')
+      hint.className = 'f2-badge f2-badge-confirmed'
+      hint.textContent = text(this.section, 'data-f2-confirmed-label', DEFAULTS.confirmedLabel)
+      el.appendChild(hint)
+      card.hint = hint
     }
 
     if (i === focus) {
@@ -475,8 +479,7 @@ export class Feature2 {
       let z = 5
 
       if (d === 0) { opacity = 1; z = 20 }
-      else if (d === 1) { x = 12; y = -8; rot = 4; opacity = 1; z = 19 }
-      else if (d === 2) { x = 22; y = -14; rot = 8; opacity = 1; z = 18 }
+      else if (d === 1) { x = 16; y = -10; rot = 6; opacity = 0.5; z = 19 }
 
       const reach = Math.abs(d)
       const spread = win(u[1], 0.3 + 0.045 * reach, 0.85 + 0.03 * reach)
@@ -485,6 +488,7 @@ export class Feature2 {
       rot = lerp(rot, 0, spread)
       opacity = lerp(opacity, 1, win(u[1], 0.3 + 0.045 * reach, 0.6 + 0.045 * reach))
       if (spread > 0.5) z = 10
+      if (c.hint) c.hint.style.opacity = String(1 - spread)
 
       x -= slots * pitch * shift
 
@@ -543,13 +547,11 @@ export class Feature2 {
       }
 
       if (d === 0) {
-        const glass = win(u[1], 0.45, 0.95)
+        const glass = win(u[2], 0, 0.5)
         const [r, g, b] = c.bg
-        c.el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${lerp(1, 0.3, glass)})`
-        c.el.style.backdropFilter = `blur(${14 * glass}px)`
-        c.el.style.webkitBackdropFilter = `blur(${14 * glass}px)`
-        if (c.edge) c.edge.style.opacity = String(glass)
-        if (c.ring) c.ring.style.opacity = String(highlight * (1 - win(u[1], 0.4, 0.8)))
+        c.el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${lerp(1, 0.6, glass)})`
+        c.el.style.boxShadow = glass > 0 ? GLASS_SHADOW : ''
+        if (c.ring) c.ring.style.opacity = String(0.45 * highlight * (1 - win(u[1], 0.4, 0.8)))
       }
 
       s.width = `${width}px`
