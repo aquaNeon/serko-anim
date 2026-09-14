@@ -24,7 +24,11 @@ const DEFAULT_LAYOUT = {
   mobileScale: 1,
   mobileBelow: 768,
   radiusMaxVh: 0,
-  apexClearance: null
+  apexClearance: null,
+  drift: 4,
+  driftLat: 2,
+  driftEase: 3,
+  driftDirection: -1
 };
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr);
@@ -76,7 +80,13 @@ function readLayout(rootEl) {
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)
-      : DEFAULT_LAYOUT.apexClearance
+      : DEFAULT_LAYOUT.apexClearance,
+    drift: num(rootEl, "data-drift", DEFAULT_LAYOUT.drift),
+    driftLat: num(rootEl, "data-drift-lat", DEFAULT_LAYOUT.driftLat),
+    driftEase: num(rootEl, "data-drift-ease", DEFAULT_LAYOUT.driftEase),
+    driftDirection: (rootEl.getAttribute("data-drift-direction") || "").toLowerCase() === "same"
+      ? 1
+      : DEFAULT_LAYOUT.driftDirection
   };
 }
 export {

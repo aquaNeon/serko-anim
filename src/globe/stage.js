@@ -69,6 +69,43 @@ class Stage {
     this._raf = null;
     this._lastTime = 0;
     this.deltaSeconds = 0;
+    this._aim = null;
+    this._pointer = { x: 0, y: 0 };
+    this._drift = { x: 0, y: 0 };
+    this._onPointerMove = (e) => {
+      if (e.pointerType === "touch") return;
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      this._pointer.x = Math.max(-1, Math.min(1, (e.clientX / w) * 2 - 1));
+      this._pointer.y = Math.max(-1, Math.min(1, (e.clientY / h) * 2 - 1));
+    };
+    this._onPointerLeave = () => {
+      this._pointer.x = 0;
+      this._pointer.y = 0;
+    };
+    const reduced = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this._driftEnabled = !reduced && (layout.drift > 0 || layout.driftLat > 0);
+    if (this._driftEnabled) {
+      window.addEventListener("pointermove", this._onPointerMove, { passive: true });
+      document.documentElement.addEventListener("pointerleave", this._onPointerLeave);
+    }
+  }
+
+  _applyDrift() {
+    const dt = this.deltaSeconds;
+    const k = 1 - Math.exp(-this.layout.driftEase * dt);
+    const d = this._drift;
+    d.x += (this._pointer.x - d.x) * k;
+    d.y += (this._pointer.y - d.y) * k;
+    const base = this._aim || { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
+    const sign = this.layout.driftDirection;
+    const lat = Math.max(-89, Math.min(89, base.lat + sign * d.y * this.layout.driftLat));
+    const lng = base.lng - sign * d.x * this.layout.drift;
+    const cam = this.globeCam;
+    if (Math.abs(cam.lat - lat) < 1e-4 && Math.abs(cam.lng - lng) < 1e-4) return;
+    cam.lookAtLatLng(lat, lng);
+    this._syncCamDir();
   }
 
   onFrame(fn) {
@@ -147,7 +184,8 @@ class Stage {
         ? midpoint(from.lat, from.lng, to.lat, to.lng)
         : { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
       const lat = Math.max(-89, Math.min(89, aim.lat + this.layout.tilt));
-      this.globeCam.lookAtLatLng(lat, aim.lng + this.layout.spin);
+      this._aim = { lat, lng: aim.lng + this.layout.spin };
+      this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
 
       this.globeCam.layout(w, h, { x: centerX, y: 0 }, 1);
       const ua = this.globeCam.project(from.lat, from.lng);
@@ -263,6 +301,7 @@ class Stage {
       this.deltaSeconds = this._lastTime ? Math.min((t - this._lastTime) / 1000, 0.1) : 0;
       this._lastTime = t;
       if (this._needsResize) this._applyLayout();
+      if (this._driftEnabled) this._applyDrift();
       for (const fn of this._onFrame) fn(t, this);
       this.renderer.render(this.scene, this.globeCam.camera);
     };
@@ -279,6 +318,8 @@ class Stage {
     this._ro.disconnect();
     window.removeEventListener("resize", this._onWindowResize);
     window.removeEventListener("scroll", this._onWindowResize);
+    window.removeEventListener("pointermove", this._onPointerMove);
+    document.documentElement.removeEventListener("pointerleave", this._onPointerLeave);
     this.renderer.dispose();
     this.canvas.remove();
   }

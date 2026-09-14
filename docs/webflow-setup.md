@@ -108,6 +108,10 @@ Layout can be overridden per-site on the root element:
 | `data-mobile-below` | `768` | the width that counts as mobile |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
+| `data-drift` | `4` | degrees the globe turns horizontally with the mouse (`0` = off) |
+| `data-drift-lat` | `2` | degrees it turns vertically |
+| `data-drift-ease` | `3` | how fast it settles - higher is snappier |
+| `data-drift-direction` | `opposite` | `same` = the globe leans towards the mouse instead of away |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
