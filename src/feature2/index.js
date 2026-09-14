@@ -487,7 +487,7 @@ export class Feature2 {
       y = lerp(y, 0, spread)
       rot = lerp(rot, 0, spread)
       opacity = lerp(opacity, 1, win(u[1], 0.3 + 0.045 * reach, 0.6 + 0.045 * reach))
-      if (spread > 0.5) z = 10
+      if (spread > 0.5 && d !== 0) z = 10
       if (c.hint) c.hint.style.opacity = String(1 - spread)
 
       x -= slots * pitch * shift
@@ -547,7 +547,7 @@ export class Feature2 {
       }
 
       if (d === 0) {
-        const glass = win(u[2], 0, 0.5)
+        const glass = win(u[1], 0.7, 1)
         const [r, g, b] = c.bg
         c.el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${lerp(1, 0.6, glass)})`
         c.el.style.boxShadow = glass > 0 ? GLASS_SHADOW : ''
