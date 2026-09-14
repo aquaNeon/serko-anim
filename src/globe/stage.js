@@ -22,6 +22,11 @@ class Stage {
       height: "100%",
       pointerEvents: "none"
     });
+    if (layout.feather > 0) {
+      const mask = `linear-gradient(to bottom, #000 calc(100% - ${layout.feather}px), transparent 100%)`;
+      this.box.style.maskImage = mask;
+      this.box.style.webkitMaskImage = mask;
+    }
     rootEl.appendChild(this.box);
 
     this.canvas = document.createElement("canvas");

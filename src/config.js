@@ -28,7 +28,8 @@ const DEFAULT_LAYOUT = {
   drift: 4,
   driftLat: 2,
   driftEase: 3,
-  driftDirection: -1
+  driftDirection: -1,
+  feather: 120
 };
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr);
@@ -86,7 +87,8 @@ function readLayout(rootEl) {
     driftEase: num(rootEl, "data-drift-ease", DEFAULT_LAYOUT.driftEase),
     driftDirection: (rootEl.getAttribute("data-drift-direction") || "").toLowerCase() === "same"
       ? 1
-      : DEFAULT_LAYOUT.driftDirection
+      : DEFAULT_LAYOUT.driftDirection,
+    feather: num(rootEl, "data-feather", DEFAULT_LAYOUT.feather)
   };
 }
 export {

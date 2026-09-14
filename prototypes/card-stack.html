@@ -138,8 +138,8 @@ const VARIANTS = [
     name: 'G · Deck, one behind Paula',
     note: 'Only the active card shows above. The next card waits behind Paula, peeking over her top edge at low opacity, and rises up to become the active one.',
     style(rel) {
-      if (rel < -1) return { y: 70, s: 0.9, o: 0, z: 5 }
-      if (rel === -1) return { y: 43, s: 0.96, o: 0.5, z: 6, blur: 0.4, hide: true }
+      if (rel < -1) return { y: 75, s: 1, o: 0, z: 5 }
+      if (rel === -1) return { y: 45, s: 1, o: 0.5, z: 6, blur: 0.4, hide: true }
       if (rel === 0) return { y: -16, s: 1, o: 1, z: 12, ease: RISE, cdelay: 0.35, odur: 0.3 }
       if (rel === 1) return { y: -46, s: 1, o: 0, z: 11, ease: RISE, hide: true, cdur: 0.5 }
       return { y: -46, s: 1, o: 0, z: 0 }

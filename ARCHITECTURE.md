@@ -254,3 +254,10 @@ as parallax depth. `data-drift-direction="same"` flips it.
 | `data-drift-lat` | `2` (degrees, vertical) |
 | `data-drift-ease` | `3` (higher settles faster) |
 | `data-drift-direction` | `opposite` |
+
+## Bottom feather
+
+The canvas box carries a `mask-image` that fades its last `feather` pixels
+(`data-feather`, default 120) to transparent. It is a mask, not a gradient
+painted over the globe, so it is pure opacity: whatever sits behind the hero
+shows through and there is no colour to keep in sync with the background.

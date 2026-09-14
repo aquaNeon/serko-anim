@@ -4,12 +4,15 @@ import { readLayout, readPlaces } from './config.js'
 import { createDebugMarkers } from './overlay/debug.js'
 import { createPinLayer, Pin } from './overlay/pill.js'
 import { Overlays } from './overlay/overlays.js'
-import { SEQUENCE, GLOBE_START, applySequence } from './sequence.js'
+import { CardStack } from './overlay/stack.js'
+import { bootFeature2 } from './feature2/index.js'
+import { SEQUENCE, STACK, GLOBE_START, applySequence } from './sequence.js'
 import { Flow, prefersReducedMotion } from './flow.js'
 
 const ROOT_SELECTOR = '#globe-root'
 
 function boot() {
+  bootFeature2(document)
   const root = document.querySelector(ROOT_SELECTOR)
   if (!root) {
     console.warn(`[globe] no ${ROOT_SELECTOR} on the page`)
@@ -42,17 +45,21 @@ function boot() {
     })
 
     applySequence(SEQUENCE, document)
+    const stack = new CardStack(STACK, document)
     const overlays = new Overlays(stage, document)
-    if (overlays.maxTime > flow.duration) flow.duration = overlays.maxTime
+    const end = Math.max(overlays.maxTime, stack.maxTime)
+    if (end > flow.duration) flow.duration = end
 
     stage.onFrame((t, s) => {
       flow.advance(s.deltaSeconds)
       originPin.update(s)
       destPin.update(s)
       overlays.update(flow.time, s)
+      stack.update(flow.time)
     })
 
     window.__globeOverlays = overlays
+    window.__globeStack = stack
 
     if (prefersReducedMotion()) flow.complete()
     else flow.play()

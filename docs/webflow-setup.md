@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.3.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.4.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.3.0/dist/serko-globe.js"
-        integrity="sha384-ozkzDpVI0bRuC88XoXR5TN2YsGRGgIzzBJnchzGErIqY2iTZlOyBPN6YWAaLE3xV"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.4.0/dist/serko-globe.js"
+        integrity="sha384-xsf09Oxw72Xva+eEXM46i1UIMN0khXfw1N7aClR0/Wv6HDt/gtl2DD6gi/BVwnjZ"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -112,6 +112,7 @@ Layout can be overridden per-site on the root element:
 | `data-drift-lat` | `2` | degrees it turns vertically |
 | `data-drift-ease` | `3` | how fast it settles - higher is snappier |
 | `data-drift-direction` | `opposite` | `same` = the globe leans towards the mouse instead of away |
+| `data-feather` | `120` | px at the bottom of the globe that fade to transparent (`0` = hard edge) |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
@@ -492,3 +493,22 @@ it, so the bar is only ever as wide as one line.
 
 This is handled by the sequence, not by CSS - the prompts share one slot and the
 saved preferences another. Nothing needs setting in Webflow.
+
+## Feature 2 images
+
+`data-f2-panel` can sit on a transparent layout wrapper: while the element has no background and a single child, the script grows that child instead (on the site, `feature2_card_wrap_inner`). Its max-width sets the starting size; the script lifts the max-width once the box grows.
+
+The panel background is the first `<img>` in the panel that is not inside the card (or any element marked `data-f2-bg`). The original stays where it is, hidden, so the Designer layout is untouched; a copy behind the content covers the panel as it grows.
+
+The call pill's two photos come from the Designer. Add two images anywhere inside `[data-f2]` and give them:
+
+| Attribute | Image |
+| --- | --- |
+| `data-f2-avatar="a"` | left photo (sits on a `#DEDEEA` circle, so a cut-out works) |
+| `data-f2-avatar="b"` | right photo |
+
+Hide them in the Designer (`display: none`); the script moves them into the pill. A plain URL in `data-f2-avatar-a` / `data-f2-avatar-b` on the section also works. With neither, the pill uses the man profile logo (left) and the support photo (right) already uploaded to the site's assets.
+
+The card logos cycle heart, face, globe. The heart is whatever image sits in the Designer card; the face and globe are built in. To use a different set, put a comma-separated list of URLs in `data-f2-logos` on the section.
+
+Once the panel grows, the text and the cards (later the pill) move as one block, centred in the panel with `data-f2-text-gap` px between them (default `160`).

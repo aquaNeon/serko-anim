@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Feature 2 — scroll sequence</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #0b0b0c; background: #fff;
+  }
+
+  .filler {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #f6f6f8; color: #9a9aa3; font-size: 14px; letter-spacing: .02em;
+  }
+
+  .feature2_wrap { position: relative; }
+  .f2-pin { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #fff; }
+
+  .feature2_contain { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto;
+    padding: clamp(40px, 8vh, 88px) 24px 0; }
+  .feature2_header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .u-eyebrow-text { margin: 0; font-size: 13px; color: #55555c; }
+  .u-heading h2 { margin: 0; font-size: clamp(30px, 4.2vw, 58px); line-height: 1.08;
+    font-weight: 500; letter-spacing: -.02em; color: #0b0b0c; }
+  .u-paragraph p { margin: 0; max-width: 460px; font-size: 15px; line-height: 1.5; color: #3b3b42; }
+
+  .f2-slot { width: min(960px, 64vw); height: min(50vh, 470px); margin: clamp(28px, 5vh, 56px) auto 0; }
+
+  .f2-panel {
+    position: absolute; z-index: 3; overflow: hidden;
+    background:
+      radial-gradient(60% 45% at 50% 108%, #f39a4c 0%, rgba(243,154,76,0) 70%),
+      radial-gradient(90% 60% at 50% 100%, #c98bf0 0%, rgba(201,139,240,0) 75%),
+      linear-gradient(180deg, #eef3fd 0%, #b9d0f7 30%, #a9b4f3 55%, #c69ae9 80%, #e4a2c8 100%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.7) inset;
+  }
+
+  .f2-title { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; }
+  .f2-title h3 { margin: 0; font-size: clamp(15px, 1.35vw, 20px); line-height: 1.35; font-weight: 600; color: #121216; }
+  .f2-title p { margin: 10px auto 0; max-width: 330px; font-size: 13px; line-height: 1.5; color: #3b3b42; }
+
+  .f2-track { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
+  .f2-card {
+    position: absolute; left: 0; top: 0;
+    border-radius: 16px; background: #fff;
+    box-shadow: 0 8px 24px rgba(40, 30, 90, .12), 0 1px 2px rgba(0,0,0,.04);
+    transform-origin: 50% 50%;
+  }
+  .f2-card_glass {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    border: 1px solid rgba(255,255,255,.75);
+  }
+  .f2-card_body { position: absolute; inset: 0; padding: 14% 11% 11%; display: flex; flex-direction: column; }
+  .f2-top { display: flex; align-items: center; justify-content: space-between; min-height: 18px; margin-bottom: 10%; }
+  .f2-logo { width: 16px; height: 16px; border-radius: 5px; }
+  .f2-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .f2-badge.is-disrupted { background: #fde7c4; color: #b8660f; }
+  .f2-badge.is-confirmed { background: #d9f4e1; color: #23864a; }
+  .f2-label { font-size: 11px; color: #8a8a93; }
+  .f2-city { font-size: clamp(15px, 1.3vw, 19px); font-weight: 600; margin: 2px 0 8%; white-space: nowrap; }
+  .f2-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #6b6b73; margin-bottom: 9%; }
+  .f2-meta i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #9a9aa3; }
+  .f2-lines { display: flex; flex-direction: column; gap: 7px; }
+  .f2-lines span { display: flex; align-items: center; gap: 6px; }
+  .f2-lines span::before { content: ''; width: 9px; height: 9px; border-radius: 2px; background: #c9c9d1; }
+  .f2-lines span::after { content: ''; height: 6px; border-radius: 3px; background: #ececf1; flex: 1; }
+  .f2-lines span:last-child::after { flex: .7; }
+  .f2-btn {
+    position: relative; margin-top: auto; height: clamp(28px, 2.4vw, 34px); border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff; background: #121216;
+  }
+  .f2-btn.is-soft { color: #121216; background: #eeeef3; }
+  .f2-btn_ring {
+    position: absolute; inset: -5px; border-radius: 999px; z-index: -1; opacity: 0;
+    background: linear-gradient(90deg, #ff8c51, #f489ad 45%, #9b7cf6);
+    filter: blur(5px);
+  }
+  .f2-btn_ring::after {
+    content: ''; position: absolute; inset: 2px; border-radius: 999px;
+    background: linear-gradient(90deg, #ff8c51, #f489ad 45%, #9b7cf6);
+  }
+  .f2-btn_label { position: relative; }
+
+  .f2-pill {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px 0 8px; gap: 10px; opacity: 0; pointer-events: none;
+  }
+  .f2-avatar { flex: 0 0 auto; border-radius: 50%; }
+  .f2-avatar.a { background: radial-gradient(circle at 50% 38%, #f1d3c0 0 28%, #6b4a3a 29% 46%, #cdb8a8 47%); }
+  .f2-avatar.b { background: radial-gradient(circle at 50% 38%, #f4d9c8 0 28%, #3b2c2a 29% 48%, #d8c7bb 49%); }
+  .f2-wave { flex: 1; height: 60%; display: flex; align-items: center; justify-content: center; gap: 3px; overflow: hidden; }
+  .f2-wave i { width: 3px; border-radius: 2px; background: #b9b9c2; flex: 0 0 auto; }
+  .f2-close {
+    flex: 0 0 auto; border-radius: 50%; border: 1.5px solid #f2b8b8;
+    display: flex; align-items: center; justify-content: center; color: #d9534f; font-size: 15px; line-height: 1;
+  }
+
+  .f2-hud {
+    position: fixed; right: 12px; bottom: 12px; z-index: 100;
+    background: rgba(255,255,255,.94); border: 1px solid #e4e4e7; border-radius: 10px;
+    padding: 8px 10px; font: 11px ui-monospace, monospace; line-height: 1.8;
+    box-shadow: 0 6px 24px rgba(0,0,0,.08);
+  }
+  .f2-hud button { font: inherit; cursor: pointer; padding: 1px 7px; }
+  .f2-hud label { display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+  <div class="filler">scroll down</div>
+
+  <section class="feature2_wrap">
+    <div class="f2-pin">
+      <div class="feature2_contain u-container u-padding-block-main">
+        <div class="feature2_header u-text-align-center u-vflex-center-center u-gap-6">
+          <div class="u-eyebrow-wrap u-color-2"><p class="u-eyebrow-text">Disruption management</p></div>
+          <div class="u-heading u-color-accent"><h2>With you all the way, </h2><h2>from booking to back home.</h2></div>
+          <div class="u-paragraph u-color-2"><p>Most travel tools leave you to handle disruptions alone. Serko doesn't. Flight canceled? It finds new options across airlines, so you can book whichever works best.</p></div>
+        </div>
+        <div class="f2-slot"></div>
+      </div>
+
+      <div class="f2-panel">
+        <div class="f2-title f2-title-a"><h3>Always monitoring.<br>Always ready with alternatives.</h3></div>
+        <div class="f2-title f2-title-b"><h3>24/7 human support,<br>whenever you need it.</h3>
+          <p>Our support crew is here to help and available any time, day or night, wherever you are in the world.</p></div>
+        <div class="f2-track"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="filler">next section</div>
+
+  <div class="f2-hud">
+    <div>step <b id="hudStep">0</b> · target <b id="hudTarget">0</b></div>
+    <div id="hudJump"></div>
+    <label>speed <input id="hudSpeed" type="range" min="0.25" max="2" step="0.05" value="1"><span id="hudSpeedV">1</span></label>
+    <label>hold <input id="hudHold" type="range" min="30" max="140" step="5" value="70"><span id="hudHoldV">70vh</span></label>
+  </div>
+
+<script>
+const LOGOS = ['#e0245e', '#2f6fe4', '#6b5ce7']
+const COUNT = 12
+const DISRUPTED = 4
+const SHIFT = 2
+const FOCUS = DISRUPTED + SHIFT
+const SEGMENTS = [0.6, 1.4, 1.0, 1.1, 1.8]
+const STEPS = SEGMENTS.length
+
+const cum = [0]
+for (const d of SEGMENTS) cum.push(cum[cum.length - 1] + d)
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
+const lerp = (a, b, p) => a + (b - a) * p
+const inOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+const out = (t) => 1 - Math.pow(1 - t, 3)
+const win = (u, a, b, ease = inOut) => ease(clamp01((u - a) / (b - a)))
+
+const pin = document.querySelector('.f2-pin')
+const section = document.querySelector('.feature2_wrap')
+const header = document.querySelector('.feature2_header')
+const slot = document.querySelector('.f2-slot')
+const panel = document.querySelector('.f2-panel')
+const titleA = document.querySelector('.f2-title-a')
+const titleB = document.querySelector('.f2-title-b')
+const track = document.querySelector('.f2-track')
+
+const cards = Array.from({ length: COUNT }, (_, i) => {
+  const el = document.createElement('div')
+  el.className = 'f2-card'
+  const disrupted = i === DISRUPTED
+  const logo = LOGOS[i % LOGOS.length]
+  el.innerHTML = `
+    <div class="f2-card_body">
+      <div class="f2-top"><span class="f2-logo" style="background:${logo}"></span>
+        ${disrupted ? '<span class="f2-badge is-disrupted">Disrupted</span>' : ''}
+        ${i === FOCUS ? '<span class="f2-badge is-confirmed">Confirmed</span>' : ''}</div>
+      <div class="f2-label">Outbound to</div>
+      <div class="f2-city">New York</div>
+      <div class="f2-meta"><i></i>8h · Nonstop</div>
+      <div class="f2-lines"><span></span><span></span></div>
+      <div class="f2-btn ${disrupted ? 'is-soft' : ''}"><span class="f2-btn_ring"></span>
+        <span class="f2-btn_label">${disrupted ? 'See alternatives' : 'Select'}</span></div>
+    </div>
+    <div class="f2-card_glass"></div>
+    <div class="f2-pill">
+      <span class="f2-avatar a"></span>
+      <span class="f2-wave">${'<i></i>'.repeat(28)}</span>
+      <span class="f2-avatar b"></span>
+      <span class="f2-close">×</span>
+    </div>`
+  track.appendChild(el)
+  return {
+    i, el, disrupted,
+    body: el.querySelector('.f2-card_body'),
+    glass: el.querySelector('.f2-card_glass'),
+    btn: el.querySelector('.f2-btn'),
+    ring: el.querySelector('.f2-btn_ring'),
+    confirmed: el.querySelector('.is-confirmed'),
+    pill: el.querySelector('.f2-pill'),
+    avatars: el.querySelectorAll('.f2-avatar'),
+    wave: el.querySelector('.f2-wave'),
+    bars: Array.from(el.querySelectorAll('.f2-wave i')),
+    close: el.querySelector('.f2-close'),
+  }
+})
+
+const hud = {
+  step: document.getElementById('hudStep'),
+  target: document.getElementById('hudTarget'),
+  speed: document.getElementById('hudSpeed'),
+  hold: document.getElementById('hudHold'),
+}
+
+let geo = null
+function measure() {
+  const vw = pin.clientWidth
+  const vh = pin.clientHeight
+  const pinRect = pin.getBoundingClientRect()
+  const s = slot.getBoundingClientRect()
+  const w = Math.max(150, Math.min(220, vw * 0.145))
+  geo = {
+    vw, vh, w, h: w * 1.22, gap: Math.max(14, w * 0.09),
+    small: { x: s.left - pinRect.left, y: s.top - pinRect.top, w: s.width, h: s.height, r: 22 },
+    full: { x: 12, y: 12, w: vw - 24, h: vh - 24, r: 28 },
+    hold: parseFloat(hud.hold.value) / 100 * vh,
+  }
+  section.style.height = `${vh + STEPS * geo.hold}px`
+}
+
+function targetStep() {
+  const top = section.getBoundingClientRect().top
+  if (top > 0) return 0
+  return Math.min(STEPS, 1 + Math.floor(-top / geo.hold))
+}
+
+function render(T, now) {
+  const u = SEGMENTS.map((d, k) => clamp01((T - cum[k]) / d))
+  const { w, h, gap } = geo
+  const pitch = w + gap
+
+  const grow = win(u[1], 0.05, 0.6)
+  const px = lerp(geo.small.x, geo.full.x, grow)
+  const py = lerp(geo.small.y, geo.full.y, grow)
+  const pw = lerp(geo.small.w, geo.full.w, grow)
+  const ph = lerp(geo.small.h, geo.full.h, grow)
+  Object.assign(panel.style, {
+    left: `${px}px`, top: `${py}px`, width: `${pw}px`, height: `${ph}px`,
+    borderRadius: `${lerp(geo.small.r, geo.full.r, grow)}px`,
+  })
+
+  const headerOut = win(u[1], 0, 0.45)
+  header.style.opacity = String(1 - headerOut)
+  header.style.transform = `translateY(${-40 * headerOut}px)`
+
+  const titleOut = win(u[4], 0, 0.3)
+  const titleIn = win(u[4], 0.45, 0.8)
+  const titleY = ph * lerp(0.13, 0.16, grow)
+  titleA.style.top = `${titleY}px`
+  titleA.style.opacity = String(1 - titleOut)
+  titleA.style.transform = `translateY(${-12 * titleOut}px)`
+  titleB.style.top = `${titleY}px`
+  titleB.style.opacity = String(titleIn)
+  titleB.style.transform = `translateY(${12 * (1 - titleIn)}px)`
+
+  track.style.left = `${pw / 2}px`
+  track.style.top = `${ph * lerp(0.6, 0.56, grow)}px`
+
+  const shift = win(u[2], 0, 1)
+  const focusHover = win(u[3], 0, 0.3)
+  const focusGrow = win(u[3], 0.25, 0.85, out)
+  const settle = win(u[4], 0, 0.3)
+  const highlight = win(u[0], 0, 1, out)
+
+  for (const c of cards) {
+    const d = c.i - DISRUPTED
+    let x = 0
+    let y = 0
+    let rot = 0
+    let scale = 1
+    let opacity = 0
+    let z = 5
+
+    if (d === 0) { opacity = 1; z = 20 }
+    else if (d === 1) { x = 12; y = -8; rot = 4; opacity = 1; z = 19 }
+    else if (d === 2) { x = 22; y = -14; rot = 8; opacity = 1; z = 18 }
+
+    const spread = win(u[1], 0.3 + 0.045 * Math.abs(d), 0.85 + 0.03 * Math.abs(d))
+    x = lerp(x, d * pitch, spread)
+    y = lerp(y, 0, spread)
+    rot = lerp(rot, 0, spread)
+    opacity = lerp(opacity, 1, win(u[1], 0.3 + 0.045 * Math.abs(d), 0.6 + 0.045 * Math.abs(d)))
+    if (spread > 0.5) z = 10
+
+    x -= SHIFT * pitch * shift
+
+    const f = c.i - FOCUS
+    if (f !== 0) x += Math.sign(f) * pitch * 0.2 * focusGrow * (1 - settle)
+    let width = w
+    let height = h
+    let radius = 16
+    let bodyOpacity = 1
+    let pillOpacity = 0
+
+    if (f === 0) {
+      if (u[2] > 0) z = 30
+      scale = 1 + 0.28 * focusGrow * (1 - settle)
+      rot += -4 * focusGrow * (1 - settle)
+      const hollow = win(u[4], 0, 0.22)
+      bodyOpacity = 1 - hollow
+      const toPill = win(u[4], 0.18, 0.5)
+      const widen = win(u[4], 0.62, 0.95)
+      const pillH = Math.max(56, w * 0.3)
+      width = lerp(lerp(w, w * 0.9, toPill), w * 1.85, widen)
+      height = lerp(h, pillH, toPill)
+      radius = lerp(16, pillH / 2, toPill)
+      pillOpacity = win(u[4], 0.48, 0.64)
+
+      c.btn.style.background = `rgb(${lerp(18, 110, focusHover)}, ${lerp(18, 110, focusHover)}, ${lerp(22, 118, focusHover)})`
+      c.confirmed.style.opacity = String(win(u[3], 0.45, 0.9))
+
+      const avatar = pillH - 16
+      for (const a of c.avatars) { a.style.width = `${avatar}px`; a.style.height = `${avatar}px` }
+      c.close.style.width = `${avatar}px`
+      c.close.style.height = `${avatar}px`
+      const wave = win(u[4], 0.7, 1)
+      c.wave.style.opacity = String(wave)
+      c.bars.forEach((bar, k) => {
+        const idle = 0.35 + 0.65 * Math.abs(Math.sin(now / 260 + k * 0.7) * Math.cos(now / 610 + k * 0.33))
+        bar.style.height = `${Math.max(3, (pillH - 28) * idle * wave)}px`
+      })
+    } else {
+      const d4 = Math.abs(f)
+      const leave = win(u[4], 0.05 + 0.035 * d4, 0.45 + 0.035 * d4)
+      opacity *= 1 - leave
+      y += 40 * leave
+    }
+
+    if (c.disrupted) {
+      const glass = win(u[1], 0.45, 0.95)
+      c.el.style.background = `rgba(255,255,255,${lerp(1, 0.3, glass)})`
+      c.el.style.backdropFilter = `blur(${14 * glass}px)`
+      c.el.style.webkitBackdropFilter = `blur(${14 * glass}px)`
+      c.glass.style.opacity = String(glass)
+      c.ring.style.opacity = String(highlight * (1 - win(u[1], 0.4, 0.8)))
+    }
+
+    c.el.style.width = `${width}px`
+    c.el.style.height = `${height}px`
+    c.el.style.borderRadius = `${radius}px`
+    c.el.style.transform =
+      `translate(${x - width / 2}px, ${y - height / 2}px) rotate(${rot}deg) scale(${scale})`
+    c.el.style.opacity = String(opacity)
+    c.el.style.zIndex = String(z)
+    c.el.style.visibility = opacity < 0.002 ? 'hidden' : 'visible'
+    c.body.style.opacity = String(bodyOpacity)
+    c.pill.style.opacity = String(pillOpacity)
+  }
+}
+
+let playT = 0
+let last = 0
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function frame(now) {
+  requestAnimationFrame(frame)
+  const dt = last ? Math.min(0.05, (now - last) / 1000) : 0
+  last = now
+  const target = targetStep()
+  const goal = cum[target]
+  const diff = goal - playT
+  if (reduced) playT = goal
+  else if (diff !== 0) {
+    const speed = Math.max(1, Math.abs(diff) / 1.2) * parseFloat(hud.speed.value)
+    playT += Math.sign(diff) * Math.min(Math.abs(diff), speed * dt)
+  }
+  let step = 0
+  for (let k = 0; k <= STEPS; k++) if (playT >= cum[k] - 1e-6) step = k
+  hud.step.textContent = step
+  hud.target.textContent = target
+  render(playT, now)
+}
+
+const jump = document.getElementById('hudJump')
+for (let k = 0; k <= STEPS; k++) {
+  const b = document.createElement('button')
+  b.textContent = k
+  b.onclick = () => {
+    const top = section.getBoundingClientRect().top + scrollY
+    const y = k === 0 ? top - innerHeight * 0.4 : top + (k - 1) * geo.hold + geo.hold * 0.3
+    scrollTo({ top: y, behavior: 'auto' })
+  }
+  jump.appendChild(b)
+}
+hud.speed.oninput = () => { document.getElementById('hudSpeedV').textContent = hud.speed.value }
+hud.hold.oninput = () => { document.getElementById('hudHoldV').textContent = hud.hold.value + 'vh'; measure() }
+
+addEventListener('resize', measure)
+measure()
+requestAnimationFrame(frame)
+</script>
+</body>
+</html>
