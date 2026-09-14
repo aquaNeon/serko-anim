@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Card stack variants</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 24px 80px;
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #0b0b0c;
+    background:
+      radial-gradient(90% 60% at 50% 105%, #fdf0e8 0%, rgba(255,255,255,0) 60%),
+      radial-gradient(70% 50% at 15% 90%, #eef2fb 0%, rgba(255,255,255,0) 60%),
+      #fafafa;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .lede { font-size: 13px; color: #666; margin: 0 0 20px; max-width: 70ch; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+    padding: 10px 12px; margin: 0 0 24px;
+    background: rgba(255,255,255,.92); border: 1px solid #e4e4e7; border-radius: 10px;
+    font: 12px ui-monospace, monospace;
+  }
+  .controls button { font: inherit; cursor: pointer; padding: 3px 10px; }
+  .controls label { display: inline-flex; align-items: center; gap: 6px; }
+  .controls input[type=range] { width: 110px; }
+  .step-name { min-width: 18ch; color: #444; }
+
+  .grid {
+    display: grid; gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
+  }
+  .variant {
+    background: rgba(255,255,255,.55); border: 1px solid #ececef; border-radius: 14px;
+    padding: 14px 20px 20px;
+  }
+  .variant h2 { font-size: 14px; font-weight: 600; margin: 0; }
+  .variant p { font-size: 12px; color: #777; margin: 2px 0 12px; min-height: 2.6em; }
+
+  .backdrop {
+    padding: 20px 24px; border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(1px 1px at 20% 30%, rgba(0,0,0,.5) 50%, transparent 51%) 0 0 / 23px 19px,
+      linear-gradient(180deg, #a9b8f4 0%, #b9a6ee 55%, #cf9fe6 100%);
+  }
+  .stage {
+    position: relative; width: 450px; height: 270px; margin: 0 auto;
+    perspective: 900px;
+  }
+
+  .card {
+    position: absolute; left: 0; bottom: 92px;
+    width: 450px; min-height: 49px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; border-radius: 16px; background: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    font-size: 15px; color: rgba(0,0,0,.88); white-space: nowrap;
+    transform-origin: 50% 100%;
+  }
+  .stage.animating .card {
+    transition:
+      transform var(--dur) var(--tease, var(--ease)),
+      opacity var(--odur, var(--dur)) var(--oease, var(--tease, var(--ease))),
+      filter var(--dur) var(--ease);
+  }
+  .card > * { opacity: var(--content, 1); }
+  .stage.animating .card > * { transition: opacity var(--cdur, var(--dur)) var(--ease) var(--cdelay, 0s); }
+  .card.profile { bottom: 0; height: 84px; gap: 16px; padding: 0 14px; border-radius: 18px;
+    font-size: 20px; font-weight: 600; }
+  .avatar { width: 56px; height: 56px; border-radius: 10px; background: #d9d2cc; flex: 0 0 auto; }
+  .icon { width: 8px; height: 8px; margin: -24px 4px 0 auto; border-radius: 50%; background: #3aa34a; }
+  .check {
+    width: 24px; height: 28px; border-radius: 999px; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(to top, #F489AD 0%, #FF897F 35%, #FF8C51 70%);
+  }
+  .check svg { width: 18px; height: 18px; }
+  .emoji { width: 20px; height: 20px; border-radius: 4px; background: #ffd9a8; flex: 0 0 auto; }
+  .send {
+    width: 28px; height: 28px; margin-left: auto; border-radius: 999px;
+    background: rgba(0,0,0,.03); flex: 0 0 auto;
+  }
+  .words span { opacity: 0; }
+  .words span.on { opacity: 1; }
+</style>
+</head>
+<body>
+  <h1>Card stack — motion variants</h1>
+  <p class="lede">Same sequence in every column: Paula's profile, then the transcript types in,
+    then each preference replaces it. Cards stay a fixed 450px wide. Plain cards only — this is
+    for picking the motion, not the styling.</p>
+
+  <div class="controls">
+    <button id="play">pause</button>
+    <button id="prev">‹ step</button>
+    <button id="next">step ›</button>
+    <button id="restart">restart</button>
+    <span class="step-name" id="stepName">–</span>
+    <label>move <input id="dur" type="range" min="0.2" max="1.4" step="0.05" value="0.6"><span id="durV">0.6s</span></label>
+    <label>hold <input id="hold" type="range" min="0.6" max="4" step="0.1" value="1.8"><span id="holdV">1.8s</span></label>
+    <label>ease
+      <select id="ease">
+        <option value="cubic-bezier(.22,1,.36,1)">out-quint</option>
+        <option value="cubic-bezier(.34,1.56,.64,1)">out-back</option>
+        <option value="cubic-bezier(.65,0,.35,1)">in-out-cubic</option>
+      </select>
+    </label>
+    <label><input id="blur" type="checkbox"> blur on move</label>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+<script>
+const STEPS = [
+  { kind: 'profile', text: "Paula’s Profile" },
+  { kind: 'transcript', text: 'Fly American Airlines', tail: 'Outbound to New York' },
+  { kind: 'pref', text: 'No early mornings' },
+  { kind: 'pref', text: 'Premium economy' },
+  { kind: 'transcript', text: 'Stay at Marriott Bonvoy' },
+  { kind: 'pref', text: 'Walkable location' },
+  { kind: 'pref', text: 'Mid-range price' },
+]
+
+const GAP = 8
+const H = 49
+
+const POP = 'cubic-bezier(.34,1.45,.64,1)'
+const SINK = 'cubic-bezier(.55,0,.75,.2)'
+const RISE = 'cubic-bezier(.45,0,.2,1)'
+
+const VARIANTS = [
+  {
+    name: 'G · Deck, one behind Paula',
+    note: 'Only the active card shows above. The next card waits behind Paula, peeking over her top edge at low opacity, and rises up to become the active one.',
+    style(rel) {
+      if (rel < -1) return { y: 70, s: 0.9, o: 0, z: 5 }
+      if (rel === -1) return { y: 43, s: 0.96, o: 0.5, z: 6, blur: 0.4, hide: true }
+      if (rel === 0) return { y: -16, s: 1, o: 1, z: 12, ease: RISE, cdelay: 0.35, odur: 0.3 }
+      if (rel === 1) return { y: -46, s: 1, o: 0, z: 11, ease: RISE, hide: true, cdur: 0.5 }
+      return { y: -46, s: 1, o: 0, z: 0 }
+    },
+  },
+  {
+    name: 'F · Deck behind Paula',
+    note: 'The deck hides behind the profile, edges peeking. Each card pops up out of it to sit on top, and drops back down behind Paula as the next one pops.',
+    style(rel) {
+      if (rel < -2) return { y: 52, s: 0.88, o: 0, z: 6 }
+      if (rel === -2) return { y: 46, s: 0.88, o: 1, z: 7, blur: 0.4 }
+      if (rel === -1) return { y: 44, s: 0.94, o: 1, z: 8, blur: 0.4 }
+      if (rel === 0) return { y: 0, s: 1, o: 1, z: 12, ease: POP }
+      if (rel === 1) return { y: 60, s: 0.94, o: 1, z: 11, ease: SINK }
+      return { y: 60, s: 0.9, o: 0, z: 5 }
+    },
+  },
+  {
+    name: 'A · Swap',
+    note: 'One slot above the profile. Outgoing drops down behind, incoming rises up in front, at the same time.',
+    style(rel) {
+      if (rel < 0) return { y: 22, s: 0.97, o: 0, z: 2, blur: 1 }
+      if (rel === 0) return { y: 0, s: 1, o: 1, z: 3 }
+      return { y: 22, s: 0.97, o: 0, z: 1, blur: 1 }
+    },
+  },
+  {
+    name: 'B · Push up',
+    note: 'Notification stack. Each new card enters at the bottom and pushes the previous ones up; two visible, the oldest fades off the top.',
+    style(rel) {
+      if (rel < 0) return { y: 22, s: 0.97, o: 0, z: 5, blur: 1 }
+      const o = rel < 2 ? 1 - rel * 0.35 : 0
+      return { y: -rel * (H + GAP), s: rel >= 2 ? 0.96 : 1, o, z: 5 - rel, blur: rel >= 2 ? 1 : 0 }
+    },
+  },
+  {
+    name: 'C · Deck',
+    note: 'New card slides up to the front; earlier ones tuck back behind it, peeking above like a deck of cards.',
+    style(rel) {
+      if (rel < 0) return { y: 26, s: 1, o: 0, z: 10, blur: 1 }
+      if (rel > 3) return { y: -30, s: 0.85, o: 0, z: 0, blur: 1 }
+      return { y: -rel * 10, s: 1 - rel * 0.05, o: rel === 3 ? 0 : 1 - rel * 0.2, z: 10 - rel, blur: rel ? 0.4 * rel : 0 }
+    },
+  },
+  {
+    name: 'D · Deck, drop away',
+    note: 'Deck, but the front card falls down and out as the next rises from behind it — one peeking card underneath.',
+    style(rel) {
+      if (rel < -1) return { y: -10, s: 0.9, o: 0, z: 1 }
+      if (rel === -1) return { y: -10, s: 0.95, o: 0.55, z: 2, blur: 0.4 }
+      if (rel === 0) return { y: 0, s: 1, o: 1, z: 3 }
+      return { y: 30, s: 1, o: 0, z: 4, blur: 1 }
+    },
+  },
+  {
+    name: 'E · Roll',
+    note: 'Split-flap / drum. Outgoing tips back over the top as the incoming rolls up from below.',
+    style(rel) {
+      if (rel < 0) return { y: 18, s: 1, o: 0, z: 2, rx: -70, blur: 1 }
+      if (rel === 0) return { y: 0, s: 1, o: 1, z: 3, rx: 0 }
+      return { y: -18, s: 1, o: 0, z: 1, rx: 70, blur: 1 }
+    },
+  },
+]
+
+function cardEl(step) {
+  const el = document.createElement('div')
+  el.className = 'card ' + step.kind
+  if (step.kind === 'profile') {
+    el.innerHTML = '<div class="avatar"></div><div></div><div class="icon"></div>'
+    el.children[1].textContent = step.text
+    return el
+  }
+  if (step.kind === 'pref') {
+    el.innerHTML = '<div class="check"><svg viewBox="0 0 26 30" fill="none"><path d="M9 15.2 L11.6 17.9 L17.4 11.2" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div></div>'
+    el.children[1].textContent = step.text
+    return el
+  }
+  const words = document.createElement('div')
+  words.className = 'words'
+  const parts = step.text.split(' ')
+  parts.forEach((w, i) => {
+    const span = document.createElement('span')
+    span.textContent = (i ? ' ' : '') + w
+    words.appendChild(span)
+  })
+  const bits = [words]
+  if (step.tail) {
+    const emoji = document.createElement('span')
+    emoji.className = 'emoji'
+    words.appendChild(document.createTextNode(' '))
+    words.appendChild(emoji)
+    step.tail.split(' ').forEach((w) => {
+      const span = document.createElement('span')
+      span.textContent = ' ' + w
+      words.appendChild(span)
+    })
+  }
+  words.style.display = 'flex'
+  words.style.alignItems = 'center'
+  words.style.gap = '0'
+  words.style.whiteSpace = 'pre'
+  el.appendChild(words)
+  const send = document.createElement('div')
+  send.className = 'send'
+  el.appendChild(send)
+  return el
+}
+
+const grid = document.getElementById('grid')
+const stages = VARIANTS.map((v) => {
+  const box = document.createElement('section')
+  box.className = 'variant'
+  box.innerHTML = '<h2></h2><p></p>'
+  box.querySelector('h2').textContent = v.name
+  box.querySelector('p').textContent = v.note
+  const stage = document.createElement('div')
+  stage.className = 'stage'
+  const cards = STEPS.map((s) => {
+    const el = cardEl(s)
+    stage.appendChild(el)
+    return el
+  })
+  const backdrop = document.createElement('div')
+  backdrop.className = 'backdrop'
+  backdrop.appendChild(stage)
+  box.appendChild(backdrop)
+  grid.appendChild(box)
+  return { v, stage, cards }
+})
+
+const state = { step: -1, playing: true, timer: null, typeTimers: [] }
+const $ = (id) => document.getElementById(id)
+const opts = () => ({
+  dur: parseFloat($('dur').value),
+  hold: parseFloat($('hold').value),
+  ease: $('ease').value,
+  blur: $('blur').checked,
+})
+
+function paint(animate) {
+  const o = opts()
+  for (const { v, stage, cards } of stages) {
+    stage.style.setProperty('--dur', o.dur + 's')
+    stage.style.setProperty('--ease', o.ease)
+    stage.classList.toggle('animating', animate)
+    const profile = cards[0]
+    const pOn = state.step >= 0
+    profile.style.transform = `translateY(${pOn ? 0 : 20}px)`
+    profile.style.opacity = pOn ? 1 : 0
+    profile.style.zIndex = 20
+    for (let i = 1; i < cards.length; i++) {
+      const rel = state.step < 0 ? -99 : state.step - i
+      const st = v.style(rel)
+      const el = cards[i]
+      el.style.transform =
+        `translateY(${st.y}px) scale(${st.s})` + (st.rx ? ` rotateX(${st.rx}deg)` : '')
+      el.style.opacity = st.o
+      el.style.zIndex = st.z
+      if (st.ease) el.style.setProperty('--tease', st.ease)
+      else el.style.removeProperty('--tease')
+      if (st.oease) el.style.setProperty('--oease', st.oease)
+      else el.style.removeProperty('--oease')
+      el.style.transitionDelay = !animate ? ''
+        : st.delay ? `${o.dur * st.delay}s`
+        : state.step === 0 && rel === -1 ? `${o.dur * 0.7}s` : ''
+      if (animate && st.cdelay) el.style.setProperty('--cdelay', `${o.dur * st.cdelay}s`)
+      else el.style.removeProperty('--cdelay')
+      el.style.setProperty('--content', st.hide ? 0 : 1)
+      const odur = st.odur ?? (st.fast ? 0.5 : null)
+      if (odur) el.style.setProperty('--odur', `${o.dur * odur}s`)
+      else el.style.removeProperty('--odur')
+      if (st.cdur) el.style.setProperty('--cdur', `${o.dur * st.cdur}s`)
+      else el.style.removeProperty('--cdur')
+      el.style.filter = o.blur && st.blur ? `blur(${3 * st.blur}px)` : 'none'
+    }
+  }
+  $('stepName').textContent = state.step < 0
+    ? '–'
+    : `${state.step + 1}/${STEPS.length} ${STEPS[state.step].kind}`
+}
+
+function clearTyping() {
+  state.typeTimers.forEach(clearTimeout)
+  state.typeTimers = []
+}
+
+function typeIn(index, instant) {
+  const step = STEPS[index]
+  if (!step || step.kind !== 'transcript') return 0
+  const spans = stages.flatMap((s) => Array.from(s.cards[index].querySelectorAll('.words span:not(.emoji)')))
+  const perCard = spans.length / stages.length
+  spans.forEach((s) => s.classList.toggle('on', !!instant))
+  if (instant) return 0
+  const start = opts().dur * 0.5
+  const each = 0.22
+  for (let w = 0; w < perCard; w++) {
+    state.typeTimers.push(setTimeout(() => {
+      for (let c = 0; c < stages.length; c++) spans[c * perCard + w].classList.add('on')
+    }, (start + w * each) * 1000))
+  }
+  return start + perCard * each
+}
+
+function go(step, animate = true) {
+  clearTimeout(state.timer)
+  clearTyping()
+  const wrapped = step >= STEPS.length || step < -1
+  if (wrapped) {
+    state.step = -1
+    for (const s of stages) {
+      s.stage.querySelectorAll('.words span').forEach((w) => w.classList.remove('on'))
+    }
+    paint(false)
+    requestAnimationFrame(() => requestAnimationFrame(() => go(0)))
+    return
+  }
+  state.step = step
+  for (let i = 0; i < STEPS.length; i++) {
+    if (i < step) typeIn(i, true)
+    else if (i > step) {
+      const spans = stages.flatMap((s) => Array.from(s.cards[i].querySelectorAll('.words span')))
+      spans.forEach((s) => s.classList.remove('on'))
+    }
+  }
+  const typing = typeIn(step, false)
+  paint(animate)
+  if (state.playing) {
+    const o = opts()
+    const wait = Math.max(o.dur, typing) + o.hold + (step === STEPS.length - 1 ? 1.2 : 0)
+    state.timer = setTimeout(() => go(state.step + 1), wait * 1000)
+  }
+}
+
+$('play').onclick = () => {
+  state.playing = !state.playing
+  $('play').textContent = state.playing ? 'pause' : 'play'
+  if (state.playing) go(state.step + 1)
+  else clearTimeout(state.timer)
+}
+$('next').onclick = () => { state.playing = false; $('play').textContent = 'play'; go(Math.min(state.step + 1, STEPS.length - 1)) }
+$('prev').onclick = () => { state.playing = false; $('play').textContent = 'play'; go(Math.max(state.step - 1, 0)) }
+$('restart').onclick = () => go(STEPS.length)
+for (const [id, fmt] of [['dur', 's'], ['hold', 's']]) {
+  $(id).oninput = () => { $(id + 'V').textContent = $(id).value + fmt }
+}
+$('blur').onchange = () => paint(true)
+
+paint(false)
+requestAnimationFrame(() => requestAnimationFrame(() => go(0)))
+</script>
+</body>
+</html>
