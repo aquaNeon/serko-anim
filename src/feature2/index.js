@@ -11,9 +11,10 @@ const CSS = `
 .f2-pin{position:sticky;top:0;height:100vh;overflow:hidden}
 .f2-track{position:absolute;left:0;top:0;width:0;height:0;z-index:2}
 .f2-card{position:absolute!important;left:0!important;top:0!important;margin:0!important;box-sizing:border-box;transform-origin:50% 50%}
-.f2-badge{position:absolute;top:12px;right:12px;padding:4px 8px;border-radius:999px;font:600 10px/1 system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap;pointer-events:none;z-index:2}
+.f2-badge{position:absolute;top:12px;right:12px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:4.608px 10.4px;border-radius:6.912px;-webkit-backdrop-filter:blur(18.432px);backdrop-filter:blur(18.432px);font-family:inherit;font-size:13px;font-weight:600;line-height:19px;white-space:nowrap;pointer-events:none;z-index:2}
 .f2-badge-disrupted{background:#fde7c4;color:#b8660f}
-.f2-badge-confirmed{background:#d9f4e1;color:#23864a;opacity:0}
+.f2-badge-confirmed{background:#c0f2b5;color:#17510b;opacity:0}
+.f2-badge-rebooked{background:#c0f2b5;color:#17510b}
 .f2-soft{background-color:#eeeef3!important}
 .f2-soft,.f2-soft *{color:#121216!important}
 .f2-ring{position:absolute;inset:-3px;border-radius:999px;z-index:-1;opacity:0;pointer-events:none;background:linear-gradient(90deg,#ff8c51,#f489ad 45%,#9b7cf6);filter:blur(6px)}
@@ -41,6 +42,7 @@ const DEFAULTS = {
   titleB: '24/7 human support,\nwhenever you need it.',
   titleBSub: 'Our support crew is here to help and available any time, day or night, wherever you are in the world.',
   disruptedLabel: 'Disrupted',
+  rebookedLabel: 'Rebooked',
   confirmedLabel: 'Confirmed',
   softButton: 'See alternatives',
   logos: [
@@ -290,8 +292,8 @@ export class Feature2 {
 
     if (i === disrupted) {
       const badge = doc.createElement('div')
-      badge.className = 'f2-badge f2-badge-disrupted'
-      badge.textContent = text(this.section, 'data-f2-disrupted-label', DEFAULTS.disruptedLabel)
+      badge.className = 'f2-badge f2-badge-rebooked'
+      badge.textContent = text(this.section, 'data-f2-rebooked-label', DEFAULTS.rebookedLabel)
       el.appendChild(badge)
       if (card.button) {
         card.button.classList.add('f2-soft')
@@ -305,8 +307,8 @@ export class Feature2 {
 
     if (i === disrupted + 1) {
       const hint = doc.createElement('div')
-      hint.className = 'f2-badge f2-badge-confirmed'
-      hint.textContent = text(this.section, 'data-f2-confirmed-label', DEFAULTS.confirmedLabel)
+      hint.className = 'f2-badge f2-badge-disrupted'
+      hint.textContent = text(this.section, 'data-f2-disrupted-label', DEFAULTS.disruptedLabel)
       el.appendChild(hint)
       card.hint = hint
     }
