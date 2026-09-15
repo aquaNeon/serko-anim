@@ -119,7 +119,7 @@ export class Pin {
     this.el.style.opacity = String(clamped * limb)
     this.el.style.transform = `translate(${p.x}px, ${p.y}px)`
 
-    const pill = clamp01(this._pill) * clamped
+    const pill = clamp01(stage.mobile ? 1 : this._pill) * clamped
     const shape = easeOutCubic(clamp01((pill - 0.3) / 0.7))
     const text = clamp01((pill - 0.55) / 0.45)
     const puff = clamp01(pill / 0.3)

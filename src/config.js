@@ -23,13 +23,15 @@ const DEFAULT_LAYOUT = {
   scaleMax: 1,
   mobileScale: 1,
   mobileBelow: 768,
+  mobileTurn: 10,
   radiusMaxVh: 0,
   apexClearance: null,
   drift: 4,
   driftLat: 2,
   driftEase: 3,
   driftDirection: -1,
-  feather: 120
+  feather: 120,
+  fadeIn: 1.2
 };
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr);
@@ -78,6 +80,7 @@ function readLayout(rootEl) {
     scaleMax: num(rootEl, "data-scale-max", DEFAULT_LAYOUT.scaleMax),
     mobileScale: num(rootEl, "data-mobile-scale", DEFAULT_LAYOUT.mobileScale),
     mobileBelow: num(rootEl, "data-mobile-below", DEFAULT_LAYOUT.mobileBelow),
+    mobileTurn: num(rootEl, "data-mobile-turn", DEFAULT_LAYOUT.mobileTurn),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)
@@ -88,7 +91,8 @@ function readLayout(rootEl) {
     driftDirection: (rootEl.getAttribute("data-drift-direction") || "").toLowerCase() === "same"
       ? 1
       : DEFAULT_LAYOUT.driftDirection,
-    feather: num(rootEl, "data-feather", DEFAULT_LAYOUT.feather)
+    feather: num(rootEl, "data-feather", DEFAULT_LAYOUT.feather),
+    fadeIn: num(rootEl, "data-fade-in", DEFAULT_LAYOUT.fadeIn)
   };
 }
 export {

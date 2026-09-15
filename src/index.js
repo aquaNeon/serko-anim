@@ -45,7 +45,7 @@ function boot() {
     })
 
     applySequence(SEQUENCE, document)
-    const stack = new CardStack(STACK, document)
+    const stack = new CardStack({ ...STACK, mobileBelow: layout.mobileBelow }, document)
     const overlays = new Overlays(stage, document)
     const end = Math.max(overlays.maxTime, stack.maxTime)
     if (end > flow.duration) flow.duration = end

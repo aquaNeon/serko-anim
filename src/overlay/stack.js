@@ -23,21 +23,18 @@ export function cubicBezier(x1, y1, x2, y2) {
 export const RISE = cubicBezier(0.45, 0, 0.2, 1)
 export const SETTLE = cubicBezier(0.22, 1, 0.36, 1)
 
-export function pose(rel, geo) {
+export function pose(rel, geo, kind = 'pref') {
   const active = geo.gap - geo.peek - geo.space
-  if (rel < -1) {
-    return { y: geo.gap + geo.height + 18, s: 1, o: 0, content: 0, z: 5 }
-  }
-  if (rel === -1) {
-    return { y: geo.gap + geo.height - geo.peek, s: 1, o: geo.peekOpacity, content: 0, z: 6 }
+  if (rel < 0) {
+    return { y: active, s: 0.94, o: 0, content: 0, z: 5 }
   }
   if (rel === 0) {
-    return { y: active, s: 1, o: 1, content: 1, z: 12, ease: RISE, odur: 0.3, cdelay: 0.35 }
+    return { y: active, s: 1, o: 1, content: 1, z: 10, ease: RISE, odur: 0.25, cdelay: 0.35 }
   }
-  if (rel === 1) {
-    return { y: active - geo.lift, s: 1, o: 0, content: 0, z: 11, ease: RISE, cdur: 0.5 }
+  if (kind === 'pref') {
+    return { y: geo.gap + geo.height, s: 1, o: 0, content: 1, z: 11, ease: RISE }
   }
-  return { y: active - geo.lift, s: 1, o: 0, content: 0, z: 0 }
+  return { y: active, s: 1, o: 0, content: 1, z: 11, ease: RISE, odur: 0.6 }
 }
 
 export function stepAt(time, times) {
@@ -48,11 +45,11 @@ export function stepAt(time, times) {
   return k
 }
 
-export function cardState(time, index, times, geo, dur) {
+export function cardState(time, index, times, geo, dur, kind = 'pref') {
   const k = stepAt(time, times)
-  if (k < 0) return pose(-2, geo)
-  const from = pose(k - 1 - index, geo)
-  const to = pose(k - index, geo)
+  if (k < 0) return pose(-1, geo, kind)
+  const from = pose(k - 1 - index, geo, kind)
+  const to = pose(k - index, geo, kind)
   const elapsed = time - times[k]
   const ease = to.ease || SETTLE
   const move = ease(clamp01(elapsed / dur))
@@ -94,6 +91,18 @@ function set(el, prop, value) {
   if (el.style[prop] !== value) el.style[prop] = value
 }
 
+let styled = false
+function injectStyles(doc, fontSize, keep) {
+  if (styled) return
+  styled = true
+  const el = doc.createElement('style')
+  const div = keep ? `div:not(${keep})` : 'div'
+  el.textContent =
+    `.globe-stack-mobile, .globe-stack-mobile ${div} { font-size: ${fontSize}px !important; }` +
+    '.globe-stack-mobile .globe-hide-mobile { display: none !important; }'
+  doc.head.appendChild(el)
+}
+
 export class CardStack {
   constructor(config, root = document) {
     this.cfg = config
@@ -114,7 +123,12 @@ export class CardStack {
     if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative'
     if (getComputedStyle(this.profile).position === 'static') this.profile.style.position = 'relative'
     this.profile.style.zIndex = '20'
-    if (config.width) template.style.width = `${config.width}px`
+    this.profile.style.whiteSpace = 'nowrap'
+    this.wrap = config.wrap ? root.querySelector(config.wrap) : null
+    const name = config.name ? this.profile.querySelector(config.name) : null
+    if (name && config.nameStyle) Object.assign(name.style, config.nameStyle)
+    if (config.mobileFontSize) injectStyles(document, config.mobileFontSize, name && config.name)
+    this._applyWidth()
     if (config.minHeight) template.style.minHeight = `${config.minHeight}px`
 
     config.cards.forEach((spec, i) => {
@@ -126,7 +140,7 @@ export class CardStack {
         margin: '0',
         left: '0',
         top: '0',
-        transformOrigin: '50% 100%',
+        transformOrigin: '50% 50%',
         opacity: '0',
         visibility: 'hidden',
       })
@@ -143,7 +157,7 @@ export class CardStack {
           })
           .filter(Boolean)
       } else {
-        card.typer = new Typewriter(el.firstElementChild, { byWord: true })
+        card.typer = new Typewriter(el.firstElementChild, { byWord: config.typeBy !== 'char' })
       }
       this.cards.push(card)
     })
@@ -168,6 +182,9 @@ export class CardStack {
     const el = strip(this.template.cloneNode(false))
     const line = noWrap(shown(strip(source.cloneNode(true))))
     if (getComputedStyle(source).display === 'none') line.style.display = 'flex'
+    if (spec.hideOnMobile) {
+      for (const node of line.querySelectorAll(spec.hideOnMobile)) node.classList.add('globe-hide-mobile')
+    }
     el.appendChild(line)
     const search = this.template.querySelector(this.cfg.search)
     if (search) el.appendChild(shown(strip(search.cloneNode(true))))
@@ -187,11 +204,26 @@ export class CardStack {
     const label = noWrap(shown(strip(text.cloneNode(false))))
     label.textContent = spec.text
     label.style.margin = '0'
+    if (this.cfg.checkGap) el.style.gap = `${this.cfg.checkGap}px`
     el.append(icon, label)
     return el
   }
 
+  _applyWidth() {
+    const { width, mobileBelow } = this.cfg
+    const mobile = mobileBelow > 0 && document.documentElement.clientWidth < mobileBelow
+    const scope = this.wrap || this.template.parentElement
+    scope.classList.toggle('globe-stack-mobile', mobile)
+    if (this.wrap) {
+      set(this.wrap, 'width', mobile ? '100%' : '')
+      set(this.wrap, 'maxWidth', mobile ? '100%' : '')
+    }
+    if (mobile) set(this.template, 'width', '100%')
+    else if (width) set(this.template, 'width', `${width}px`)
+  }
+
   _measure() {
+    this._applyWidth()
     const template = this.template
     const bottom = template.offsetTop + template.offsetHeight
     const height = (this.cards[0] && this.cards[0].el.offsetHeight) || template.offsetHeight
@@ -201,7 +233,6 @@ export class CardStack {
       peek: this.cfg.peek,
       space: this.cfg.space,
       lift: this.cfg.lift,
-      peekOpacity: this.cfg.peekOpacity,
     }
     for (const card of this.cards) {
       const h = card.el.offsetHeight || height
@@ -217,7 +248,7 @@ export class CardStack {
     if (this._dirty) this._measure()
     const dur = this.cfg.dur
     for (const card of this.cards) {
-      const st = cardState(time, card.index, this.times, this.geo, dur)
+      const st = cardState(time, card.index, this.times, this.geo, dur, card.spec.kind)
       const el = card.el
       set(el, 'transform', `translateY(${st.y.toFixed(2)}px) scale(${st.s.toFixed(4)})`)
       set(el, 'opacity', st.o.toFixed(3))

@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.4.2/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.5.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.4.2/dist/serko-globe.js"
-        integrity="sha384-JrFwUXcLrJvbJcM5LYHGyWwnA4lYKCHT52BGJtpHBA7VgEaMTJA8HkSV+w5eVrwQ"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.5.0/dist/serko-globe.js"
+        integrity="sha384-ydhjjG+XG94R/Exeb8ZnQMKdYwkZ2QwepvvJwmPSUtC9Dld4Uou3D5oFS/VbxnZw"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -106,6 +106,7 @@ Layout can be overridden per-site on the root element:
 | `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
 | `data-mobile-scale` | `1` | scale the globe by this below the mobile breakpoint |
 | `data-mobile-below` | `768` | the width that counts as mobile |
+| `data-mobile-turn` | `10` | degrees the globe turns to the right below the mobile breakpoint |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
 | `data-drift` | `4` | degrees the globe turns horizontally with the mouse (`0` = off) |
@@ -116,6 +117,7 @@ Layout can be overridden per-site on the root element:
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
+| `data-fade-in` | `1.2` | seconds the globe takes to fade in once its first frame is drawn (`0` = no fade) |
 
 ### Keeping the route in the same place on every screen
 
@@ -335,6 +337,36 @@ away from the heading.
 
 `__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
 can confirm which side of the breakpoint you are on.
+
+The same breakpoint switches the preferences UI to full width: below
+`data-mobile-below`, `.hero1_profile_wrap` and the search bar are set to `100%`
+instead of the fixed 450px bar. Every line in the bar, and the profile row,
+is `nowrap`, so a line that is too long overflows rather than breaking - shorten
+the copy if that happens.
+
+Below the same breakpoint the flight and hotel detail cards are centred on the
+screen horizontally and hang **below** their city instead of above it: the
+card's top edge sits `data-mobile-offset-y` px under the city point (24 in the
+shipped sequence), and it grows down from that edge. The city pills
+stay open on mobile rather than shrinking to a dot while a card is up, and the
+globe turns `data-mobile-turn` degrees to the right.
+
+On mobile the text in the block drops to 14px (`mobileFontSize` in
+`src/sequence.js`), and the airline logo in the first prompt is hidden
+(`hideOnMobile` on that card) so the line fits a phone.
+
+## The preferences bar
+
+The flight and hotel prompts type in letter by letter in place, like text being
+written into a prompt, and fade out without moving. Each saved preference
+arrives in place behind the card in front of it, growing from 94% to full size,
+so it is revealed as that card leaves, and when the next card arrives it slides down behind Paula's profile -
+read as being collected into it.
+
+The profile name is styled by the script (Jokker, 600, 20px, 150% line height,
+`rgba(0,0,0,.88)`), set in `nameStyle` in `src/sequence.js`. Jokker has to be
+uploaded to the Webflow site or the name falls back to the system font. The
+name keeps its 20px on mobile.
 
 
 ## The grow animation

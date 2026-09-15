@@ -37,6 +37,7 @@ function parse(el) {
     lng: num(el, 'data-lng', 0),
     offsetX: num(el, 'data-offset-x', 0),
     offsetY: num(el, 'data-offset-y', 0),
+    mobileOffsetY: num(el, 'data-mobile-offset-y', 0),
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
@@ -314,9 +315,11 @@ export class Overlays {
         item.slotHeight = h
         el.style.height = `${h}px`
       }
+      const x = stage.mobile ? stage._size.w / 2 : p.x + dx
+      const y = stage.mobile ? p.y + item.mobileOffsetY : p.y + dy - h
       el.style.transform =
-        `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) scale(${scale})`
-      if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
+        `translate(${x}px, ${y}px) translate(-50%, 0) scale(${scale})`
+      if (item.anim === 'grow') el.style.transformOrigin = stage.mobile ? '50% 0%' : '50% 100%'
     } else {
       el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'

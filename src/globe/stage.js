@@ -27,6 +27,10 @@ class Stage {
       this.box.style.maskImage = mask;
       this.box.style.webkitMaskImage = mask;
     }
+    if (layout.fadeIn > 0) {
+      this.box.style.opacity = "0";
+      this.box.style.transition = `opacity ${layout.fadeIn}s ease-out`;
+    }
     rootEl.appendChild(this.box);
 
     this.canvas = document.createElement("canvas");
@@ -144,6 +148,8 @@ class Stage {
     const anchorRect = this.anchor.getBoundingClientRect();
     const bleed = this.layout.fullBleed;
     const vw = document.documentElement.clientWidth || rootRect.width;
+    this.mobile = vw < this.layout.mobileBelow;
+    const turn = this.mobile ? this.layout.mobileTurn : 0;
 
     let host = this.root;
     if (bleed) {
@@ -189,7 +195,7 @@ class Stage {
         ? midpoint(from.lat, from.lng, to.lat, to.lng)
         : { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
       const lat = Math.max(-89, Math.min(89, aim.lat + this.layout.tilt));
-      this._aim = { lat, lng: aim.lng + this.layout.spin };
+      this._aim = { lat, lng: aim.lng + this.layout.spin - turn };
       this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
 
       this.globeCam.layout(w, h, { x: centerX, y: 0 }, 1);
@@ -213,6 +219,8 @@ class Stage {
         centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
       }
     } else {
+      this._aim = { lat: this.layout.cameraLat, lng: this.layout.cameraLng - turn };
+      this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
       if (this.layout.hasRefWidth) {
         const ref = this.layout.refWidth;
         const scale = Math.min(
@@ -309,6 +317,12 @@ class Stage {
       if (this._driftEnabled) this._applyDrift();
       for (const fn of this._onFrame) fn(t, this);
       this.renderer.render(this.scene, this.globeCam.camera);
+      if (!this._revealed) {
+        this._revealed = true;
+        requestAnimationFrame(() => {
+          this.box.style.opacity = "1";
+        });
+      }
     };
     this._raf = requestAnimationFrame(tick);
   }
