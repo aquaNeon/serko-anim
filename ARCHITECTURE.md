@@ -227,3 +227,37 @@ transforms and a clamped copy drives opacity. Clamping in the setter silently
 throws the overshoot away and the pins land flat.
 
 `prefers-reduced-motion` jumps straight to the end state rather than animating.
+
+## Pointer drift
+
+The globe leans slightly away from the mouse. The pointer's position across the
+viewport, -1..1 on each axis, offsets the camera's look-at by up to `drift`
+degrees of longitude and `driftLat` of latitude, on top of whatever the layout
+aimed at. Nothing is translated in screen space, so the globe turns rather than
+slides and the US stays in view.
+
+It moves the camera, not the scene, so the projection stays the single source of
+truth: arcs, pins and anchored cards all read the same camera in the same tick
+and follow the drift for free. `_syncCamDir` runs only when the aim actually
+changes.
+
+The offset eases towards the pointer with `1 - exp(-driftEase · dt)`, which is
+frame-rate independent. Touch pointers are ignored, the offset returns to centre
+when the pointer leaves the page, and `prefers-reduced-motion` disables it.
+
+Direction defaults to *opposite* (mouse right, surface moves left), which reads
+as parallax depth. `data-drift-direction="same"` flips it.
+
+| Attribute | Default |
+|---|---|
+| `data-drift` | `4` (degrees, horizontal; `0` turns it off) |
+| `data-drift-lat` | `2` (degrees, vertical) |
+| `data-drift-ease` | `3` (higher settles faster) |
+| `data-drift-direction` | `opposite` |
+
+## Bottom feather
+
+The canvas box carries a `mask-image` that fades its last `feather` pixels
+(`data-feather`, default 120) to transparent. It is a mask, not a gradient
+painted over the globe, so it is pure opacity: whatever sits behind the hero
+shows through and there is no colour to keep in sync with the background.

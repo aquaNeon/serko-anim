@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.3.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.3.0/dist/serko-globe.js"
-        integrity="sha384-ozkzDpVI0bRuC88XoXR5TN2YsGRGgIzzBJnchzGErIqY2iTZlOyBPN6YWAaLE3xV"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js"
+        integrity="sha384-ed74b8sfDKeNvTs2Oe8ar2RN9p9RPwcwYKGX3CwhDCrbU0ZyuDnfwuh11zJwjB78"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -96,21 +96,32 @@ Layout can be overridden per-site on the root element:
 |---|---|---|
 | `data-radius-scale` | `0.403` | sphere radius as a fraction of the anchor's width |
 | `data-center-y` | `0.925` | sphere centre, in radii below the anchor's top edge |
-| `data-camera-lat` | `-4` | where the camera looks |
+| `data-camera-lat` | `-20` | where the camera looks |
 | `data-camera-lng` | `-91` | where the camera looks |
+| `data-camera-lat-mobile` | `-5` | camera latitude on narrow screens - eases up to `data-camera-lat` across the ease band |
 | `data-apex-clearance` | off | px the dome's top must sit **below** the anchor's top edge |
 | `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
 | `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
-| `data-mobile-scale` | `1` | scale the globe by this below the mobile breakpoint |
-| `data-mobile-below` | `768` | the width that counts as mobile |
+| `data-mobile-scale` | `1` | scale the globe by this on narrow screens - eased, not switched |
+| `data-mobile-lift` | `40` | px the whole globe moves up on narrow screens - eased over the same band |
+| `data-mobile-below` | `768` | the width that counts as mobile (overlay + card layout) |
+| `data-ease-below` | `430` | width at and under which the mobile camera latitude, turn, scale and lift are fully applied |
+| `data-ease-above` | `767` | width at and over which those same values are fully desktop - between the two they ease, so nothing jumps |
+| `data-mobile-turn` | `10` | degrees the globe turns to the right on narrow screens - eased, not switched |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
+| `data-drift` | `4` | degrees the globe turns horizontally with the mouse (`0` = off) |
+| `data-drift-lat` | `2` | degrees it turns vertically |
+| `data-drift-ease` | `3` | how fast it settles - higher is snappier |
+| `data-drift-direction` | `opposite` | `same` = the globe leans towards the mouse instead of away |
+| `data-feather` | `120` | px at the bottom of the globe that fade to transparent (`0` = hard edge) |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
+| `data-fade-in` | `1.2` | seconds the globe takes to fade in once its first frame is drawn (`0` = no fade) |
 
 ### Keeping the route in the same place on every screen
 
@@ -331,6 +342,39 @@ away from the heading.
 `__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
 can confirm which side of the breakpoint you are on.
 
+The same breakpoint switches the preferences UI to full width: below
+`data-mobile-below`, `.hero1_profile_wrap` and the search bar are set to `100%`
+instead of the fixed 450px bar. Every line in the bar, and the profile row,
+is `nowrap`, so a line that is too long overflows rather than breaking - shorten
+the copy if that happens.
+
+Below the same breakpoint the flight and hotel detail cards are centred on the
+screen horizontally and park in the gap above the preferences bar rather than
+tracking their city: `data-mobile-above` takes a selector (`.hero1_profile_wrap`
+in the shipped sequence) and the card's **bottom** edge sits `data-mobile-gap`
+above that element's top edge - `4rem` shipped, and rem or px both parse. With
+no `data-mobile-above` the card falls back to hanging below its city, with its
+top edge `data-mobile-offset-y` px under the city point. The city pills
+stay open on mobile rather than shrinking to a dot while a card is up, and the
+globe turns `data-mobile-turn` degrees to the right.
+
+On mobile the text in the block drops to 14px (`mobileFontSize` in
+`src/sequence.js`), and the airline logo in the first prompt is hidden
+(`hideOnMobile` on that card) so the line fits a phone.
+
+## The preferences bar
+
+The flight and hotel prompts type in letter by letter in place, like text being
+written into a prompt, and fade out without moving. Each saved preference
+arrives in place behind the card in front of it, growing from 94% to full size,
+so it is revealed as that card leaves, and when the next card arrives it slides down behind Paula's profile -
+read as being collected into it.
+
+The profile name is styled by the script (Jokker, 600, 20px, 150% line height,
+`rgba(0,0,0,.88)`), set in `nameStyle` in `src/sequence.js`. Jokker has to be
+uploaded to the Webflow site or the name falls back to the system font. The
+name keeps its 20px on mobile.
+
 
 ## The grow animation
 
@@ -488,3 +532,22 @@ it, so the bar is only ever as wide as one line.
 
 This is handled by the sequence, not by CSS - the prompts share one slot and the
 saved preferences another. Nothing needs setting in Webflow.
+
+## Feature 2 images
+
+`data-f2-panel` can sit on a transparent layout wrapper: while the element has no background and a single child, the script grows that child instead (on the site, `feature2_card_wrap_inner`). Its max-width sets the starting size; the script lifts the max-width once the box grows.
+
+The panel background is the first `<img>` in the panel that is not inside the card (or any element marked `data-f2-bg`). The original stays where it is, hidden, so the Designer layout is untouched; a copy behind the content covers the panel as it grows.
+
+The call pill's two photos come from the Designer. Add two images anywhere inside `[data-f2]` and give them:
+
+| Attribute | Image |
+| --- | --- |
+| `data-f2-avatar="a"` | left photo (sits on a `#DEDEEA` circle, so a cut-out works) |
+| `data-f2-avatar="b"` | right photo |
+
+Hide them in the Designer (`display: none`); the script moves them into the pill. A plain URL in `data-f2-avatar-a` / `data-f2-avatar-b` on the section also works. With neither, the pill uses the man profile logo (left) and the support photo (right) already uploaded to the site's assets.
+
+The card logos cycle heart, face, globe. The heart is whatever image sits in the Designer card; the face and globe are built in. To use a different set, put a comma-separated list of URLs in `data-f2-logos` on the section.
+
+Once the panel grows, the text and the cards (later the pill) move as one block, centred in the panel with `data-f2-text-gap` px between them (default `160`).

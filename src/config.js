@@ -8,7 +8,8 @@ const DEFAULT_LAYOUT = {
 
   centerYFactor: 0.925,
 
-  cameraLat: -4,
+  cameraLat: -20,
+  cameraLatMobile: -5,
   cameraLng: -91,
   globeStart: 0,
   fitRoute: 0,
@@ -22,9 +23,19 @@ const DEFAULT_LAYOUT = {
   scaleMin: 1,
   scaleMax: 1,
   mobileScale: 1,
+  mobileLift: 40,
   mobileBelow: 768,
+  mobileTurn: 10,
+  easeBelow: 430,
+  easeAbove: 767,
   radiusMaxVh: 0,
-  apexClearance: null
+  apexClearance: null,
+  drift: 4,
+  driftLat: 2,
+  driftEase: 3,
+  driftDirection: -1,
+  feather: 120,
+  fadeIn: 1.2
 };
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr);
@@ -59,6 +70,9 @@ function readLayout(rootEl) {
     radiusScale: num(rootEl, "data-radius-scale", DEFAULT_LAYOUT.radiusScale),
     centerYFactor: num(rootEl, "data-center-y", DEFAULT_LAYOUT.centerYFactor),
     cameraLat: num(rootEl, "data-camera-lat", DEFAULT_LAYOUT.cameraLat),
+    cameraLatMobile: rootEl.hasAttribute("data-camera-lat-mobile")
+      ? num(rootEl, "data-camera-lat-mobile", DEFAULT_LAYOUT.cameraLat)
+      : DEFAULT_LAYOUT.cameraLatMobile,
     cameraLng: num(rootEl, "data-camera-lng", DEFAULT_LAYOUT.cameraLng),
     globeStart: num(rootEl, "data-globe-start", DEFAULT_LAYOUT.globeStart),
     fitRoute: num(rootEl, "data-fit-route", DEFAULT_LAYOUT.fitRoute),
@@ -72,11 +86,23 @@ function readLayout(rootEl) {
     scaleMin: num(rootEl, "data-scale-min", DEFAULT_LAYOUT.scaleMin),
     scaleMax: num(rootEl, "data-scale-max", DEFAULT_LAYOUT.scaleMax),
     mobileScale: num(rootEl, "data-mobile-scale", DEFAULT_LAYOUT.mobileScale),
+    mobileLift: num(rootEl, "data-mobile-lift", DEFAULT_LAYOUT.mobileLift),
     mobileBelow: num(rootEl, "data-mobile-below", DEFAULT_LAYOUT.mobileBelow),
+    mobileTurn: num(rootEl, "data-mobile-turn", DEFAULT_LAYOUT.mobileTurn),
+    easeBelow: num(rootEl, "data-ease-below", DEFAULT_LAYOUT.easeBelow),
+    easeAbove: num(rootEl, "data-ease-above", DEFAULT_LAYOUT.easeAbove),
     radiusMaxVh: num(rootEl, "data-radius-max-vh", DEFAULT_LAYOUT.radiusMaxVh),
     apexClearance: rootEl.hasAttribute("data-apex-clearance")
       ? num(rootEl, "data-apex-clearance", 0)
-      : DEFAULT_LAYOUT.apexClearance
+      : DEFAULT_LAYOUT.apexClearance,
+    drift: num(rootEl, "data-drift", DEFAULT_LAYOUT.drift),
+    driftLat: num(rootEl, "data-drift-lat", DEFAULT_LAYOUT.driftLat),
+    driftEase: num(rootEl, "data-drift-ease", DEFAULT_LAYOUT.driftEase),
+    driftDirection: (rootEl.getAttribute("data-drift-direction") || "").toLowerCase() === "same"
+      ? 1
+      : DEFAULT_LAYOUT.driftDirection,
+    feather: num(rootEl, "data-feather", DEFAULT_LAYOUT.feather),
+    fadeIn: num(rootEl, "data-fade-in", DEFAULT_LAYOUT.fadeIn)
   };
 }
 export {

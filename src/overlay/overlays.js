@@ -11,6 +11,19 @@ function nums(el, attr, fallback) {
   return parts.length ? parts : fallback
 }
 
+// accepts px numbers and rem values ("4rem"), resolved against the root font size
+function len(el, attr, fallback) {
+  const raw = el.getAttribute(attr)
+  if (raw === null || raw.trim() === "") return fallback
+  const v = Number.parseFloat(raw)
+  if (!Number.isFinite(v)) return fallback
+  if (!/rems*$/i.test(raw)) return v
+  const rootPx = Number.parseFloat(
+    getComputedStyle(el.ownerDocument.documentElement).fontSize
+  )
+  return v * (Number.isFinite(rootPx) ? rootPx : 16)
+}
+
 function num(el, attr, fallback) {
   const raw = el.getAttribute(attr)
   if (raw === null || raw.trim() === '') return fallback
@@ -37,6 +50,7 @@ function parse(el) {
     lng: num(el, 'data-lng', 0),
     offsetX: num(el, 'data-offset-x', 0),
     offsetY: num(el, 'data-offset-y', 0),
+    mobileOffsetY: num(el, 'data-mobile-offset-y', 0),
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
@@ -240,7 +254,25 @@ export class Overlays {
   }
 
   update(time, stage) {
+    this._boxTop = null
     for (const item of this.items) this._updateItem(item, time, stage)
+  }
+
+  // top of the element this card should sit above, in stage-box pixels
+  _mobileAboveTop(item, stage) {
+    if (!item.mobileAbove) return null
+    if (!item.mobileAboveEl) {
+      item.mobileAboveEl = document.querySelector(item.mobileAbove)
+      if (!item.mobileAboveEl) {
+        console.warn("[globe] data-mobile-above found nothing for", item.mobileAbove)
+        item.mobileAbove = ""
+        return null
+      }
+    }
+    if (this._boxTop === null) {
+      this._boxTop = (stage.box || stage.root).getBoundingClientRect().top
+    }
+    return item.mobileAboveEl.getBoundingClientRect().top - this._boxTop
   }
 
   _updateItem(item, time, stage) {
@@ -314,9 +346,15 @@ export class Overlays {
         item.slotHeight = h
         el.style.height = `${h}px`
       }
+      const x = stage.mobile ? stage._size.w / 2 : p.x + dx
+      let y = p.y + dy - h
+      if (stage.mobile) {
+        const above = this._mobileAboveTop(item, stage)
+        y = above === null ? p.y + item.mobileOffsetY : above - h - item.mobileGap
+      }
       el.style.transform =
-        `translate(${p.x + dx}px, ${p.y + dy - h}px) translate(-50%, 0) scale(${scale})`
-      if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'
+        `translate(${x}px, ${y}px) translate(-50%, 0) scale(${scale})`
+      if (item.anim === 'grow') el.style.transformOrigin = stage.mobile ? '50% 0%' : '50% 100%'
     } else {
       el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`
       if (item.anim === 'grow') el.style.transformOrigin = '50% 100%'

@@ -22,6 +22,15 @@ class Stage {
       height: "100%",
       pointerEvents: "none"
     });
+    if (layout.feather > 0) {
+      const mask = `linear-gradient(to bottom, #000 calc(100% - ${layout.feather}px), transparent 100%)`;
+      this.box.style.maskImage = mask;
+      this.box.style.webkitMaskImage = mask;
+    }
+    if (layout.fadeIn > 0) {
+      this.box.style.opacity = "0";
+      this.box.style.transition = `opacity ${layout.fadeIn}s ease-out`;
+    }
     rootEl.appendChild(this.box);
 
     this.canvas = document.createElement("canvas");
@@ -69,6 +78,43 @@ class Stage {
     this._raf = null;
     this._lastTime = 0;
     this.deltaSeconds = 0;
+    this._aim = null;
+    this._pointer = { x: 0, y: 0 };
+    this._drift = { x: 0, y: 0 };
+    this._onPointerMove = (e) => {
+      if (e.pointerType === "touch") return;
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      this._pointer.x = Math.max(-1, Math.min(1, (e.clientX / w) * 2 - 1));
+      this._pointer.y = Math.max(-1, Math.min(1, (e.clientY / h) * 2 - 1));
+    };
+    this._onPointerLeave = () => {
+      this._pointer.x = 0;
+      this._pointer.y = 0;
+    };
+    const reduced = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this._driftEnabled = !reduced && (layout.drift > 0 || layout.driftLat > 0);
+    if (this._driftEnabled) {
+      window.addEventListener("pointermove", this._onPointerMove, { passive: true });
+      document.documentElement.addEventListener("pointerleave", this._onPointerLeave);
+    }
+  }
+
+  _applyDrift() {
+    const dt = this.deltaSeconds;
+    const k = 1 - Math.exp(-this.layout.driftEase * dt);
+    const d = this._drift;
+    d.x += (this._pointer.x - d.x) * k;
+    d.y += (this._pointer.y - d.y) * k;
+    const base = this._aim || { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
+    const sign = this.layout.driftDirection;
+    const lat = Math.max(-89, Math.min(89, base.lat + sign * d.y * this.layout.driftLat));
+    const lng = base.lng - sign * d.x * this.layout.drift;
+    const cam = this.globeCam;
+    if (Math.abs(cam.lat - lat) < 1e-4 && Math.abs(cam.lng - lng) < 1e-4) return;
+    cam.lookAtLatLng(lat, lng);
+    this._syncCamDir();
   }
 
   onFrame(fn) {
@@ -97,11 +143,26 @@ class Stage {
     return outermost.parentElement;
   }
 
+  // 1 at easeBelow and narrower, 0 at easeAbove and wider - the mobile camera
+  // latitude, turn, scale and lift ride this so nothing jumps at the breakpoint
+  _mobileMix(vw) {
+    const narrow = this.layout.easeBelow;
+    const wide = Math.max(narrow + 1, this.layout.easeAbove);
+    const t = Math.min(1, Math.max(0, (vw - narrow) / (wide - narrow)));
+    return 1 - t * t * (3 - 2 * t);
+  }
+
   _applyLayout() {
     const rootRect = this.root.getBoundingClientRect();
     const anchorRect = this.anchor.getBoundingClientRect();
     const bleed = this.layout.fullBleed;
     const vw = document.documentElement.clientWidth || rootRect.width;
+    this.mobile = vw < this.layout.mobileBelow;
+    const mix = this._mobileMix(vw);
+    const turn = this.layout.mobileTurn * mix;
+    const camLat = this.layout.cameraLatMobile === null
+      ? this.layout.cameraLat
+      : this.layout.cameraLat + (this.layout.cameraLatMobile - this.layout.cameraLat) * mix;
 
     let host = this.root;
     if (bleed) {
@@ -145,9 +206,10 @@ class Stage {
       const { from, to } = this.route;
       const aim = this.layout.aimAtRoute
         ? midpoint(from.lat, from.lng, to.lat, to.lng)
-        : { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
+        : { lat: camLat, lng: this.layout.cameraLng };
       const lat = Math.max(-89, Math.min(89, aim.lat + this.layout.tilt));
-      this.globeCam.lookAtLatLng(lat, aim.lng + this.layout.spin);
+      this._aim = { lat, lng: aim.lng + this.layout.spin - turn };
+      this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
 
       this.globeCam.layout(w, h, { x: centerX, y: 0 }, 1);
       const ua = this.globeCam.project(from.lat, from.lng);
@@ -170,6 +232,9 @@ class Stage {
         centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
       }
     } else {
+      const lat = Math.max(-89, Math.min(89, camLat + this.layout.tilt));
+      this._aim = { lat, lng: this.layout.cameraLng + this.layout.spin - turn };
+      this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
       if (this.layout.hasRefWidth) {
         const ref = this.layout.refWidth;
         const scale = Math.min(
@@ -198,11 +263,14 @@ class Stage {
       }
     }
 
-    if (vw < this.layout.mobileBelow && this.layout.mobileScale !== 1) {
-      const shrink = this.layout.mobileScale;
+    if (this.layout.mobileScale !== 1 && mix > 0) {
+      const shrink = 1 + (this.layout.mobileScale - 1) * mix;
       const apexBefore = centerY - radiusPx;
       radiusPx *= shrink;
       centerY = apexBefore + radiusPx;
+    }
+    if (this.layout.mobileLift !== 0 && mix > 0) {
+      centerY -= this.layout.mobileLift * mix;
     }
 
     const centerPx = { x: centerX, y: centerY };
@@ -263,8 +331,15 @@ class Stage {
       this.deltaSeconds = this._lastTime ? Math.min((t - this._lastTime) / 1000, 0.1) : 0;
       this._lastTime = t;
       if (this._needsResize) this._applyLayout();
+      if (this._driftEnabled) this._applyDrift();
       for (const fn of this._onFrame) fn(t, this);
       this.renderer.render(this.scene, this.globeCam.camera);
+      if (!this._revealed) {
+        this._revealed = true;
+        requestAnimationFrame(() => {
+          this.box.style.opacity = "1";
+        });
+      }
     };
     this._raf = requestAnimationFrame(tick);
   }
@@ -279,6 +354,8 @@ class Stage {
     this._ro.disconnect();
     window.removeEventListener("resize", this._onWindowResize);
     window.removeEventListener("scroll", this._onWindowResize);
+    window.removeEventListener("pointermove", this._onPointerMove);
+    document.documentElement.removeEventListener("pointerleave", this._onPointerLeave);
     this.renderer.dispose();
     this.canvas.remove();
   }
