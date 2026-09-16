@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.5.1/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.5.1/dist/serko-globe.js"
-        integrity="sha384-q2OYWbTZflMRvFb5mq1UzONoBurfYQ5WRimu6/LmUpq4AV1/jTuelm+0RvEwMYvC"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js"
+        integrity="sha384-ed74b8sfDKeNvTs2Oe8ar2RN9p9RPwcwYKGX3CwhDCrbU0ZyuDnfwuh11zJwjB78"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -96,17 +96,21 @@ Layout can be overridden per-site on the root element:
 |---|---|---|
 | `data-radius-scale` | `0.403` | sphere radius as a fraction of the anchor's width |
 | `data-center-y` | `0.925` | sphere centre, in radii below the anchor's top edge |
-| `data-camera-lat` | `-4` | where the camera looks |
+| `data-camera-lat` | `-20` | where the camera looks |
 | `data-camera-lng` | `-91` | where the camera looks |
+| `data-camera-lat-mobile` | `-5` | camera latitude on narrow screens - eases up to `data-camera-lat` across the ease band |
 | `data-apex-clearance` | off | px the dome's top must sit **below** the anchor's top edge |
 | `data-radius-max-vh` | `0` | cap the radius at this fraction of viewport height (`0` = off) |
 | `data-fit-route` | `0` | frame the globe so the route spans this fraction of the width |
 | `data-route-y` | `0.34` | where the route sits, as a fraction of the anchor's height |
 | `data-full-bleed` | off | present = canvas spans the window, ignoring the container |
 | `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
-| `data-mobile-scale` | `1` | scale the globe by this below the mobile breakpoint |
-| `data-mobile-below` | `768` | the width that counts as mobile |
-| `data-mobile-turn` | `10` | degrees the globe turns to the right below the mobile breakpoint |
+| `data-mobile-scale` | `1` | scale the globe by this on narrow screens - eased, not switched |
+| `data-mobile-lift` | `40` | px the whole globe moves up on narrow screens - eased over the same band |
+| `data-mobile-below` | `768` | the width that counts as mobile (overlay + card layout) |
+| `data-ease-below` | `430` | width at and under which the mobile camera latitude, turn, scale and lift are fully applied |
+| `data-ease-above` | `767` | width at and over which those same values are fully desktop - between the two they ease, so nothing jumps |
+| `data-mobile-turn` | `10` | degrees the globe turns to the right on narrow screens - eased, not switched |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
 | `data-drift` | `4` | degrees the globe turns horizontally with the mouse (`0` = off) |
@@ -345,9 +349,12 @@ is `nowrap`, so a line that is too long overflows rather than breaking - shorten
 the copy if that happens.
 
 Below the same breakpoint the flight and hotel detail cards are centred on the
-screen horizontally and hang **below** their city instead of above it: the
-card's top edge sits `data-mobile-offset-y` px under the city point (24 in the
-shipped sequence), and it grows down from that edge. The city pills
+screen horizontally and park in the gap above the preferences bar rather than
+tracking their city: `data-mobile-above` takes a selector (`.hero1_profile_wrap`
+in the shipped sequence) and the card's **bottom** edge sits `data-mobile-gap`
+above that element's top edge - `4rem` shipped, and rem or px both parse. With
+no `data-mobile-above` the card falls back to hanging below its city, with its
+top edge `data-mobile-offset-y` px under the city point. The city pills
 stay open on mobile rather than shrinking to a dot while a card is up, and the
 globe turns `data-mobile-turn` degrees to the right.
 

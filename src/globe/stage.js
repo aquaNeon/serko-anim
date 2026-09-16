@@ -143,13 +143,26 @@ class Stage {
     return outermost.parentElement;
   }
 
+  // 1 at easeBelow and narrower, 0 at easeAbove and wider - the mobile camera
+  // latitude, turn, scale and lift ride this so nothing jumps at the breakpoint
+  _mobileMix(vw) {
+    const narrow = this.layout.easeBelow;
+    const wide = Math.max(narrow + 1, this.layout.easeAbove);
+    const t = Math.min(1, Math.max(0, (vw - narrow) / (wide - narrow)));
+    return 1 - t * t * (3 - 2 * t);
+  }
+
   _applyLayout() {
     const rootRect = this.root.getBoundingClientRect();
     const anchorRect = this.anchor.getBoundingClientRect();
     const bleed = this.layout.fullBleed;
     const vw = document.documentElement.clientWidth || rootRect.width;
     this.mobile = vw < this.layout.mobileBelow;
-    const turn = this.mobile ? this.layout.mobileTurn : 0;
+    const mix = this._mobileMix(vw);
+    const turn = this.layout.mobileTurn * mix;
+    const camLat = this.layout.cameraLatMobile === null
+      ? this.layout.cameraLat
+      : this.layout.cameraLat + (this.layout.cameraLatMobile - this.layout.cameraLat) * mix;
 
     let host = this.root;
     if (bleed) {
@@ -193,7 +206,7 @@ class Stage {
       const { from, to } = this.route;
       const aim = this.layout.aimAtRoute
         ? midpoint(from.lat, from.lng, to.lat, to.lng)
-        : { lat: this.layout.cameraLat, lng: this.layout.cameraLng };
+        : { lat: camLat, lng: this.layout.cameraLng };
       const lat = Math.max(-89, Math.min(89, aim.lat + this.layout.tilt));
       this._aim = { lat, lng: aim.lng + this.layout.spin - turn };
       this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
@@ -219,7 +232,8 @@ class Stage {
         centerY = anchorTop + band * this.layout.routeY - unitMidY * radiusPx;
       }
     } else {
-      this._aim = { lat: this.layout.cameraLat, lng: this.layout.cameraLng - turn };
+      const lat = Math.max(-89, Math.min(89, camLat + this.layout.tilt));
+      this._aim = { lat, lng: this.layout.cameraLng + this.layout.spin - turn };
       this.globeCam.lookAtLatLng(this._aim.lat, this._aim.lng);
       if (this.layout.hasRefWidth) {
         const ref = this.layout.refWidth;
@@ -249,11 +263,14 @@ class Stage {
       }
     }
 
-    if (vw < this.layout.mobileBelow && this.layout.mobileScale !== 1) {
-      const shrink = this.layout.mobileScale;
+    if (this.layout.mobileScale !== 1 && mix > 0) {
+      const shrink = 1 + (this.layout.mobileScale - 1) * mix;
       const apexBefore = centerY - radiusPx;
       radiusPx *= shrink;
       centerY = apexBefore + radiusPx;
+    }
+    if (this.layout.mobileLift !== 0 && mix > 0) {
+      centerY -= this.layout.mobileLift * mix;
     }
 
     const centerPx = { x: centerX, y: centerY };

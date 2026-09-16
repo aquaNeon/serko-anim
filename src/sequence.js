@@ -10,6 +10,8 @@ export const SEQUENCE = [
     lng: -122.4194,
     offsetY: -31,
     mobileOffsetY: 24,
+    mobileAbove: '.hero1_profile_wrap',
+    mobileGap: '4rem',
     reparent: true,
     in: 4.95,
     out: 12.0,
@@ -24,6 +26,8 @@ export const SEQUENCE = [
     lng: -74.006,
     offsetY: -31,
     mobileOffsetY: 24,
+    mobileAbove: '.hero1_profile_wrap',
+    mobileGap: '4rem',
     reparent: true,
     in: 15.35,
     out: 22.0,
@@ -93,6 +97,8 @@ const ATTR = {
   offsetX: 'data-offset-x',
   offsetY: 'data-offset-y',
   mobileOffsetY: 'data-mobile-offset-y',
+  mobileAbove: 'data-mobile-above',
+  mobileGap: 'data-mobile-gap',
   reparent: 'data-reparent',
 }
 
