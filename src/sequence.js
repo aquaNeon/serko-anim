@@ -30,7 +30,7 @@ export const SEQUENCE = [
     mobileGap: '2rem',
     reparent: true,
     in: 15.35,
-    out: 22.0,
+    out: 24.9,
     dur: 0.9,
     outDur: 0.32,
     growOut: 0.86,
@@ -69,9 +69,10 @@ export const STACK = {
     { at: 0.9, kind: 'prompt', from: '.hero1_profile_choice_text_wrap', hideOnMobile: '.hero1_profile_choice_emoji' },
     { at: 7.0, kind: 'pref', text: 'No early mornings' },
     { at: 10.1, kind: 'pref', text: 'Premium economy' },
-    { at: 13.7, kind: 'prompt', from: '.hero1_profile_choice_hotel' },
-    { at: 17.2, kind: 'pref', text: 'Walkable location' },
-    { at: 20.1, kind: 'pref', text: 'Mid-range price' },
+    { at: 13.7, kind: 'prompt', from: '.hero1_profile_choice_hotel', text: 'Stay at Marriott near Javits Center' },
+    { at: 17.2, kind: 'pref', text: 'Marriott Bonvoy membership', icon: '.hero1_profile_choice_hotel .hero1_profile_choice_emoji' },
+    { at: 20.1, kind: 'pref', text: 'Walking distance to Javits Center' },
+    { at: 23.0, kind: 'pref', text: 'Mid-range price' },
   ],
 }
 

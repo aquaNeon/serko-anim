@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.1/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.2/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.1/dist/serko-globe.js"
-        integrity="sha384-phXrJNYk6mvXE1KG4zgAdL/5GIMbmBzLgHJXIf43p4fsW6DQgzd1vCXDDPwvvJkN"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.2/dist/serko-globe.js"
+        integrity="sha384-E2SUyf0aDyEaNs6/cHOL4tLe45PQdgkcVyHAZVT93n8HxRzNctcimbWOCyyeL+ng"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -548,8 +548,8 @@ The call pill's two photos come from the Designer. Add two images anywhere insid
 | `data-f2-avatar="a"` | left photo (sits on a `#DEDEEA` circle, so a cut-out works) |
 | `data-f2-avatar="b"` | right photo |
 
-Hide them in the Designer (`display: none`); the script moves them into the pill. A plain URL in `data-f2-avatar-a` / `data-f2-avatar-b` on the section also works. With neither, the pill uses the man profile logo (left) and the support photo (right) already uploaded to the site's assets.
+The attribute can sit on the image or on a wrapper around it. Hide them in the Designer (`display: none`); the script moves the image into the pill and shows it. A plain URL in `data-f2-avatar-a` / `data-f2-avatar-b` on the section also works. With neither, the pill uses the man profile logo (left) and the support photo (right) already uploaded to the site's assets.
 
-The card logos cycle heart, face, globe. The heart is whatever image sits in the Designer card; the face and globe are built in. To use a different set, put a comma-separated list of URLs in `data-f2-logos` on the section.
+The card logos cycle heart, face, globe. The heart is whatever image sits in the Designer card; the face and globe are built in. To swap one, add a hidden image anywhere inside `[data-f2]` with `data-f2-logo` set to its slot - `1` heart, `2` face, `3` globe - and the script uses that image's source instead. A comma-separated list of URLs in `data-f2-logos` on the section replaces the whole set.
 
 Once the panel grows, the text and the cards (later the pill) move as one block, centred in the panel with `data-f2-text-gap` px between them (default `160`).

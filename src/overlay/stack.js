@@ -180,7 +180,13 @@ export class CardStack {
       return null
     }
     const el = strip(this.template.cloneNode(false))
-    const line = noWrap(shown(strip(source.cloneNode(true))))
+    const line = noWrap(shown(strip(source.cloneNode(!spec.text))))
+    if (spec.text) {
+      const label = source.querySelector(this.cfg.text)
+      const copy = label ? strip(label.cloneNode(false)) : document.createElement('div')
+      copy.textContent = spec.text
+      line.appendChild(noWrap(copy))
+    }
     if (getComputedStyle(source).display === 'none') line.style.display = 'flex'
     if (spec.hideOnMobile) {
       for (const node of line.querySelectorAll(spec.hideOnMobile)) node.classList.add('globe-hide-mobile')
@@ -199,8 +205,20 @@ export class CardStack {
       return null
     }
     const el = strip(this.template.cloneNode(false))
-    const icon = shown(strip(check.cloneNode(true)))
+    const logo = spec.icon ? this.template.querySelector(spec.icon) : null
+    if (spec.icon && !logo) console.warn(`[globe] card stack: ${spec.icon} matched nothing, using the check`)
+    let icon
+    if (logo) {
+      // the logo sits in a box cut from the check so every preference starts its text at the same x
+      icon = shown(strip(check.cloneNode(false)))
+      icon.style.alignItems = 'center'
+      icon.style.justifyContent = 'center'
+      icon.appendChild(shown(strip(logo.cloneNode(true))))
+    } else {
+      icon = shown(strip(check.cloneNode(true)))
+    }
     icon.style.display = 'flex'
+    icon.style.flexShrink = '0'
     const label = noWrap(shown(strip(text.cloneNode(false))))
     label.textContent = spec.text
     label.style.margin = '0'
@@ -226,7 +244,9 @@ export class CardStack {
     this._applyWidth()
     const template = this.template
     const bottom = template.offsetTop + template.offsetHeight
-    const height = (this.cards[0] && this.cards[0].el.offsetHeight) || template.offsetHeight
+    for (const card of this.cards) card.el.style.height = ''
+    const height = Math.ceil(Math.max(0, ...this.cards.map((card) => card.el.offsetHeight))) ||
+      template.offsetHeight
     this.geo = {
       gap: this.profile.offsetTop - bottom,
       height,
@@ -235,7 +255,9 @@ export class CardStack {
       lift: this.cfg.lift,
     }
     for (const card of this.cards) {
-      const h = card.el.offsetHeight || height
+      const h = height
+      card.el.style.boxSizing = 'border-box'
+      card.el.style.height = `${h}px`
       card.el.style.left = `${template.offsetLeft}px`
       card.el.style.top = `${bottom - h}px`
       card.el.style.width = `${template.offsetWidth}px`

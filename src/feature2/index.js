@@ -21,7 +21,7 @@ const CSS = `
 .f2-bg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;object-fit:cover;object-position:50% 100%;z-index:-1;pointer-events:none}
 .f2-pill{position:absolute;left:50%;top:50%;box-sizing:border-box;display:flex;align-items:center;gap:2.042em;padding:1.441em;opacity:0;pointer-events:none;font-size:10px;line-height:0}
 .f2-avatar{position:relative;flex:0 0 auto;width:7.35em;height:7.35em;border-radius:50%;overflow:hidden;background:#dedeea}
-.f2-avatar img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover}
+.f2-avatar img{display:block!important;visibility:visible!important;position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover}
 .f2-avatar-b{width:7.278em;height:7.278em}
 .f2-wave{flex:0 0 auto;width:15.682em;height:5.672em;display:flex;align-items:center;gap:.334em}
 .f2-wave i{flex:0 0 auto;width:.667em;border-radius:.417em;background:#000;opacity:.2}
@@ -47,7 +47,7 @@ const DEFAULTS = {
   softButton: 'See alternatives',
   logos: [
     '',
-    'https://cdn.prod.website-files.com/6aa12b65e6dd0b96a2a8345b/6aa827c24e5b37e637d8be28_slotStart%20(1).png',
+    'https://cdn.prod.website-files.com/6aa12b65e6dd0b96a2a8345b/6aa32dd2a66e06a72860750b_Flight.png',
     'https://cdn.prod.website-files.com/6aa12b65e6dd0b96a2a8345b/6aa827c299c1c34d28a5cffe_slotStart%20(2).png',
   ],
   avatarA: 'https://cdn.prod.website-files.com/6aa12b65e6dd0b96a2a8345b/6aa835df822458297f3c3dd1_man_profile.png',
@@ -62,6 +62,10 @@ const CLOSE_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><pat
 const text = (el, name, fallback) => {
   const v = el.getAttribute(name)
   return v === null || v.trim() === '' ? fallback : v
+}
+const imageSrc = (el) => {
+  const img = el.tagName === 'IMG' ? el : el.querySelector('img')
+  return img ? img.getAttribute('src') || '' : text(el, 'data-f2-logo-src', '')
 }
 const number = (el, name, fallback) => {
   const n = parseFloat(el.getAttribute(name))
@@ -167,9 +171,7 @@ export class Feature2 {
       focus: DEFAULTS.disrupted + shift,
       hold: number(section, 'data-f2-hold', DEFAULTS.hold),
       textGap: number(section, 'data-f2-text-gap', DEFAULTS.textGap),
-      logos: section.hasAttribute('data-f2-logos')
-        ? text(section, 'data-f2-logos', '').split(',').map((s) => s.trim()).filter(Boolean)
-        : DEFAULTS.logos,
+      logos: this._logos(section),
       avatars: ['a', 'b'].map((k) => this._avatarSource(section, k)),
     }
 
@@ -244,11 +246,29 @@ export class Feature2 {
     this.measure()
   }
 
+  _logos(section) {
+    const logos = section.hasAttribute('data-f2-logos')
+      ? text(section, 'data-f2-logos', '').split(',').map((s) => s.trim()).filter(Boolean)
+      : DEFAULTS.logos.slice()
+    for (const el of section.querySelectorAll('[data-f2-logo]')) {
+      const slot = Math.round(parseFloat(el.getAttribute('data-f2-logo')))
+      const src = imageSrc(el)
+      if (!src || !(slot >= 1)) continue
+      while (logos.length < slot) logos.push('')
+      logos[slot - 1] = src
+    }
+    return logos
+  }
+
   _avatarSource(section, key) {
-    const img = section.querySelector(`[data-f2-avatar="${key}"]`)
+    const found = section.querySelector(`[data-f2-avatar="${key}"]`)
+    const img = found && (found.tagName === 'IMG' ? found : found.querySelector('img'))
     if (img) {
       img.remove()
       img.removeAttribute('data-f2-avatar')
+      img.removeAttribute('srcset')
+      img.removeAttribute('sizes')
+      img.style.display = ''
       img.loading = 'eager'
       return img
     }
