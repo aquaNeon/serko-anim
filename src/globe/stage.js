@@ -70,6 +70,12 @@ class Stage {
       this._needsResize = true;
     });
     this._ro.observe(this.root);
+    this.cutEl = null;
+    if (layout.cutBelow && layout.cutBelow !== "none") {
+      this.cutEl = document.querySelector(layout.cutBelow);
+      if (this.cutEl) this._ro.observe(this.cutEl);
+      else console.warn("[globe] data-cut-below found nothing for", layout.cutBelow);
+    }
     this._onWindowResize = () => {
       this._needsResize = true;
     };
@@ -175,17 +181,24 @@ class Stage {
       }
     }
 
+    // the box ends a set distance under the cut element, so a tall hero shows only the top of the globe
+    let boxHeight = rootRect.height;
+    if (this.cutEl) {
+      const cut = this.cutEl.getBoundingClientRect().bottom - rootRect.top + this.layout.cutOffset;
+      boxHeight = Math.max(1, Math.min(boxHeight, cut));
+    }
+
     const hostRect = host.getBoundingClientRect();
     const boxWidth = bleed ? vw : rootRect.width;
     const boxLeft = bleed ? -hostRect.left : 0;
     this.box.style.left = `${boxLeft}px`;
     this.box.style.top = `${bleed ? rootRect.top - hostRect.top : 0}px`;
     this.box.style.width = `${boxWidth}px`;
-    this.box.style.height = `${rootRect.height}px`;
+    this.box.style.height = `${boxHeight}px`;
 
     const bleedLeft = bleed ? rootRect.left : 0;
     const rect = { left: 0, top: rootRect.top,
-                   width: boxWidth, height: rootRect.height };
+                   width: boxWidth, height: boxHeight };
     const w = Math.max(1, Math.round(rect.width));
     const h = Math.max(1, Math.round(rect.height));
     const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);

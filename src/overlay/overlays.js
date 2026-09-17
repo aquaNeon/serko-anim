@@ -51,6 +51,9 @@ function parse(el) {
     offsetX: num(el, 'data-offset-x', 0),
     offsetY: num(el, 'data-offset-y', 0),
     mobileOffsetY: num(el, 'data-mobile-offset-y', 0),
+    mobileAbove: (el.getAttribute('data-mobile-above') || '').trim(),
+    mobileAboveEl: null,
+    mobileGap: len(el, 'data-mobile-gap', 64),
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
@@ -136,9 +139,20 @@ function parse(el) {
   return item
 }
 
-function reparentAnchored(items, stageRoot) {
-  const doc = stageRoot.ownerDocument
-  let layer = stageRoot.querySelector('.globe-overlay-layer')
+// the cards mount on the nearest ancestor shared with the preferences bar, so a z-index on
+// #globe-root or its wrapper can't trap them under the hero buttons
+function overlayHost(stage) {
+  const root = stage.root
+  let node = root.parentElement
+  if (stage.cutEl) {
+    while (node && !node.contains(stage.cutEl)) node = node.parentElement
+  }
+  return node || root.parentElement || root
+}
+
+function reparentAnchored(items, host) {
+  const doc = host.ownerDocument
+  let layer = host.querySelector(':scope > .globe-overlay-layer')
 
   for (const item of items) {
     if (!item.anchored) continue
@@ -149,10 +163,11 @@ function reparentAnchored(items, stageRoot) {
       layer = doc.createElement('div')
       layer.className = 'globe-overlay-layer'
       layer.style.position = 'absolute'
-      layer.style.inset = '0'
+      layer.style.top = '0'
+      layer.style.left = '0'
       layer.style.pointerEvents = 'none'
       layer.style.zIndex = '45'
-      stageRoot.appendChild(layer)
+      host.appendChild(layer)
     }
 
     if (item.hiddenByDisplay) item.el.style.display = item.revealDisplay
@@ -201,6 +216,7 @@ function reparentAnchored(items, stageRoot) {
     item.slotHeight = Math.ceil(height) || 0
     item.host = slot
   }
+  return layer || null
 }
 
 function lockSizes(root) {
@@ -240,7 +256,22 @@ export class Overlays {
     lockSizes(root)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
-    if (stage && stage.root) reparentAnchored(this.items, stage.box || stage.root)
+    this.layer = null
+    this._layerShift = { x: 0, y: 0 }
+    if (stage && stage.root) this.layer = reparentAnchored(this.items, overlayHost(stage))
+  }
+
+  _syncLayer(stage) {
+    if (!this.layer) return
+    const box = (stage.box || stage.root).getBoundingClientRect()
+    const at = this.layer.getBoundingClientRect()
+    const shift = this._layerShift
+    shift.x += box.left - at.left
+    shift.y += box.top - at.top
+    const s = this.layer.style
+    s.width = `${box.width}px`
+    s.height = `${box.height}px`
+    s.transform = `translate(${shift.x}px, ${shift.y}px)`
   }
 
   get maxTime() {
@@ -255,6 +286,7 @@ export class Overlays {
 
   update(time, stage) {
     this._boxTop = null
+    this._syncLayer(stage)
     for (const item of this.items) this._updateItem(item, time, stage)
   }
 

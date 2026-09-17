@@ -27,7 +27,7 @@ const DEFAULT_LAYOUT = {
   mobileBelow: 768,
   mobileTurn: 10,
   easeBelow: 430,
-  easeAbove: 767,
+  easeAbove: 1024,
   radiusMaxVh: 0,
   apexClearance: null,
   drift: 4,
@@ -35,6 +35,8 @@ const DEFAULT_LAYOUT = {
   driftEase: 3,
   driftDirection: -1,
   feather: 120,
+  cutBelow: ".hero1_profile_wrap",
+  cutOffset: 64,
   fadeIn: 1.2
 };
 function num(el, attr, fallback) {
@@ -102,6 +104,10 @@ function readLayout(rootEl) {
       ? 1
       : DEFAULT_LAYOUT.driftDirection,
     feather: num(rootEl, "data-feather", DEFAULT_LAYOUT.feather),
+    cutBelow: rootEl.hasAttribute("data-cut-below")
+      ? rootEl.getAttribute("data-cut-below").trim()
+      : DEFAULT_LAYOUT.cutBelow,
+    cutOffset: num(rootEl, "data-cut-offset", DEFAULT_LAYOUT.cutOffset),
     fadeIn: num(rootEl, "data-fade-in", DEFAULT_LAYOUT.fadeIn)
   };
 }

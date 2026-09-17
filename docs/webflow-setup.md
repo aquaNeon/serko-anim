@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.1/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.0/dist/serko-globe.js"
-        integrity="sha384-ed74b8sfDKeNvTs2Oe8ar2RN9p9RPwcwYKGX3CwhDCrbU0ZyuDnfwuh11zJwjB78"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.1/dist/serko-globe.js"
+        integrity="sha384-phXrJNYk6mvXE1KG4zgAdL/5GIMbmBzLgHJXIf43p4fsW6DQgzd1vCXDDPwvvJkN"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -109,7 +109,7 @@ Layout can be overridden per-site on the root element:
 | `data-mobile-lift` | `40` | px the whole globe moves up on narrow screens - eased over the same band |
 | `data-mobile-below` | `768` | the width that counts as mobile (overlay + card layout) |
 | `data-ease-below` | `430` | width at and under which the mobile camera latitude, turn, scale and lift are fully applied |
-| `data-ease-above` | `767` | width at and over which those same values are fully desktop - between the two they ease, so nothing jumps |
+| `data-ease-above` | `1024` | width at and over which those same values are fully desktop - between the two they ease, so nothing jumps |
 | `data-mobile-turn` | `10` | degrees the globe turns to the right on narrow screens - eased, not switched |
 | `data-scale-min` | `1` | never shrink below this fraction - crop instead |
 | `data-scale-max` | `1` | never grow above this fraction |
@@ -118,6 +118,8 @@ Layout can be overridden per-site on the root element:
 | `data-drift-ease` | `3` | how fast it settles - higher is snappier |
 | `data-drift-direction` | `opposite` | `same` = the globe leans towards the mouse instead of away |
 | `data-feather` | `120` | px at the bottom of the globe that fade to transparent (`0` = hard edge) |
+| `data-cut-below` | `.hero1_profile_wrap` | the globe ends `data-cut-offset` px under this element's bottom edge, so a tall mobile hero still shows only the top of the globe (`none` = run to the bottom of `#globe-root`) |
+| `data-cut-offset` | `64` | px the globe (including its feather) extends past the bottom of `data-cut-below` |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
 | `data-globe-loop` | off | present = replay the flight on a loop |
@@ -352,7 +354,7 @@ Below the same breakpoint the flight and hotel detail cards are centred on the
 screen horizontally and park in the gap above the preferences bar rather than
 tracking their city: `data-mobile-above` takes a selector (`.hero1_profile_wrap`
 in the shipped sequence) and the card's **bottom** edge sits `data-mobile-gap`
-above that element's top edge - `4rem` shipped, and rem or px both parse. With
+above that element's top edge - `2rem` shipped, and rem or px both parse. With
 no `data-mobile-above` the card falls back to hanging below its city, with its
 top edge `data-mobile-offset-y` px under the city point. The city pills
 stay open on mobile rather than shrinking to a dot while a card is up, and the
