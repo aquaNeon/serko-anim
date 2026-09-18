@@ -176,3 +176,17 @@ test('the pin itself is never hidden by the card appearing', () => {
   assert.ok(minAfterEntry > 0.98,
     `origin pin dipped to ${minAfterEntry}; the dot and stem should stay`)
 })
+
+test('an outro clears the pins and route, and complete() stops short of it', () => {
+  const route = { ...fakeRoute(), opacity: 1, setOpacity(v) { this.opacity = v; return this } }
+  const originPin = fakePin()
+  const destPin = fakePin()
+  const flow = new Flow({ route, originPin, destPin, outroAt: 30 })
+  flow.complete()
+  assert.ok(Math.abs(originPin.amount - 1) < 1e-9)
+  assert.equal(route.opacity, 1)
+  flow.seek(31)
+  assert.equal(originPin.amount, 0)
+  assert.equal(destPin.amount, 0)
+  assert.equal(route.opacity, 0)
+})

@@ -108,6 +108,7 @@ export class CardStack {
     this.cfg = config
     this.cards = []
     this.times = [0, ...config.cards.map((c) => c.at)]
+    if (config.outAt) this.times.push(config.outAt)
     this.template = root.querySelector(config.template)
     this.profile = root.querySelector(config.profile)
     if (!this.template || !this.profile) {
@@ -126,7 +127,6 @@ export class CardStack {
     this.profile.style.whiteSpace = 'nowrap'
     this.wrap = config.wrap ? root.querySelector(config.wrap) : null
     const name = config.name ? this.profile.querySelector(config.name) : null
-    if (name && config.nameStyle) Object.assign(name.style, config.nameStyle)
     if (config.mobileFontSize) injectStyles(document, config.mobileFontSize, name && config.name)
     this._applyWidth()
     if (config.minHeight) template.style.minHeight = `${config.minHeight}px`
@@ -169,8 +169,8 @@ export class CardStack {
   }
 
   get maxTime() {
-    const last = this.cfg.cards[this.cfg.cards.length - 1]
-    return last ? last.at + this.cfg.dur * 1.5 : 0
+    const last = this.times[this.times.length - 1]
+    return this.cfg.cards.length ? last + this.cfg.dur * 1.5 : 0
   }
 
   _prompt(spec) {

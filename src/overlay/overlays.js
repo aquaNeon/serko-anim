@@ -193,7 +193,6 @@ function reparentAnchored(items, host) {
     el.style.opacity = '1'
     el.style.visibility = 'visible'
 
-    const width = el.offsetWidth
     const height = el.offsetHeight
 
     const slot = doc.createElement('div')
@@ -203,7 +202,10 @@ function reparentAnchored(items, host) {
     slot.style.left = '0'
     slot.style.margin = '0'
     slot.style.willChange = 'transform, opacity'
-    if (width) slot.style.width = `${Math.ceil(width)}px`
+    // A width measured here goes stale once the brand font loads or the card moves
+    // out of its Webflow column, and the frozen slot then wraps the card's text.
+    slot.style.width = 'max-content'
+    slot.style.maxWidth = 'calc(100% - 2rem)'
     if (height) slot.style.height = `${Math.ceil(height)}px`
 
     layer.appendChild(slot)

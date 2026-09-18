@@ -19,13 +19,19 @@ export const DEFAULT_BEATS = [
   { track: 'destPin', at: 2.05, dur: 0.75, from: 0, to: 1, ease: 'outBack' },
   { track: 'dropHead', at: 2.6, dur: 1.8, from: 0, to: 1, ease: 'inOutCubic' },
   { track: 'originPill', at: 1.4, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
-  { track: 'originPill', at: 9.2, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
-  { track: 'destPill', at: 11.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
-  { track: 'destPill', at: 19.2, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+  { track: 'originPill', at: 7.2, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+  { track: 'destPill', at: 9.8, dur: 0.55, from: 1, to: 0, ease: 'inOutCubic' },
+  { track: 'destPill', at: 14.4, dur: 0.45, from: 0, to: 1, ease: 'outBack' },
+]
+
+export const OUTRO_BEATS = [
+  { track: 'originPin', at: 0, dur: 0.6, from: 1, to: 0, ease: 'inOutCubic' },
+  { track: 'destPin', at: 0, dur: 0.6, from: 1, to: 0, ease: 'inOutCubic' },
+  { track: 'routeOpacity', at: 0, dur: 0.6, from: 1, to: 0, ease: 'inOutCubic' },
 ]
 
 export class Flow {
-  constructor({ route, originPin, destPin, beats = DEFAULT_BEATS, offset = 0, loop = false, loopDelay = 2.5 }) {
+  constructor({ route, originPin, destPin, beats = DEFAULT_BEATS, offset = 0, loop = false, loopDelay = 2.5, outroAt = null }) {
     this.route = route
     this.originPin = originPin
     this.destPin = destPin
@@ -33,6 +39,11 @@ export class Flow {
     this.beats = offset
       ? beats.map((b) => ({ ...b, at: b.at + offset }))
       : beats
+    // outroAt is absolute: it lines up with the overlay timeline, which has no offset
+    if (outroAt !== null) {
+      this.beats = this.beats.concat(OUTRO_BEATS.map((b) => ({ ...b, at: b.at + outroAt })))
+    }
+    this.restAt = outroAt
     this.loop = loop
     this.loopDelay = loopDelay
     this.time = 0
@@ -48,7 +59,7 @@ export class Flow {
 
     this.values = {
       originPin: 0, arcDraw: 0, dropHead: 0, destPin: 0,
-      originPill: 1, destPill: 1
+      originPill: 1, destPill: 1, routeOpacity: 1
     }
     Object.assign(this.values, this._initial)
     this._apply()
@@ -77,8 +88,9 @@ export class Flow {
     return this
   }
 
+  // the finished state is the moment before the outro clears it
   complete() {
-    return this.seek(this.duration)
+    return this.seek(this.restAt === null ? this.duration : this.restAt)
   }
 
   advance(dt) {
@@ -111,6 +123,7 @@ export class Flow {
     const v = this.values
     this.route.setProgress(v.arcDraw)
     this.route.setHead(v.dropHead)
+    if (this.route.setOpacity) this.route.setOpacity(v.routeOpacity)
     if (this.originPin) this.originPin.setAmount(v.originPin).setPill(v.originPill)
     if (this.destPin) this.destPin.setAmount(v.destPin).setPill(v.destPill)
   }

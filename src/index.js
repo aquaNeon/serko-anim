@@ -6,7 +6,7 @@ import { createPinLayer, Pin } from './overlay/pill.js'
 import { Overlays } from './overlay/overlays.js'
 import { CardStack } from './overlay/stack.js'
 import { bootFeature2 } from './feature2/index.js'
-import { SEQUENCE, STACK, GLOBE_START, applySequence } from './sequence.js'
+import { SEQUENCE, STACK, GLOBE_START, OUTRO_AT, applySequence } from './sequence.js'
 import { Flow, prefersReducedMotion } from './flow.js'
 
 const ROOT_SELECTOR = '#globe-root'
@@ -41,7 +41,9 @@ function boot() {
       originPin,
       destPin,
       offset: layout.globeStart || GLOBE_START,
-      loop: root.hasAttribute('data-globe-loop'),
+      loop: root.getAttribute('data-globe-loop') !== 'false',
+      loopDelay: 0.5,
+      outroAt: OUTRO_AT,
     })
 
     applySequence(SEQUENCE, document)
@@ -62,7 +64,7 @@ function boot() {
     window.__globeStack = stack
 
     if (prefersReducedMotion()) flow.complete()
-    else flow.play()
+    else playWhileInView(document.querySelector(STACK.wrap) || root, flow)
   }
 
   stage.start()
@@ -136,6 +138,19 @@ function boot() {
     console.log('%c[globe report]', 'font-weight:bold', report)
     return report
   }
+}
+
+// starts once the element is almost fully on screen, so a short viewport that shows
+// only the top of the hero waits for the scroll; pauses only once it is fully gone
+function playWhileInView(el, flow) {
+  if (typeof IntersectionObserver !== 'function') {
+    flow.play()
+    return
+  }
+  new IntersectionObserver(([entry]) => {
+    if (entry.intersectionRatio >= 0.9) flow.play()
+    else if (!entry.isIntersecting) flow.pause()
+  }, { threshold: [0, 0.9] }).observe(el)
 }
 
 if (document.readyState === 'loading') {

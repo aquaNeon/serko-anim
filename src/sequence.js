@@ -1,3 +1,8 @@
+export const GLOBE_START = 2.3
+
+// everything on screen clears here so the loop restarts from an empty globe
+export const OUTRO_AT = 20.3
+
 export const SEQUENCE = [
   {
     selector: '.hero1_profile_wrap',
@@ -13,8 +18,8 @@ export const SEQUENCE = [
     mobileAbove: '.hero1_profile_wrap',
     mobileGap: '2rem',
     reparent: true,
-    in: 4.95,
-    out: 12.0,
+    in: 4.25,
+    out: 9.3,
     dur: 0.9,
     outDur: 0.32,
     growOut: 0.86,
@@ -29,8 +34,8 @@ export const SEQUENCE = [
     mobileAbove: '.hero1_profile_wrap',
     mobileGap: '2rem',
     reparent: true,
-    in: 15.35,
-    out: 24.9,
+    in: 12.65,
+    out: 19.0,
     dur: 0.9,
     outDur: 0.32,
     growOut: 0.86,
@@ -44,13 +49,6 @@ export const STACK = {
   profile: '.hero1_profile_item',
   wrap: '.hero1_profile_wrap',
   name: '.hero1_profile_name',
-  nameStyle: {
-    fontFamily: "'Jokker', system-ui, sans-serif",
-    fontWeight: '600',
-    fontSize: '20px',
-    lineHeight: '150%',
-    color: 'rgba(0, 0, 0, 0.88)',
-  },
   check: '.hero1_profile_choice_check',
   text: '.hero1_profile_choice_text',
   search: '.hero1_profile_search_wrap',
@@ -66,17 +64,17 @@ export const STACK = {
   typeSpeed: 28,
   drawDur: 0.5,
   cards: [
-    { at: 0.9, kind: 'prompt', from: '.hero1_profile_choice_text_wrap', hideOnMobile: '.hero1_profile_choice_emoji' },
-    { at: 7.0, kind: 'pref', text: 'No early mornings' },
-    { at: 10.1, kind: 'pref', text: 'Premium economy' },
-    { at: 13.7, kind: 'prompt', from: '.hero1_profile_choice_hotel', text: 'Stay at Marriott near Javits Center' },
-    { at: 17.2, kind: 'pref', text: 'Marriott Bonvoy membership', icon: '.hero1_profile_choice_hotel .hero1_profile_choice_emoji' },
-    { at: 20.1, kind: 'pref', text: 'Walking distance to Javits Center' },
-    { at: 23.0, kind: 'pref', text: 'Mid-range price' },
+    { at: 0.2, kind: 'prompt', from: '.hero1_profile_choice_text_wrap', hideOnMobile: '.hero1_profile_choice_emoji' },
+    { at: 6.3, kind: 'pref', text: 'No early mornings' },
+    { at: 7.8, kind: 'pref', text: 'Premium economy' },
+    { at: 11.0, kind: 'prompt', from: '.hero1_profile_choice_hotel', text: 'Stay at Marriott near Javits Center' },
+    { at: 14.5, kind: 'pref', text: 'Marriott Bonvoy membership', icon: '.hero1_profile_choice_hotel .hero1_profile_choice_emoji' },
+    { at: 16.0, kind: 'pref', text: 'Walking distance to Javits Center' },
+    { at: 17.5, kind: 'pref', text: 'Mid-range price' },
   ],
+  outAt: OUTRO_AT,
 }
 
-export const GLOBE_START = 3.0
 
 const ATTR = {
   in: 'data-in',

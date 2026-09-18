@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.2/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.7.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.6.2/dist/serko-globe.js"
-        integrity="sha384-E2SUyf0aDyEaNs6/cHOL4tLe45PQdgkcVyHAZVT93n8HxRzNctcimbWOCyyeL+ng"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.7.0/dist/serko-globe.js"
+        integrity="sha384-pXVD/sofNT7w0bXmYuUSlhMw+UP5vDDnnm4LADu2Q+RRCrAGUsb8ck99kU7y71ka"
         crossorigin="anonymous" defer></script>
 ```
 
@@ -122,7 +122,7 @@ Layout can be overridden per-site on the root element:
 | `data-cut-offset` | `64` | px the globe (including its feather) extends past the bottom of `data-cut-below` |
 | `data-tilt` | `0` | degrees of tilt - positive looks from further north, showing more pole |
 | `data-spin` | `0` | degrees of rotation around the axis |
-| `data-globe-loop` | off | present = replay the flight on a loop |
+| `data-globe-loop` | on | `false` = play once and hold the end state |
 | `data-fade-in` | `1.2` | seconds the globe takes to fade in once its first frame is drawn (`0` = no fade) |
 
 ### Keeping the route in the same place on every screen
@@ -179,8 +179,11 @@ everywhere it is not needed.
 `0.4` caps the radius at 40% of the window height regardless of how wide the
 anchor is.
 
-The animation runs once on load and holds its end state. Add `data-globe-loop`
-to the root element to have it repeat.
+The animation starts once the preferences bar (`.hero1_profile_wrap`) is 90% on
+screen, so a short viewport waits for the scroll; it pauses once the bar is fully
+out of view, and loops: at `OUTRO_AT` in `src/sequence.js` the cards and route clear, and
+it starts again from the bare globe. Set `data-globe-loop="false"` on the root
+element to play it once and hold the end state.
 
 Visitors with `prefers-reduced-motion: reduce` are shown the finished state
 immediately, with no animation.
