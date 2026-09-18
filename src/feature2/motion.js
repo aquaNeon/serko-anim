@@ -18,6 +18,15 @@ export function targetStep(top, hold, steps = STEPS) {
   return Math.min(steps, 1 + Math.floor(-top / hold))
 }
 
+export function scrubTime(top, span, total = cumulative()[STEPS]) {
+  return total * clamp01((0 - top) / span)
+}
+
+export function smooth(play, goal, dt, rate = 10) {
+  const next = play + (goal - play) * (1 - Math.exp(-rate * dt))
+  return Math.abs(goal - next) < 1e-3 ? goal : next
+}
+
 export function advance(play, goal, dt, speed = 1) {
   const diff = goal - play
   if (diff === 0) return play

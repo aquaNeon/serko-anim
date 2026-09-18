@@ -1,5 +1,5 @@
 import {
-  SEGMENTS, STEPS, cumulative, targetStep, advance, progress,
+  SEGMENTS, STEPS, cumulative, targetStep, scrubTime, smooth, advance, progress,
   lerp, out, win, parseRgb,
 } from './motion.js'
 
@@ -29,7 +29,7 @@ const CSS = `
 .f2-close svg{width:2.4em;height:2.4em;display:block}
 [data-f2-title],[data-f2-title] *{text-align:center!important}
 .f2-title-b{position:absolute!important;opacity:0;pointer-events:none;margin:0!important;text-align:center}
-.f2-title-b-head{margin:0!important;font-size:20px!important;font-weight:500!important;line-height:1.5!important;color:#000!important;text-align:center!important;max-width:none!important}
+.f2-title-b-head{margin:0!important;color:#000!important;text-align:center!important;max-width:none!important}
 .f2-title-b-sub{margin:12px auto 0!important;max-width:448px!important;font-size:18px!important;font-weight:400!important;line-height:1.5!important;color:#000!important;text-align:center!important}
 `
 
@@ -38,6 +38,7 @@ const DEFAULTS = {
   disrupted: 4,
   shift: 2,
   hold: 70,
+  endHold: 50,
   textGap: 160,
   titleB: '24/7 human support,\nwhenever you need it.',
   titleBSub: 'Our support crew is here to help and available any time, day or night, wherever you are in the world.',
@@ -170,6 +171,9 @@ export class Feature2 {
       disrupted: DEFAULTS.disrupted,
       focus: DEFAULTS.disrupted + shift,
       hold: number(section, 'data-f2-hold', DEFAULTS.hold),
+      // "steps" is the earlier behaviour: each hold of scroll plays the next segment on a timer
+      steps: text(section, 'data-f2-scroll', 'scrub') === 'steps',
+      endHold: number(section, 'data-f2-end-hold', DEFAULTS.endHold),
       textGap: number(section, 'data-f2-text-gap', DEFAULTS.textGap),
       logos: this._logos(section),
       avatars: ['a', 'b'].map((k) => this._avatarSource(section, k)),
@@ -401,7 +405,8 @@ export class Feature2 {
       full: { x: 12, y: offset + 12, w: vw - 24, h: vh - 24, r: Math.max(radius, 28) },
       hold: (this.opts.hold / 100) * vh,
     }
-    this.section.style.height = `${vh + offset + STEPS * this.geo.hold}px`
+    const endHold = this.opts.steps ? 0 : (this.opts.endHold / 100) * vh
+    this.section.style.height = `${vh + offset + STEPS * this.geo.hold + endHold}px`
     this.rendered = false
   }
 
@@ -416,8 +421,12 @@ export class Feature2 {
     const dt = this.last ? Math.min(0.05, (now - this.last) / 1000) : 0
     this.last = now
     const rect = this.section.getBoundingClientRect()
-    const goal = CUM[targetStep(rect.top + this.geo.offset, this.geo.hold)]
-    const next = this.reduced ? goal : advance(this.play, goal, dt)
+    const top = rect.top + this.geo.offset
+    const goal = this.opts.steps
+      ? CUM[targetStep(top, this.geo.hold)]
+      : scrubTime(top, STEPS * this.geo.hold, CUM[STEPS])
+    const next = this.reduced ? goal
+      : this.opts.steps ? advance(this.play, goal, dt) : smooth(this.play, goal, dt)
     const moving = next !== this.play
     this.play = next
     const visible = rect.bottom > -50 && rect.top < innerHeight + 50

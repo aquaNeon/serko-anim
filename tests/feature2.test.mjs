@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  SEGMENTS, STEPS, cumulative, targetStep, advance, progress, parseRgb,
+  SEGMENTS, STEPS, cumulative, targetStep, scrubTime, smooth, advance, progress, parseRgb,
 } from '../src/feature2/motion.js'
 
 const cum = cumulative(SEGMENTS)
@@ -80,4 +80,25 @@ test('colours parse from computed style strings', () => {
   assert.deepEqual(parseRgb('rgb(18, 18, 22)'), [18, 18, 22])
   assert.deepEqual(parseRgb('rgba(255, 255, 255, 0.5)'), [255, 255, 255])
   assert.deepEqual(parseRgb('transparent', [1, 2, 3]), [1, 2, 3])
+})
+
+test('scrub maps pinned scroll straight onto the timeline', () => {
+  const span = STEPS * hold
+  assert.equal(scrubTime(200, span), 0)
+  assert.equal(scrubTime(0, span), 0)
+  assert.ok(Math.abs(scrubTime(-span / 2, span) - cum[STEPS] / 2) < 1e-9)
+  assert.equal(scrubTime(-span, span), cum[STEPS])
+  assert.equal(scrubTime(-span * 3, span), cum[STEPS])
+})
+
+test('smoothing closes in on the goal and lands on it exactly', () => {
+  let play = 0
+  let last = 0
+  for (let i = 0; i < 120; i++) {
+    play = smooth(play, 3, 1 / 60)
+    assert.ok(play >= last && play <= 3)
+    last = play
+  }
+  assert.equal(play, 3)
+  assert.equal(smooth(2, 1, 1 / 60) < 2, true)
 })
