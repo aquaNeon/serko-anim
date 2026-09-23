@@ -158,6 +158,19 @@ class Stage {
     return 1 - t * t * (3 - 2 * t);
   }
 
+  // a short phone needs the globe pulled up and a tall one does not, so the
+  // lift rides viewport height between the two authored values
+  _lift() {
+    if (this.layout.mobileLiftTall === null) return this.layout.mobileLift;
+    const short = this.layout.liftShortH;
+    const tall = Math.max(short + 1, this.layout.liftTallH);
+    const vh = window.innerHeight || tall;
+    const t = Math.min(1, Math.max(0, (vh - short) / (tall - short)));
+    const eased = t * t * (3 - 2 * t);
+    return this.layout.mobileLift +
+      (this.layout.mobileLiftTall - this.layout.mobileLift) * eased;
+  }
+
   _applyLayout() {
     const rootRect = this.root.getBoundingClientRect();
     const anchorRect = this.anchor.getBoundingClientRect();
@@ -282,8 +295,9 @@ class Stage {
       radiusPx *= shrink;
       centerY = apexBefore + radiusPx;
     }
-    if (this.layout.mobileLift !== 0 && mix > 0) {
-      centerY -= this.layout.mobileLift * mix;
+    const lift = this._lift();
+    if (lift !== 0 && mix > 0) {
+      centerY -= lift * mix;
     }
 
     const centerPx = { x: centerX, y: centerY };

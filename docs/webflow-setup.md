@@ -107,6 +107,9 @@ Layout can be overridden per-site on the root element:
 | `data-ref-width` | unset | the width the globe's size is designed against - **set this or the globe shrinks** |
 | `data-mobile-scale` | `1` | scale the globe by this on narrow screens - eased, not switched |
 | `data-mobile-lift` | `40` | px the whole globe moves up on narrow screens - eased over the same band |
+| `data-mobile-lift-tall` | off | the lift on a tall phone - the lift then rides viewport height between `data-lift-short-h` and `data-lift-tall-h` instead of staying flat |
+| `data-lift-short-h` | `667` | viewport height at which `data-mobile-lift` applies in full |
+| `data-lift-tall-h` | `880` | viewport height at which `data-mobile-lift-tall` applies in full |
 | `data-mobile-below` | `768` | the width that counts as mobile (overlay + card layout) |
 | `data-ease-below` | `430` | width at and under which the mobile camera latitude, turn, scale and lift are fully applied |
 | `data-ease-above` | `1024` | width at and over which those same values are fully desktop - between the two they ease, so nothing jumps |

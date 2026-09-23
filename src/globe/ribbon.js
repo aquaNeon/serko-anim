@@ -69,8 +69,9 @@ const VERTEX =  `
 
   float dropWidth(float local) {
     if (local < 0.0 || local > 1.0) return 0.0;
-    if (local < 0.8) return sqrt(local / 0.8);
-    float k = (local - 0.8) / 0.2;
+    float t = 1.0 - local;
+    if (t < 0.8) return sqrt(t / 0.8);
+    float k = (t - 0.8) / 0.2;
     return sqrt(max(0.0, 1.0 - k * k));
   }
 

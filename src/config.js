@@ -24,6 +24,9 @@ const DEFAULT_LAYOUT = {
   scaleMax: 1,
   mobileScale: 1,
   mobileLift: 40,
+  mobileLiftTall: null,
+  liftShortH: 667,
+  liftTallH: 880,
   mobileBelow: 768,
   mobileTurn: 10,
   easeBelow: 430,
@@ -89,6 +92,11 @@ function readLayout(rootEl) {
     scaleMax: num(rootEl, "data-scale-max", DEFAULT_LAYOUT.scaleMax),
     mobileScale: num(rootEl, "data-mobile-scale", DEFAULT_LAYOUT.mobileScale),
     mobileLift: num(rootEl, "data-mobile-lift", DEFAULT_LAYOUT.mobileLift),
+    mobileLiftTall: rootEl.hasAttribute("data-mobile-lift-tall")
+      ? num(rootEl, "data-mobile-lift-tall", 0)
+      : DEFAULT_LAYOUT.mobileLiftTall,
+    liftShortH: num(rootEl, "data-lift-short-h", DEFAULT_LAYOUT.liftShortH),
+    liftTallH: num(rootEl, "data-lift-tall-h", DEFAULT_LAYOUT.liftTallH),
     mobileBelow: num(rootEl, "data-mobile-below", DEFAULT_LAYOUT.mobileBelow),
     mobileTurn: num(rootEl, "data-mobile-turn", DEFAULT_LAYOUT.mobileTurn),
     easeBelow: num(rootEl, "data-ease-below", DEFAULT_LAYOUT.easeBelow),
