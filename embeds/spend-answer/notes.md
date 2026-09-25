@@ -2,7 +2,7 @@
 
 **What it is.** A looping chat-to-chart animation: the Ops team asks how much
 free cancellations have saved, then the question gives way to the Travel spend
-chart, which slides in and draws itself. Once drawn, the $279,000 answer card
+chart, which slides in and draws itself. Once drawn, the $18,400 answer card
 pops up with its number counting up. Then it fades out and starts again.
 
 Figma, Serko.ai - Design:
@@ -13,7 +13,7 @@ Figma, Serko.ai - Design:
 in that div, so the Webflow Designer (which never runs scripts) can show it:
 
 - `embed.html` - markup and CSS. The Designer shows the answer frame: the chart
-  drawn and the $279,000 card, scaled to the div by CSS alone.
+  drawn and the $18,400 card, scaled to the div by CSS alone.
 - `script.html` - the script. It finds the markup through the nearest parent
   that contains it, so both embeds must sit in the same div.
 

@@ -9,8 +9,8 @@
   var DRAW_MS = 1600;
   var COUNT_DELAY = 200;
   var COUNT_MS = 900;
-  var COUNT_FROM = 180000;
-  var COUNT_TO = 279000;
+  var COUNT_FROM = 11900;
+  var COUNT_TO = 18400;
   var START_MS = 300;
   var MIN_K = .45;
   var ART_W = 1024;
@@ -69,7 +69,7 @@
     })(t0);
   }
 
-  function setValue(n) { value.textContent = '$' + (Math.round(n / 1000) * 1000).toLocaleString('en-US'); }
+  function setValue(n) { value.textContent = '$' + (Math.round(n / 100) * 100).toLocaleString('en-US'); }
 
   function reset() {
     root.setAttribute('data-snap', '');

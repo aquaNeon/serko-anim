@@ -35,7 +35,7 @@ Two sizes are CSS variables in `embed.html`:
 | Name | Does |
 |---|---|
 | `--seq-content` | On `.hero-seq`. Scales the profile stack and the prompt card inside the gradient, which stays full size - lower it for wider margins. `.8` now. |
-| `--pin-s` | On `.hero-seq__pin--ella`. Ella's pin scale, `.72` to match Courteney's. |
+| `--pin-s` | On `.hero-seq__pin--ella`. Ella's pin scale, `.72` to match Saur's. |
 
 The globe's colour is the PNG's own ink; it is a single-colour alpha mask, so a
 tint change means re-exporting it, not a CSS edit. Opacity and size are on
@@ -51,7 +51,7 @@ the URLs you already have:
 - Ella: `..._Avatar-1.webp`
 - Adam: `..._Avatar.webp`
 
-Skyla and Courteney are monograms on the Figma gradient fill, as in the comp.
+Skyla and Saur are monograms on the Figma gradient fill, as in the comp.
 This is the one place the no-network rule in `embeds/README.md` is deliberately
 broken; the character limit leaves no alternative, and these are Webflow assets
 either way. `globe.png` in this folder is no longer used by the embed - it is
