@@ -1,0 +1,134 @@
+<script>
+(function () {
+  var STEPS = [
+    { name: 'ask', hold: 2600 },
+    { name: 'answer', hold: 5600 },
+    { name: 'out', hold: 700 }
+  ];
+  var DRAW_DELAY = 450;
+  var DRAW_MS = 1600;
+  var COUNT_DELAY = 200;
+  var COUNT_MS = 900;
+  var COUNT_FROM = 180000;
+  var COUNT_TO = 279000;
+  var START_MS = 300;
+  var MIN_K = .45;
+  var ART_W = 1024;
+  var ART_H = 492;
+  var REVEAL_W = 420;
+
+  var root = null;
+  for (var el = document.currentScript; el && !root; el = el.parentElement) {
+    root = el.querySelector && el.querySelector('[data-spend-answer]');
+  }
+  root = root || document.querySelector('[data-spend-answer]');
+  if (!root) return;
+
+  var panel = root.querySelector('.spend-answer__panel');
+  var stage = root.querySelector('.spend-answer__stage');
+  var reveal = root.querySelector('.spend-answer__reveal');
+  var value = root.querySelector('[data-value]');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var timers = [];
+  var frames = [];
+  var running = false;
+  var step = 0;
+
+  function fit() {
+    var w = panel.clientWidth;
+    var h = panel.clientHeight;
+    if (!w || !h) return;
+    var k = Math.max(Math.min(w / ART_W, h / ART_H), MIN_K);
+    stage.style.setProperty('--k', k);
+    stage.style.height = Math.max(ART_H, h / k) + 'px';
+  }
+
+  if ('ResizeObserver' in window) new ResizeObserver(fit).observe(panel);
+  else window.addEventListener('resize', fit);
+  fit();
+
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+
+  function clearAll() {
+    timers.forEach(clearTimeout);
+    frames.forEach(cancelAnimationFrame);
+    timers = [];
+    frames = [];
+  }
+
+  function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+  function tween(ms, fn, done) {
+    var t0 = performance.now();
+    (function tick(now) {
+      var t = Math.min((now - t0) / ms, 1);
+      fn(ease(t));
+      if (t < 1) frames.push(requestAnimationFrame(tick));
+      else if (done) done();
+    })(t0);
+  }
+
+  function setValue(n) { value.textContent = '$' + (Math.round(n / 1000) * 1000).toLocaleString('en-US'); }
+
+  function reset() {
+    root.setAttribute('data-snap', '');
+    root.removeAttribute('data-drawn');
+    root.setAttribute('data-step', 'pre');
+    reveal.setAttribute('width', 0);
+    setValue(COUNT_FROM);
+    root.offsetWidth;
+    root.removeAttribute('data-snap');
+  }
+
+  function draw() {
+    tween(DRAW_MS, function (t) {
+      reveal.setAttribute('width', t * REVEAL_W);
+    }, function () {
+      root.setAttribute('data-drawn', '');
+      at(COUNT_DELAY, count);
+    });
+  }
+
+  function count() {
+    tween(COUNT_MS, function (t) {
+      setValue(COUNT_FROM + (COUNT_TO - COUNT_FROM) * t);
+    });
+  }
+
+  function run() {
+    if (!running) return;
+    var s = STEPS[step % STEPS.length];
+    if (s.name === 'ask') reset();
+    root.setAttribute('data-step', s.name);
+    if (s.name === 'answer') at(DRAW_DELAY, draw);
+    at(s.hold, function () { step += 1; run(); });
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    step = 0;
+    at(START_MS, run);
+  }
+
+  function stop() {
+    running = false;
+    clearAll();
+  }
+
+  if (reduced) return;
+
+  reset();
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) start(); else stop();
+      });
+    }, { threshold: 0.25 }).observe(root);
+  } else {
+    start();
+  }
+})();
+</script>

@@ -14,6 +14,7 @@ embeds/
   README.md            this file - the index below is the source of truth
   <name>/
     embed.html         paste this whole file into the Webflow Embed element
+    script.html        optional - the script as its own embed (see below)
     notes.md           what it is, where it goes, what can be tuned
 ```
 
@@ -24,7 +25,12 @@ One folder per animation, named for what it is, in kebab-case
 
 | Embed | Where it goes | Status |
 |---|---|---|
-| _(none yet)_ | | |
+| `hero-prompt` | Home, hero gradient panel | built, not yet pasted - needs globe.png uploaded as a Webflow asset |
+| `spend-answer` | Right-hand div, chat → spend chart loop | built, not yet pasted - two embeds (markup+CSS, script) in the same div |
+| `approval-search` | Travel approval sticky section, step 1 visual | built, not yet pasted - two embeds (markup+CSS, script), replacing the three old ones in `.sticky1_steps_visual.is-1` |
+| `approval-flagged` | Travel approval sticky section, step 2 visual | built, not yet pasted - two embeds, replacing the three old ones in `.sticky1_steps_visual.is-2` |
+| `approval-refund` | Travel approval sticky section, step 3 visual | built, not yet pasted - two embeds, replacing the three old ones in `.sticky1_steps_visual.is-3` |
+| `approval-steps` | Travel approval sticky section, section script (`u-embed-js` at the bottom of `sticky1_wrap`) | fixed, not yet pasted - replaces `initStickyStepsBasic` |
 
 Add a row when you add a folder - this table is how anyone finds which embed
 is live on which page.
@@ -32,6 +38,10 @@ is live on which page.
 ## Rules for an embed.html
 
 **Self-contained.** One file: markup, a single `<style>`, a single `<script>`.
+When the embed has to show in the Webflow Designer, which never runs scripts,
+split it: `embed.html` holds the markup and `<style>` in the state the
+Designer should show, and `script.html` holds the `<script>` as a second
+embed next to it.
 No imports, no build step, no local file references. A reader should be able to
 open it straight off disk and see the finished animation.
 

@@ -1,0 +1,99 @@
+<script>
+(function () {
+  var STAGES = [
+    ['in', 0],
+    ['open', 1300],
+    ['chart', 2150],
+    ['cta', 3700],
+    ['aim', 4100],
+    ['press', 5100]
+  ];
+  var RESET_MS = 600;
+  var ART_W = 745;
+  var ART_H = 725;
+  var MIN_K = .4;
+
+  var root = null;
+  for (var el = document.currentScript; el && !root; el = el.parentElement) {
+    root = el.querySelector && el.querySelector('[data-ap-flag]');
+  }
+  root = root || document.querySelector('[data-ap-flag]');
+  if (!root) return;
+
+  var panel = root.querySelector('.ap-flag__panel');
+  var stage = root.querySelector('.ap-flag__stage');
+  var item = root.closest('[data-sticky-steps-item]');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers = [];
+  var playing = false;
+
+  function fit() {
+    var w = panel.clientWidth;
+    var h = panel.clientHeight;
+    if (!w || !h) return;
+    stage.style.setProperty('--k', Math.max(Math.min(w / ART_W, h / ART_H), MIN_K));
+  }
+
+  if ('ResizeObserver' in window) new ResizeObserver(fit).observe(panel);
+  else window.addEventListener('resize', fit);
+  fit();
+
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearAll() { timers.forEach(clearTimeout); timers = []; }
+
+  function reset() {
+    root.setAttribute('data-snap', '');
+    root.setAttribute('data-stage', 'reset');
+    root.offsetWidth;
+    root.removeAttribute('data-snap');
+  }
+
+  function play() {
+    if (playing) return;
+    playing = true;
+    clearAll();
+    if (reduced) { root.setAttribute('data-stage', 'cta'); return; }
+    reset();
+    STAGES.forEach(function (s) {
+      at(s[1], function () { root.setAttribute('data-stage', s[0]); });
+    });
+  }
+
+  function leave() {
+    if (!playing) return;
+    playing = false;
+    clearAll();
+    at(RESET_MS, reset);
+  }
+
+  if (reduced) {
+    root.setAttribute('data-stage', 'cta');
+    return;
+  }
+
+  reset();
+
+  var active = !item;
+  var visible = false;
+
+  function sync() {
+    if (item) active = item.getAttribute('data-sticky-steps-item-status') === 'active';
+    if (active && visible) play();
+    else leave();
+  }
+
+  if (item) {
+    new MutationObserver(sync).observe(item, { attributes: true, attributeFilter: ['data-sticky-steps-item-status'] });
+  }
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      visible = entries[entries.length - 1].isIntersecting;
+      sync();
+    }, { threshold: 0.25 }).observe(root);
+  } else {
+    visible = true;
+    sync();
+  }
+})();
+</script>

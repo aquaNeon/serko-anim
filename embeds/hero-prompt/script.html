@@ -1,0 +1,208 @@
+<script>
+(function () {
+  var PROMPT = 'Show me everyone on the road right now: Flag anyone in a disrupted or higher-risk area first.';
+  var TYPE_MS = 34;
+  var CYCLE_MS = 1500;
+  var EXIT_MS = 460;
+  var STAGES = [
+    { layers: ['globe'], hold: 1100 },
+    { layers: ['globe', 'pins'], hold: 6000 },
+    { layers: ['stack'], hold: 6000 },
+    { layers: ['prompt'], hold: 2400 }
+  ];
+  var FADE_MS = 620;
+  var START_MS = 400;
+  var MIN_K = .58;
+  var ART_W = 735;
+  var ART_H = 778;
+  var DEPTH = [
+    { y: 382, s: 1, o: 1 },
+    { y: 309.21, s: .844, o: 1 },
+    { y: 250.21, s: .646, o: .6 },
+    { y: 206, s: .505, o: .2 }
+  ];
+  var EXIT = { y: 470, s: 1.14, o: 0 };
+
+  var root = null;
+  for (var el = document.currentScript; el && !root; el = el.parentElement) {
+    root = el.querySelector && el.querySelector('[data-hero-seq]');
+  }
+  root = root || document.querySelector('[data-hero-seq]');
+  if (!root) return;
+
+  var panel = root.querySelector('.hero-seq__panel');
+  var stage = root.querySelector('.hero-seq__stage');
+  var out = root.querySelector('.hero-seq__text');
+  var rows = Array.prototype.slice.call(root.querySelectorAll('[data-row]')).reverse();
+  var layers = {};
+  Array.prototype.forEach.call(root.querySelectorAll('[data-layer]'), function (el) {
+    layers[el.getAttribute('data-layer')] = el;
+  });
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers = [];
+  var running = false;
+  var step = 0;
+  var front = 0;
+  var stackOn = false;
+
+  function fit() {
+    var w = panel.clientWidth;
+    var h = panel.clientHeight;
+    if (!w || !h) return;
+    var k = Math.max(w / ART_W, h / ART_H, MIN_K);
+    stage.style.setProperty('--k', k);
+  }
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(fit).observe(panel);
+  } else {
+    window.addEventListener('resize', fit);
+  }
+  fit();
+
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearAll() { timers.forEach(clearTimeout); timers = []; }
+
+  function apply(row, d) {
+    row.style.setProperty('--y', d.y + 'px');
+    row.style.setProperty('--s', d.s);
+    row.dataset.o = d.o;
+    row.style.opacity = stackOn ? d.o : 0;
+  }
+
+  function fadeRows(on) {
+    stackOn = on;
+    rows.forEach(function (row) {
+      row.style.opacity = on ? (row.dataset.o || 1) : 0;
+    });
+  }
+
+  function place(row, slot, snap) {
+    if (snap) { row.setAttribute('data-snap', ''); row.offsetWidth; }
+    row.removeAttribute('data-exit');
+    row.style.setProperty('--z', String(DEPTH.length - slot));
+    row.setAttribute('data-depth', String(slot));
+    apply(row, DEPTH[slot]);
+    if (snap) { row.offsetWidth; row.removeAttribute('data-snap'); }
+  }
+
+  function layout(snap) {
+    rows.forEach(function (row, i) {
+      place(row, (i - front + rows.length) % rows.length, snap);
+    });
+  }
+
+  function respawn(row) {
+    var back = DEPTH.length - 1;
+    row.setAttribute('data-snap', '');
+    row.removeAttribute('data-exit');
+    row.setAttribute('data-depth', String(back));
+    row.style.setProperty('--z', '1');
+    apply(row, { y: DEPTH[back].y, s: DEPTH[back].s, o: 0 });
+    row.offsetWidth;
+    row.removeAttribute('data-snap');
+    row.offsetWidth;
+    row.dataset.o = DEPTH[back].o;
+    row.style.opacity = stackOn ? DEPTH[back].o : 0;
+  }
+
+  function cycle() {
+    if (!running || !layers.stack.hasAttribute('data-active')) return;
+
+    var leaving = rows[front];
+    front = (front + 1) % rows.length;
+
+    rows.forEach(function (row, i) {
+      if (row === leaving) return;
+      place(row, (i - front + rows.length) % rows.length);
+    });
+
+    leaving.setAttribute('data-exit', '');
+    leaving.style.setProperty('--z', String(DEPTH.length + 1));
+    apply(leaving, EXIT);
+
+    at(EXIT_MS, function () { respawn(leaving); });
+    at(CYCLE_MS, cycle);
+  }
+
+  function show(names) {
+    Object.keys(layers).forEach(function (key) {
+      var el = layers[key];
+      if (names.indexOf(key) !== -1) el.setAttribute('data-active', '');
+      else el.removeAttribute('data-active');
+    });
+    if (names.indexOf('stack') === -1) fadeRows(false);
+  }
+
+  function type(done) {
+    var n = 0;
+    out.textContent = '';
+    if (reduced) { out.textContent = PROMPT; done(); return; }
+    (function tick() {
+      if (n >= PROMPT.length) { done(); return; }
+      n += 1;
+      out.textContent = PROMPT.slice(0, n);
+      at(TYPE_MS, tick);
+    })();
+  }
+
+  function run() {
+    if (!running) return;
+    var stageDef = STAGES[step % STAGES.length];
+    show(stageDef.layers);
+
+    if (stageDef.layers.indexOf('stack') !== -1) {
+      layout(true);
+      if (reduced) {
+        fadeRows(true);
+      } else {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { fadeRows(true); });
+        });
+        at(CYCLE_MS, cycle);
+      }
+    }
+    if (stageDef.layers.indexOf('prompt') !== -1) {
+      type(function () { at(stageDef.hold, next); });
+      return;
+    }
+    if (stageDef.hold != null) at(stageDef.hold, next);
+  }
+
+  function next() {
+    step += 1;
+    at(FADE_MS * 0.4, run);
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    at(START_MS, run);
+  }
+
+  function stop() {
+    running = false;
+    clearAll();
+  }
+
+  // the markup ships with the globe and names on for the Designer; clear them without a fade before the first stage
+  root.setAttribute('data-seq-snap', '');
+  show([]);
+  root.offsetWidth;
+  root.removeAttribute('data-seq-snap');
+
+  layout();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) start(); else stop();
+      });
+    }, { threshold: 0.25 });
+    io.observe(root);
+  } else {
+    start();
+  }
+})();
+</script>

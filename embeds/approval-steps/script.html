@@ -1,0 +1,69 @@
+<script>
+function initStickyStepsBasic() {
+  const containers = document.querySelectorAll("[data-sticky-steps-init]");
+  if (!containers.length) return;
+
+  const triggerPosition = "top 70%";
+
+  containers.forEach((container) => {
+    const items = [...container.querySelectorAll("[data-sticky-steps-item]")];
+    if (!items.length) return;
+
+    function setStatus(activeIndex) {
+      items.forEach((item, index) => {
+        let status = "active";
+        if (index < activeIndex) status = "before";
+        if (index > activeIndex) status = "after";
+        if (item.getAttribute("data-sticky-steps-item-status") !== status) {
+          item.setAttribute("data-sticky-steps-item-status", status);
+        }
+      });
+    }
+
+    const triggers = [];
+
+    items.forEach((item, index) => {
+      const anchor = item.querySelector("[data-sticky-steps-anchor]");
+      if (!anchor) return;
+
+      const nextAnchor = items[index + 1]?.querySelector("[data-sticky-steps-anchor]");
+
+      triggers.push({
+        index,
+        st: ScrollTrigger.create({
+          trigger: anchor,
+          start: triggerPosition,
+          endTrigger: nextAnchor || container,
+          end: nextAnchor ? triggerPosition : "bottom center",
+          onToggle: (self) => {
+            if (self.isActive) setStatus(index);
+          }
+        })
+      });
+    });
+
+    // The browser restores the scroll position after this runs on a reload.
+    function syncToScroll() {
+      const current = triggers.find((t) => t.st.isActive);
+      if (current) return setStatus(current.index);
+      const last = triggers[triggers.length - 1];
+      setStatus(last && last.st.progress === 1 ? last.index : 0);
+    }
+
+    syncToScroll();
+    ScrollTrigger.addEventListener("refresh", syncToScroll);
+    window.addEventListener("load", () => ScrollTrigger.refresh());
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 100);
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  gsap.registerPlugin(ScrollTrigger);
+  initStickyStepsBasic();
+});
+</script>
