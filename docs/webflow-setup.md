@@ -63,7 +63,7 @@ DOM is what decides, not the `data-id` values.
 In **Page settings → Custom code → Before `</body>`**:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.8.0/dist/serko-globe.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.10.0/dist/serko-globe.js" defer></script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
@@ -74,8 +74,8 @@ Because the tag pins an exact file, it is worth adding Subresource Integrity so 
 compromised CDN cannot swap the bundle:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.8.0/dist/serko-globe.js"
-        integrity="sha384-+OtOpdDlWTp6WdmSDVqKHmR9kmzDkhy2G0butTx/AXa1L9pof04TNiYUrx6+D9+9"
+<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.10.0/dist/serko-globe.js"
+        integrity="sha384-RCKWH03RxQGPh664qATmfX7uILdRR7j7iAMBOlwsT+iSQTZ5U1V7I6RSc/Qog1Fx"
         crossorigin="anonymous" defer></script>
 ```
 
