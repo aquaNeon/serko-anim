@@ -14,7 +14,7 @@ const CSS = `
 .f2-badge{position:absolute;top:12px;right:12px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:4.608px 10.4px;border-radius:6.912px;-webkit-backdrop-filter:blur(18.432px);backdrop-filter:blur(18.432px);font-family:inherit;font-size:13px;font-weight:600;line-height:19px;white-space:nowrap;pointer-events:none;z-index:2}
 .f2-badge-disrupted{background:#fde7c4;color:#b8660f}
 .f2-badge-confirmed{background:#c0f2b5;color:#17510b;opacity:0}
-.f2-badge-rebooked{background:#c0f2b5;color:#17510b}
+.f2-badge-rebooked{background:#fde7c4;color:#b8660f}
 .f2-soft{background-color:#eeeef3!important}
 .f2-soft,.f2-soft *{color:#121216!important}
 .f2-ring{position:absolute;inset:-3px;border-radius:999px;z-index:-1;opacity:0;pointer-events:none;background:linear-gradient(90deg,#ff8c51,#f489ad 45%,#9b7cf6);filter:blur(6px)}
@@ -30,7 +30,7 @@ const CSS = `
 [data-f2-title],[data-f2-title] *{text-align:center!important}
 .f2-title-b{position:absolute!important;opacity:0;pointer-events:none;margin:0!important;text-align:center}
 .f2-title-b-head{margin:0!important;color:#000!important;text-align:center!important;max-width:none!important}
-.f2-title-b-sub{margin:12px auto 0!important;max-width:448px!important;font-size:18px!important;font-weight:400!important;line-height:1.5!important;color:#000!important;text-align:center!important}
+.f2-title-b-sub{margin:12px auto 0!important;max-width:448px!important;font-size:16px!important;font-weight:500!important;line-height:1.5!important;color:#000!important;text-align:center!important}
 `
 
 const DEFAULTS = {
@@ -472,7 +472,7 @@ export class Feature2 {
     const hB = b ? b.offsetHeight : hA
     const titleH = lerp(hA, hB, win(u[4], 0.2, 0.6))
     const textGap = this.opts.textGap
-    const groupTop = Math.max(24, (ph - (titleH + textGap + cardNow)) / 2)
+    const groupTop = Math.max(24, (ph - (hA + textGap + h)) / 2)
     const naturalTop = a ? a.offsetTop : 0
     const titleTop = lerp(naturalTop, groupTop, grow)
     if (a) {
