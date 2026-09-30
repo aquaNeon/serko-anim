@@ -43,7 +43,7 @@ const DEFAULTS = {
   titleB: '24/7 human support,\nwhenever you need it.',
   titleBSub: 'Our support crew is here to help and available any time, day or night, wherever you are in the world.',
   disruptedLabel: 'Disrupted',
-  rebookedLabel: 'Rebooked',
+  rebookedLabel: 'Canceled',
   confirmedLabel: 'Confirmed',
   softButton: 'See alternatives',
   logos: [
