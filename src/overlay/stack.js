@@ -1,4 +1,5 @@
 import { Typewriter } from './typewriter.js'
+import { warn } from '../log.js'
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
 const lerp = (a, b, p) => a + (b - a) * p
@@ -112,7 +113,7 @@ export class CardStack {
     this.template = root.querySelector(config.template)
     this.profile = root.querySelector(config.profile)
     if (!this.template || !this.profile) {
-      console.warn(
+      warn(
         '[globe] card stack skipped: ' +
         (this.template ? config.profile : config.template) + ' matched nothing'
       )
@@ -176,7 +177,7 @@ export class CardStack {
   _prompt(spec) {
     const source = this.template.querySelector(spec.from)
     if (!source) {
-      console.warn(`[globe] card stack: ${spec.from} matched nothing, card skipped`)
+      warn(`[globe] card stack: ${spec.from} matched nothing, card skipped`)
       return null
     }
     const el = strip(this.template.cloneNode(false))
@@ -201,12 +202,12 @@ export class CardStack {
     const check = this.template.querySelector(this.cfg.check)
     const text = this.template.querySelector(this.cfg.text)
     if (!check || !text) {
-      console.warn(`[globe] card stack: ${check ? this.cfg.text : this.cfg.check} matched nothing, card skipped`)
+      warn(`[globe] card stack: ${check ? this.cfg.text : this.cfg.check} matched nothing, card skipped`)
       return null
     }
     const el = strip(this.template.cloneNode(false))
     const logo = spec.icon ? this.template.querySelector(spec.icon) : null
-    if (spec.icon && !logo) console.warn(`[globe] card stack: ${spec.icon} matched nothing, using the check`)
+    if (spec.icon && !logo) warn(`[globe] card stack: ${spec.icon} matched nothing, using the check`)
     let icon
     if (logo) {
       // the logo sits in a box cut from the check so every preference starts its text at the same x

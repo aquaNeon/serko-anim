@@ -1,3 +1,4 @@
+import { warn } from './log.js'
 export const GLOBE_START = 2.3
 
 // everything on screen clears here so the loop restarts from an empty globe
@@ -192,7 +193,7 @@ export function applySequence(sequence = SEQUENCE, root = document) {
   }
 
   if (missing.length) {
-    console.warn(
+    warn(
       '[globe] sequence selectors matched nothing: ' + missing.join(', ') +
       ' - a class was probably renamed in Webflow'
     )

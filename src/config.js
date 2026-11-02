@@ -1,3 +1,4 @@
+import { warn } from "./log.js";
 const DEFAULT_PLACES = [
   { id: "origin", lat: 37.7749, lng: -122.4194, label: "San Francisco" },
   { id: "destination", lat: 40.7128, lng: -74.006, label: "New York" }
@@ -56,7 +57,7 @@ function readPlaces(root = document) {
     const lat = num(el, "data-lat", NaN);
     const lng = num(el, "data-lng", NaN);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      console.warn("[globe] skipping place with bad lat/lng", el);
+      warn("[globe] skipping place with bad lat/lng", el);
       return;
     }
     places.push({
