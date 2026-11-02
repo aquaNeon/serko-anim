@@ -60,26 +60,44 @@ DOM is what decides, not the `data-id` values.
 
 ### 4. Add the script
 
-In **Page settings → Custom code → Before `</body>`**:
+The globe fades in, so nothing is lost by starting it after the page has loaded -
+and the three.js bundle then stays out of the page-load window entirely, which is
+what Lighthouse scores.
+
+In **Page settings → Custom code → Inside `<head>`**, hide the hero cards until
+the script has placed them, so the raw Webflow layout never flashes. If the script
+fails to load they show after 8 seconds anyway:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.11.0/dist/serko-globe.js" defer></script>
+<style>
+  html:not([data-globe-ready]) :is(.hero1_profile_route_wrap, .hero1_profile_hotel_wrap, .hero1_profile_choice_wrap) {
+    visibility: hidden;
+    animation: globe-show 0s 8s forwards;
+  }
+  @keyframes globe-show { to { visibility: visible; } }
+</style>
+```
+
+In **Page settings → Custom code → Before `</body>`**, load the script once the
+page has loaded:
+
+```html
+<script>
+  addEventListener("load", function () {
+    var s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.12.0/dist/serko-globe.js";
+    s.integrity = "sha384-<hash>";
+    s.crossOrigin = "anonymous";
+    document.body.appendChild(s);
+  });
+</script>
 ```
 
 Pin a tag rather than `@main` — jsDelivr caches tagged URLs permanently, and
 `@main` is served with a short TTL, so an untagged URL means slower loads and
 surprise updates in production.
 
-Because the tag pins an exact file, it is worth adding Subresource Integrity so a
-compromised CDN cannot swap the bundle:
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/aquaNeon/serko-anim@v0.11.0/dist/serko-globe.js"
-        integrity="sha384-RCKWH03RxQGPh664qATmfX7uILdRR7j7iAMBOlwsT+iSQTZ5U1V7I6RSc/Qog1Fx"
-        crossorigin="anonymous" defer></script>
-```
-
-Regenerate the hash on every release, or the browser will refuse to run the file:
+The integrity hash stops a compromised CDN from swapping the bundle. Regenerate the hash on every release, or the browser will refuse to run the file:
 
 ```bash
 openssl dgst -sha384 -binary dist/serko-globe.js | openssl base64 -A
@@ -198,6 +216,9 @@ immediately, with no animation.
 Append `?debug` to the URL, or add `data-globe-debug` to the root element, to
 draw test-city markers. Useful for confirming the projection lines up before
 there is any art on screen.
+
+The same switch exposes `__globe`, `__globeReport()` and `__f2` in the console.
+Production pages without it get no globals.
 
 ## Local development
 
@@ -347,7 +368,7 @@ The globe is full size at and above the breakpoint, and exactly
 puts it, so shrinking pulls the globe up from the bottom rather than moving it
 away from the heading.
 
-`__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
+With `?debug` on the URL, `__globeReport()` shows `mobileScale`, `mobileBelow` and `mobileActive` so you
 can confirm which side of the breakpoint you are on.
 
 The same breakpoint switches the preferences UI to full width: below
