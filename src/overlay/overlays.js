@@ -13,15 +13,12 @@ function nums(el, attr, fallback) {
 }
 
 // accepts px numbers and rem values ("4rem"), resolved against the root font size
-function len(el, attr, fallback) {
+function len(el, attr, fallback, rootPx) {
   const raw = el.getAttribute(attr)
   if (raw === null || raw.trim() === "") return fallback
   const v = Number.parseFloat(raw)
   if (!Number.isFinite(v)) return fallback
   if (!/rems*$/i.test(raw)) return v
-  const rootPx = Number.parseFloat(
-    getComputedStyle(el.ownerDocument.documentElement).fontSize
-  )
   return v * (Number.isFinite(rootPx) ? rootPx : 16)
 }
 
@@ -40,7 +37,9 @@ const easeOutBack = (t) => {
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2)
 }
 
-function parse(el) {
+// display and the root font size come in read up front, so parsing one card
+// never makes the page restyle after the previous card's writes
+function parse(el, display, rootPx) {
   const anchored = el.hasAttribute('data-globe-pin')
   const anim = (el.getAttribute('data-anim') || 'fade').toLowerCase()
   const item = {
@@ -54,7 +53,7 @@ function parse(el) {
     mobileOffsetY: num(el, 'data-mobile-offset-y', 0),
     mobileAbove: (el.getAttribute('data-mobile-above') || '').trim(),
     mobileAboveEl: null,
-    mobileGap: len(el, 'data-mobile-gap', 64),
+    mobileGap: len(el, 'data-mobile-gap', 64, rootPx),
     ins: nums(el, 'data-in', [0]),
     outs: el.hasAttribute('data-out') ? nums(el, 'data-out', []) : [],
     collapse: (el.getAttribute('data-collapse') || 'true').toLowerCase() !== 'false',
@@ -123,8 +122,7 @@ function parse(el) {
       .filter(Boolean)
   }
 
-  const computed = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null
-  if (computed && computed.display === 'none') {
+  if (display === 'none') {
     item.hiddenByDisplay = true
     item.revealDisplay = el.getAttribute('data-display') || 'block'
   }
@@ -151,35 +149,36 @@ function overlayHost(stage) {
   return node || root.parentElement || root
 }
 
+// REPARENT
+// three passes - read where each card was authored, reset them all, then read
+// all heights - so moving the cards restyles the page once rather than per card
 function reparentAnchored(items, host) {
   const doc = host.ownerDocument
   let layer = host.querySelector(':scope > .globe-overlay-layer')
+  const moving = items.filter((item) =>
+    item.anchored && item.el.getAttribute('data-reparent') === 'true' && item.host === item.el)
+  if (!moving.length) return layer || null
 
-  for (const item of items) {
-    if (!item.anchored) continue
-    if (item.el.getAttribute('data-reparent') !== 'true') continue
-    if (item.host !== item.el) continue
+  if (!layer) {
+    layer = doc.createElement('div')
+    layer.className = 'globe-overlay-layer'
+    layer.style.position = 'absolute'
+    layer.style.top = '0'
+    layer.style.left = '0'
+    layer.style.pointerEvents = 'none'
+    layer.style.zIndex = '45'
+    host.appendChild(layer)
+  }
 
-    if (!layer) {
-      layer = doc.createElement('div')
-      layer.className = 'globe-overlay-layer'
-      layer.style.position = 'absolute'
-      layer.style.top = '0'
-      layer.style.left = '0'
-      layer.style.pointerEvents = 'none'
-      layer.style.zIndex = '45'
-      host.appendChild(layer)
-    }
-
-    if (item.hiddenByDisplay) item.el.style.display = item.revealDisplay
-
+  const authored = moving.map((item) => getComputedStyle(item.el).position)
+  moving.forEach((item, i) => {
     const el = item.el
-    const authored = getComputedStyle(el).position
-    if (authored !== 'static') {
-      el.dataset.globeAuthoredPosition = authored
+    if (item.hiddenByDisplay) el.style.display = item.revealDisplay
+    if (authored[i] !== 'static') {
+      el.dataset.globeAuthoredPosition = authored[i]
       warn(
         '[globe] ' + (el.getAttribute('class') || '').split(' ')[0] +
-        ' is position:' + authored + ' in Webflow. An anchored card is ' +
+        ' is position:' + authored[i] + ' in Webflow. An anchored card is ' +
         'positioned by the globe, so that has been reset - remove it in the ' +
         'Designer to avoid surprises.'
       )
@@ -193,9 +192,11 @@ function reparentAnchored(items, host) {
     el.style.transform = 'none'
     el.style.opacity = '1'
     el.style.visibility = 'visible'
+  })
+  const heights = moving.map((item) => item.el.offsetHeight)
 
-    const height = el.offsetHeight
-
+  moving.forEach((item, i) => {
+    const height = heights[i]
     const slot = doc.createElement('div')
     slot.className = 'globe-anchor-slot'
     slot.style.position = 'absolute'
@@ -219,8 +220,8 @@ function reparentAnchored(items, host) {
     }
     item.slotHeight = Math.ceil(height) || 0
     item.host = slot
-  }
-  return layer || null
+  })
+  return layer
 }
 
 const COLD_ATTR = 'data-globe-cold'
@@ -289,10 +290,14 @@ function activeWindow(item, time) {
 
 export class Overlays {
   constructor(stage, root = document) {
-    const nodes = root.querySelectorAll('[data-globe-cue], [data-globe-pin]')
+    const nodes = Array.from(root.querySelectorAll('[data-globe-cue], [data-globe-pin]'))
+    const styled = typeof getComputedStyle === 'function'
+    const displays = nodes.map((el) => (styled ? getComputedStyle(el).display : ''))
+    const docEl = root.documentElement || (root.ownerDocument && root.ownerDocument.documentElement)
+    const rootPx = styled && docEl ? Number.parseFloat(getComputedStyle(docEl).fontSize) : 16
     const mobileBelow = stage && stage.layout ? stage.layout.mobileBelow : 0
     lockSizes(root, mobileBelow > 0 && document.documentElement.clientWidth < mobileBelow)
-    this.items = Array.from(nodes).map(parse)
+    this.items = nodes.map((el, i) => parse(el, displays[i], rootPx))
     this.stage = stage
     this.layer = null
     this._layerShift = { x: 0, y: 0 }

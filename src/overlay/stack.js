@@ -120,10 +120,15 @@ export class CardStack {
       return
     }
 
+    // setup reads come before the writes and the card builds stay detached until
+    // all are made, so the page restyles a couple of times instead of once per card
     const template = this.template
     const parent = template.parentElement
-    if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative'
-    if (getComputedStyle(this.profile).position === 'static') this.profile.style.position = 'relative'
+    const parentStatic = getComputedStyle(parent).position === 'static'
+    const profileStatic = getComputedStyle(this.profile).position === 'static'
+    const built = config.cards.map((spec) => (spec.kind === 'pref' ? this._pref(spec) : this._prompt(spec)))
+    if (parentStatic) parent.style.position = 'relative'
+    if (profileStatic) this.profile.style.position = 'relative'
     this.profile.style.zIndex = '20'
     this.profile.style.whiteSpace = 'nowrap'
     this.wrap = config.wrap ? root.querySelector(config.wrap) : null
@@ -133,7 +138,7 @@ export class CardStack {
     if (config.minHeight) template.style.minHeight = `${config.minHeight}px`
 
     config.cards.forEach((spec, i) => {
-      const el = spec.kind === 'pref' ? this._pref(spec) : this._prompt(spec)
+      const el = built[i]
       if (!el) return
       el.classList.add('globe-stack-card')
       Object.assign(el.style, {
@@ -147,20 +152,27 @@ export class CardStack {
       })
       parent.insertBefore(el, template)
       const card = { spec, el, index: i + 1, typer: null, strokes: null }
-      if (spec.kind === 'pref') {
-        card.strokes = Array.from(el.querySelectorAll('path'))
-          .map((path) => {
-            let length = 0
-            try { length = path.getTotalLength() } catch { length = 0 }
-            if (!length) return null
-            path.style.strokeDasharray = String(length)
-            return { path, length }
-          })
-          .filter(Boolean)
-      } else {
+      if (spec.kind !== 'pref') {
         card.typer = new Typewriter(el.firstElementChild, { byWord: config.typeBy !== 'char' })
       }
       this.cards.push(card)
+    })
+
+    // path lengths are read for every card first, then the dash writes follow
+    const strokes = this.cards.map((card) => {
+      if (card.spec.kind !== 'pref') return null
+      return Array.from(card.el.querySelectorAll('path'))
+        .map((path) => {
+          let length = 0
+          try { length = path.getTotalLength() } catch { length = 0 }
+          return length ? { path, length } : null
+        })
+        .filter(Boolean)
+    })
+    this.cards.forEach((card, i) => {
+      if (!strokes[i]) return
+      for (const s of strokes[i]) s.path.style.strokeDasharray = String(s.length)
+      card.strokes = strokes[i]
     })
 
     template.style.visibility = 'hidden'

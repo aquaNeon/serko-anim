@@ -26,10 +26,11 @@ function markReady() {
 
 // BOOT
 // the desktop hero locks card heights from the brand font, so it waits for it.
-// feature 2 and the first frame follow in their own tasks
-// so page load never sees one long block of our script
+// the hero, feature 2 and the first frame each get their own task, apart from
+// three.js starting up, so no single block of our script runs long
 async function boot() {
   if (document.fonts) await Promise.race([document.fonts.ready, wait(FONT_WAIT_MS)])
+  await nextTask()
   const stage = mountHero()
   if (stage) {
     const off = stage.onFrame(() => {

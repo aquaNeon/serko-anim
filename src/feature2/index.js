@@ -116,19 +116,30 @@ function findBox(panel) {
   return box
 }
 
-function blankTime(card) {
+// the time text becomes a blank bar styled like the card's fill bars;
+// read and write are split so every card is read before any is written
+function readBlank(card) {
   const time = card.querySelector('[data-f2-time]') || card.querySelector('[class*="time_text"]')
-  if (!time) return
+  if (!time) return null
   const fill = card.querySelector('[class*="card_fill"]')
   const cs = fill ? getComputedStyle(fill) : null
-  time.textContent = ''
-  Object.assign(time.style, {
-    display: 'block',
-    flex: '0 0 auto',
-    width: '2.0625rem',
+  return {
+    time,
     height: cs && parseFloat(cs.height) ? cs.height : '6px',
     borderRadius: cs ? cs.borderRadius : '3px',
     backgroundColor: cs ? cs.backgroundColor : '#ececf1',
+  }
+}
+
+function writeBlank(blank) {
+  blank.time.textContent = ''
+  Object.assign(blank.time.style, {
+    display: 'block',
+    flex: '0 0 auto',
+    width: '2.0625rem',
+    height: blank.height,
+    borderRadius: blank.borderRadius,
+    backgroundColor: blank.backgroundColor,
   })
 }
 
@@ -240,6 +251,7 @@ export class Feature2 {
 
     this.cards = []
     for (let i = 0; i < count; i++) this.cards.push(this._makeCard(template, i))
+    this._styleCards()
 
     this.play = 0
     this.last = 0
@@ -375,13 +387,30 @@ export class Feature2 {
     }
 
     this.track.appendChild(el)
-    if (i !== disrupted && i !== focus) blankTime(el)
-    if (card.button && getComputedStyle(card.button).position === 'static') {
-      card.button.style.position = 'relative'
-    }
-    card.bg = parseRgb(getComputedStyle(el).backgroundColor)
-    card.btnBg = card.button ? parseRgb(getComputedStyle(card.button).backgroundColor, [18, 18, 22]) : null
     return card
+  }
+
+  // STYLE CARDS
+  // one pass of reads over every card, then one pass of writes,
+  // so building the track restyles the page once instead of per card
+  _styleCards() {
+    const { disrupted, focus } = this.opts
+    const reads = this.cards.map((card) => {
+      const btn = card.button ? getComputedStyle(card.button) : null
+      return {
+        blank: card.i !== disrupted && card.i !== focus ? readBlank(card.el) : null,
+        staticButton: btn ? btn.position === 'static' : false,
+        bg: getComputedStyle(card.el).backgroundColor,
+        btnBg: btn ? btn.backgroundColor : null,
+      }
+    })
+    this.cards.forEach((card, i) => {
+      const r = reads[i]
+      if (r.blank) writeBlank(r.blank)
+      if (r.staticButton) card.button.style.position = 'relative'
+      card.bg = parseRgb(r.bg)
+      card.btnBg = card.button ? parseRgb(r.btnBg, [18, 18, 22]) : null
+    })
   }
 
   measure() {
