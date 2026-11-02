@@ -1,4 +1,5 @@
 import { Typewriter } from './typewriter.js'
+import { warn } from '../log.js'
 const DEFAULT_DUR = 0.6
 
 function nums(el, attr, fallback) {
@@ -176,7 +177,7 @@ function reparentAnchored(items, host) {
     const authored = getComputedStyle(el).position
     if (authored !== 'static') {
       el.dataset.globeAuthoredPosition = authored
-      console.warn(
+      warn(
         '[globe] ' + (el.getAttribute('class') || '').split(' ')[0] +
         ' is position:' + authored + ' in Webflow. An anchored card is ' +
         'positioned by the globe, so that has been reset - remove it in the ' +
@@ -201,6 +202,7 @@ function reparentAnchored(items, host) {
     slot.style.top = '0'
     slot.style.left = '0'
     slot.style.margin = '0'
+    slot.style.opacity = '0'
     slot.style.willChange = 'transform, opacity'
     // A width measured here goes stale once the brand font loads or the card moves
     // out of its Webflow column, and the frozen slot then wraps the card's text.
@@ -221,11 +223,44 @@ function reparentAnchored(items, host) {
   return layer || null
 }
 
-function lockSizes(root) {
-  const targets = root.querySelectorAll('[data-lock-width="true"], [data-lock-height="true"]')
+const COLD_ATTR = 'data-globe-cold'
+const COLD_FONT = '--globe-cold-font'
+
+// COLD
+// styles a first visit sees before the brand font and lazy images arrive
+function coldStyle(targets) {
+  const doc = targets[0].ownerDocument
+  const css = doc.createElement('style')
+  css.textContent =
+    `[${COLD_ATTR}], [${COLD_ATTR}] * { font-family: var(${COLD_FONT}) !important; }` +
+    `[${COLD_ATTR}] img { display: none !important; }`
   for (const el of targets) {
-    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null
-    if (!rect) continue
+    const fallback = getComputedStyle(el).fontFamily.split(',').slice(1).join(',')
+    el.style.setProperty(COLD_FONT, fallback || 'sans-serif')
+    el.setAttribute(COLD_ATTR, '')
+  }
+  doc.head.appendChild(css)
+  return () => {
+    css.remove()
+    for (const el of targets) {
+      el.removeAttribute(COLD_ATTR)
+      el.style.removeProperty(COLD_FONT)
+    }
+  }
+}
+
+// LOCK
+// phones lock cold, so the height matches a first visit however warm the cache
+// and however late the script runs; it is undone in the same task, so nothing paints
+function lockSizes(root, cold) {
+  const targets = Array.from(root.querySelectorAll('[data-lock-width="true"], [data-lock-height="true"]'))
+  if (!targets.length) return
+  const undo = cold ? coldStyle(targets) : null
+  const rects = targets.map((el) => (el.getBoundingClientRect ? el.getBoundingClientRect() : null))
+  if (undo) undo()
+  targets.forEach((el, i) => {
+    const rect = rects[i]
+    if (!rect) return
     if (el.getAttribute('data-lock-width') === 'true' && rect.width) {
       el.style.width = `${Math.ceil(rect.width)}px`
       el.style.flexGrow = '0'
@@ -234,7 +269,7 @@ function lockSizes(root) {
     if (el.getAttribute('data-lock-height') === 'true' && rect.height) {
       el.style.height = `${Math.ceil(rect.height)}px`
     }
-  }
+  })
 }
 
 function activeWindow(item, time) {
@@ -255,7 +290,8 @@ function activeWindow(item, time) {
 export class Overlays {
   constructor(stage, root = document) {
     const nodes = root.querySelectorAll('[data-globe-cue], [data-globe-pin]')
-    lockSizes(root)
+    const mobileBelow = stage && stage.layout ? stage.layout.mobileBelow : 0
+    lockSizes(root, mobileBelow > 0 && document.documentElement.clientWidth < mobileBelow)
     this.items = Array.from(nodes).map(parse)
     this.stage = stage
     this.layer = null
@@ -298,7 +334,7 @@ export class Overlays {
     if (!item.mobileAboveEl) {
       item.mobileAboveEl = document.querySelector(item.mobileAbove)
       if (!item.mobileAboveEl) {
-        console.warn("[globe] data-mobile-above found nothing for", item.mobileAbove)
+        warn("[globe] data-mobile-above found nothing for", item.mobileAbove)
         item.mobileAbove = ""
         return null
       }
