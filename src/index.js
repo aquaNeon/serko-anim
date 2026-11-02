@@ -98,6 +98,7 @@ function mountHero() {
     if (end > flow.duration) flow.duration = end
 
     stage.onFrame((t, s) => {
+      overlays.measure(s)
       flow.advance(s.deltaSeconds)
       originPin.update(s)
       destPin.update(s)

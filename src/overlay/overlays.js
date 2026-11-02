@@ -296,20 +296,38 @@ export class Overlays {
     this.stage = stage
     this.layer = null
     this._layerShift = { x: 0, y: 0 }
+    this._box = { w: 0, h: 0 }
     if (stage && stage.root) this.layer = reparentAnchored(this.items, overlayHost(stage))
   }
 
-  _syncLayer(stage) {
+  // MEASURE
+  // every layout read for the frame, before anyone writes, so the browser
+  // lays the page out once per frame instead of once per card
+  measure(stage) {
+    const boxEl = stage.box || stage.root
+    if (!boxEl) return
+    const box = boxEl.getBoundingClientRect()
+    this._box.w = box.width
+    this._box.h = box.height
+    if (this.layer) {
+      const at = this.layer.getBoundingClientRect()
+      this._layerShift.x += box.left - at.left
+      this._layerShift.y += box.top - at.top
+    }
+    for (const item of this.items) {
+      if (!item.anchored) continue
+      item.height = item.el.offsetHeight
+      const above = stage.mobile ? this._aboveEl(item) : null
+      item.aboveTop = above ? above.getBoundingClientRect().top - box.top : null
+    }
+  }
+
+  _syncLayer() {
     if (!this.layer) return
-    const box = (stage.box || stage.root).getBoundingClientRect()
-    const at = this.layer.getBoundingClientRect()
-    const shift = this._layerShift
-    shift.x += box.left - at.left
-    shift.y += box.top - at.top
     const s = this.layer.style
-    s.width = `${box.width}px`
-    s.height = `${box.height}px`
-    s.transform = `translate(${shift.x}px, ${shift.y}px)`
+    s.width = `${this._box.w}px`
+    s.height = `${this._box.h}px`
+    s.transform = `translate(${this._layerShift.x}px, ${this._layerShift.y}px)`
   }
 
   get maxTime() {
@@ -322,14 +340,14 @@ export class Overlays {
     }, 0)
   }
 
+  // writes only; the reads come from measure()
   update(time, stage) {
-    this._boxTop = null
-    this._syncLayer(stage)
+    this._syncLayer()
     for (const item of this.items) this._updateItem(item, time, stage)
   }
 
-  // top of the element this card should sit above, in stage-box pixels
-  _mobileAboveTop(item, stage) {
+  // the element this card sits above on mobile
+  _aboveEl(item) {
     if (!item.mobileAbove) return null
     if (!item.mobileAboveEl) {
       item.mobileAboveEl = document.querySelector(item.mobileAbove)
@@ -339,10 +357,7 @@ export class Overlays {
         return null
       }
     }
-    if (this._boxTop === null) {
-      this._boxTop = (stage.box || stage.root).getBoundingClientRect().top
-    }
-    return item.mobileAboveEl.getBoundingClientRect().top - this._boxTop
+    return item.mobileAboveEl
   }
 
   _updateItem(item, time, stage) {
@@ -411,7 +426,7 @@ export class Overlays {
       }
       const limb = Math.min(1, p.depth / 0.12)
       opacity *= limb
-      const h = item.el.offsetHeight || item.slotHeight || 0
+      const h = item.height || item.slotHeight || 0
       if (h && Math.abs(h - item.slotHeight) > 0.5) {
         item.slotHeight = h
         el.style.height = `${h}px`
@@ -419,8 +434,8 @@ export class Overlays {
       const x = stage.mobile ? stage._size.w / 2 : p.x + dx
       let y = p.y + dy - h
       if (stage.mobile) {
-        const above = this._mobileAboveTop(item, stage)
-        y = above === null ? p.y + item.mobileOffsetY : above - h - item.mobileGap
+        const above = item.aboveTop
+        y = above == null ? p.y + item.mobileOffsetY : above - h - item.mobileGap
       }
       el.style.transform =
         `translate(${x}px, ${y}px) translate(-50%, 0) scale(${scale})`
