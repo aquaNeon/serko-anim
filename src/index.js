@@ -8,21 +8,66 @@ import { CardStack } from './overlay/stack.js'
 import { bootFeature2 } from './feature2/index.js'
 import { SEQUENCE, STACK, GLOBE_START, OUTRO_AT, applySequence } from './sequence.js'
 import { Flow, prefersReducedMotion } from './flow.js'
+import { warn } from './log.js'
 
 const ROOT_SELECTOR = '#globe-root'
 
-function boot() {
+const FONT_WAIT_MS = 3000
+const READY_ATTR = 'data-globe-ready'
+
+const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0))
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// the page's head css hides the hero cards until this is set, so the raw Webflow
+// layout never flashes before the first frame places them
+function markReady() {
+  document.documentElement.setAttribute(READY_ATTR, '')
+}
+
+// BOOT
+// the desktop hero locks card heights from the brand font, so it waits for it.
+// feature 2 and the first frame follow in their own tasks
+// so page load never sees one long block of our script
+async function boot() {
+  if (document.fonts) await Promise.race([document.fonts.ready, wait(FONT_WAIT_MS)])
+  const stage = mountHero()
+  if (stage) {
+    const off = stage.onFrame(() => {
+      off()
+      markReady()
+    })
+  } else {
+    markReady()
+  }
+
+  await nextTask()
   bootFeature2(document)
+  // feature 2 changes the page height; if load has already passed,
+  // the host page's ScrollTrigger missed its own refresh and needs one now
+  if (document.readyState === 'complete' && window.ScrollTrigger) window.ScrollTrigger.refresh()
+
+  if (!stage) return
+  await nextTask()
+  await stage.warm()
+  runWhileVisible(stage)
+}
+
+function mountHero() {
   const root = document.querySelector(ROOT_SELECTOR)
   if (!root) {
-    console.warn(`[globe] no ${ROOT_SELECTOR} on the page`)
-    return
+    warn(`[globe] no ${ROOT_SELECTOR} on the page`)
+    return null
   }
-  if (root.dataset.globeMounted) return
+  if (root.dataset.globeMounted) return null
   root.dataset.globeMounted = '1'
 
   const layout = readLayout(root)
   const places = readPlaces(root)
+  const debug =
+    new URLSearchParams(location.search).has('debug') ||
+    root.hasAttribute('data-globe-debug')
+  // the local tuning page reads window.__globe, so dev exposes it without ?debug
+  const expose = debug || import.meta.env?.DEV
 
   const stage = new Stage(root, layout)
 
@@ -60,19 +105,17 @@ function boot() {
       stack.update(flow.time)
     })
 
-    window.__globeOverlays = overlays
-    window.__globeStack = stack
+    if (expose) {
+      window.__globeOverlays = overlays
+      window.__globeStack = stack
+    }
 
     if (prefersReducedMotion()) flow.complete()
     else playWhileInView(document.querySelector(STACK.wrap) || root, flow)
   }
 
-  stage.start()
-
-  const debug =
-    new URLSearchParams(location.search).has('debug') ||
-    root.hasAttribute('data-globe-debug')
   if (debug) createDebugMarkers(stage)
+  if (!expose) return stage
 
   window.__globe = { stage, layout, places, flow }
 
@@ -138,6 +181,7 @@ function boot() {
     console.log('%c[globe report]', 'font-weight:bold', report)
     return report
   }
+  return stage
 }
 
 // starts once the element is almost fully on screen, so a short viewport that shows
@@ -151,6 +195,24 @@ function playWhileInView(el, flow) {
     if (entry.intersectionRatio >= 0.9) flow.play()
     else if (!entry.isIntersecting) flow.pause()
   }, { threshold: [0, 0.9] }).observe(el)
+}
+
+// the globe draws only while its box is on screen and the tab is visible,
+// so an idle hero costs nothing
+function runWhileVisible(stage) {
+  let onScreen = true
+  const sync = () => {
+    if (onScreen && !document.hidden) stage.start()
+    else stage.stop()
+  }
+  if (typeof IntersectionObserver === 'function') {
+    new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting
+      sync()
+    }).observe(stage.box)
+  }
+  document.addEventListener('visibilitychange', sync)
+  sync()
 }
 
 if (document.readyState === 'loading') {

@@ -2,6 +2,7 @@ import {
   SEGMENTS, STEPS, cumulative, targetStep, scrubTime, smooth, advance, progress,
   lerp, out, win, parseRgb,
 } from './motion.js'
+import { warn } from '../log.js'
 
 const CUM = cumulative(SEGMENTS)
 const PIN_EDGE = 32
@@ -158,7 +159,7 @@ export class Feature2 {
     const panel = findBox(section.querySelector('[data-f2-panel]'))
     this.ok = Boolean(panel && template)
     if (!this.ok) {
-      console.warn('[f2] needs [data-f2-panel] and [data-f2-card] inside [data-f2]')
+      warn('[f2] needs [data-f2-panel] and [data-f2-card] inside [data-f2]')
       return
     }
     injectStyle(doc)
@@ -189,7 +190,7 @@ export class Feature2 {
       : 0.6
 
     if (!findButton(template)) {
-      console.warn('[f2] no [data-f2-button] in the card - the glow and hover are skipped')
+      warn('[f2] no [data-f2-button] in the card - the glow and hover are skipped')
     }
 
     const pin = doc.createElement('div')
@@ -242,6 +243,8 @@ export class Feature2 {
 
     this.play = 0
     this.last = 0
+    this._raf = null
+    this.near = false
     this.rendered = false
     this.reduced = typeof matchMedia === 'function' &&
       matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -413,11 +416,24 @@ export class Feature2 {
   start() {
     addEventListener('resize', this._onResize)
     addEventListener('load', this._onResize, { once: true })
-    requestAnimationFrame(this._frame)
+    if (typeof IntersectionObserver !== 'function') {
+      this.near = true
+      this._raf = requestAnimationFrame(this._frame)
+      return
+    }
+    // ticks only within a screen of the section, so it has caught up before it shows
+    this._io = new IntersectionObserver(([entry]) => {
+      this.near = entry.isIntersecting
+      if (this.near && this._raf === null) {
+        this.last = 0
+        this._raf = requestAnimationFrame(this._frame)
+      }
+    }, { rootMargin: '100% 0px' })
+    this._io.observe(this.section)
   }
 
   frame(now) {
-    requestAnimationFrame(this._frame)
+    this._raf = this.near ? requestAnimationFrame(this._frame) : null
     const dt = this.last ? Math.min(0.05, (now - this.last) / 1000) : 0
     this.last = now
     const rect = this.section.getBoundingClientRect()
@@ -608,6 +624,8 @@ export function bootFeature2(doc = document) {
     feature.start()
     mounted.push(feature)
   }
-  if (mounted.length && typeof window !== 'undefined') window.__f2 = mounted
+  const expose = import.meta.env?.DEV ||
+    (typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug'))
+  if (mounted.length && expose) window.__f2 = mounted
   return mounted
 }

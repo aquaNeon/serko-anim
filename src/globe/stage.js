@@ -4,6 +4,7 @@ import { createDots } from "./dots.js";
 import { createGrid } from "./grid.js";
 import { createRim } from "./rim.js";
 import { Route } from "./route.js";
+import { warn } from "../log.js";
 const MAX_DPR = 2;
 const REF_RADIUS_PX = 500;
 const SIZE_SCALE_RANGE = [0.7, 1.6];
@@ -48,8 +49,7 @@ class Stage {
       canvas: this.canvas,
       alpha: true,
 
-      antialias: true,
-      powerPreference: "high-performance"
+      antialias: true
     });
     this.renderer.setClearColor(0, 0);
     this.scene = new THREE.Scene();
@@ -74,13 +74,12 @@ class Stage {
     if (layout.cutBelow && layout.cutBelow !== "none") {
       this.cutEl = document.querySelector(layout.cutBelow);
       if (this.cutEl) this._ro.observe(this.cutEl);
-      else console.warn("[globe] data-cut-below found nothing for", layout.cutBelow);
+      else warn("[globe] data-cut-below found nothing for", layout.cutBelow);
     }
     this._onWindowResize = () => {
       this._needsResize = true;
     };
     window.addEventListener("resize", this._onWindowResize);
-    window.addEventListener("scroll", this._onWindowResize, { passive: true });
     this._raf = null;
     this._lastTime = 0;
     this.deltaSeconds = 0;
@@ -271,7 +270,7 @@ class Stage {
       } else {
         if (!this._warnedNoFit) {
           this._warnedNoFit = true;
-          console.warn(
+          warn(
             "[globe] the globe is sized from its container, so it shrinks " +
             'with the screen. Add data-ref-width="1440" to #globe-root to ' +
             "hold its size and crop instead."
@@ -351,6 +350,16 @@ class Stage {
     Object.assign(this.dotOpts, opts);
     return this._replace("dots", createDots, this.dotOpts);
   }
+  // links the shaders before the first frame, off the main thread where the browser can;
+  // Safari has no parallel compile and three warns if asked, so it compiles in place
+  warm() {
+    const camera = this.globeCam.camera;
+    if (this.renderer.extensions.has("KHR_parallel_shader_compile")) {
+      return this.renderer.compileAsync(this.scene, camera).catch(() => {});
+    }
+    this.renderer.compile(this.scene, camera);
+    return Promise.resolve();
+  }
   start() {
     if (this._raf !== null) return;
     const tick = (t) => {
@@ -380,7 +389,6 @@ class Stage {
     this.stop();
     this._ro.disconnect();
     window.removeEventListener("resize", this._onWindowResize);
-    window.removeEventListener("scroll", this._onWindowResize);
     window.removeEventListener("pointermove", this._onPointerMove);
     document.documentElement.removeEventListener("pointerleave", this._onPointerLeave);
     this.renderer.dispose();
